@@ -1,0 +1,11 @@
+# Hand-wrapped prose. Prettier reflows the tables and gains nothing.
+AGENTS.md
+ARCHITECTURE.md
+CLAUDE.md
+WORKFLOW.md
+QUALITY_AND_SAFETY.md
+
+# Brand transcription source — the tokens are read from these verbatim.
+geekinate new logo/
+
+.next/

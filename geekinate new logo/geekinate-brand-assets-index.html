@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Geekinate — Brand Asset Index</title>
+<link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Onest:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{--volt:#B8E01B;--ink:#101613;--white:#FDFDFB;--grey:#5B6B62;--wash:#F4F7EA}
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#EDEEE8;font-family:'Onest',sans-serif;color:var(--ink);padding:44px 24px 80px}
+  .wrap{max-width:1080px;margin:0 auto}
+  .kicker{font-family:'IBM Plex Mono',monospace;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--grey);margin-bottom:8px}
+  h1{font-family:'Onest';font-weight:800;font-size:30px;letter-spacing:-.03em;margin-bottom:8px}
+  .sub{font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--grey);margin-bottom:40px}
+  h2{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;margin:44px 0 16px;padding-bottom:10px;border-bottom:1.5px solid var(--ink)}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+  .grid.icons{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:720px){.grid,.grid.icons{grid-template-columns:1fr 1fr}}
+  .asset{background:var(--white);border:1.5px solid var(--ink);border-radius:20px;overflow:hidden;box-shadow:3px 3px 0 var(--ink)}
+  .asset .canvas{min-height:150px;display:flex;align-items:center;justify-content:center;padding:24px}
+  .asset .canvas.dark{background:var(--ink)}
+  .asset .canvas.wash{background:var(--wash)}
+  .asset img{max-width:100%;max-height:110px}
+  .asset .meta{border-top:1.5px solid var(--ink);padding:14px 18px;font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:.02em}
+  .asset .fname{color:var(--ink);font-weight:500;margin-bottom:4px;word-break:break-all}
+  .asset .use{color:var(--grey);text-transform:uppercase;letter-spacing:.05em;font-size:10px}
+  .icons .canvas{min-height:110px;padding:18px}
+  .icons img{max-height:76px}
+  .snippet{background:var(--ink);border-radius:20px;padding:24px 26px;margin-top:24px;overflow-x:auto}
+  .snippet pre{font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.8;color:#DCE3DE;white-space:pre}
+  .snippet .tag{color:var(--volt)}
+  .snippet .attr{color:#A7D8E8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Geekinate · brand assets · v2</div>
+  <h1>Logo deliverables</h1>
+  <div class="sub">Audiowide outlined to vector paths — no font dependency. SVG = source of truth · PNG/ICO = export.</div>
+
+  <h2>01 · Primary lockup</h2>
+  <div class="grid">
+    <div class="asset">
+      <div class="canvas"><img src="geekinate-brand-assets/geekinate-lockup-light.svg" alt="lockup light"></div>
+      <div class="meta"><div class="fname">geekinate-lockup-light.svg</div><div class="use">Light backgrounds · default</div></div>
+    </div>
+    <div class="asset">
+      <div class="canvas dark"><img src="geekinate-brand-assets/geekinate-lockup-dark.svg" alt="lockup dark"></div>
+      <div class="meta"><div class="fname">geekinate-lockup-dark.svg</div><div class="use">Dark / ink backgrounds</div></div>
+    </div>
+  </div>
+
+  <h2>02 · Wordmark alone</h2>
+  <div class="grid">
+    <div class="asset">
+      <div class="canvas"><img src="geekinate-brand-assets/geekinate-wordmark-ink.svg" alt="wordmark ink"></div>
+      <div class="meta"><div class="fname">geekinate-wordmark-ink.svg</div><div class="use">Ink · light backgrounds</div></div>
+    </div>
+    <div class="asset">
+      <div class="canvas dark"><img src="geekinate-brand-assets/geekinate-wordmark-white.svg" alt="wordmark white"></div>
+      <div class="meta"><div class="fname">geekinate-wordmark-white.svg</div><div class="use">White · dark backgrounds</div></div>
+    </div>
+  </div>
+
+  <h2>03 · Mark alone</h2>
+  <div class="grid icons">
+    <div class="asset">
+      <div class="canvas"><img src="geekinate-brand-assets/geekinate-mark.svg" alt="mark volt"></div>
+      <div class="meta"><div class="fname">geekinate-mark.svg</div><div class="use">Volt · default mark</div></div>
+    </div>
+    <div class="asset">
+      <div class="canvas dark"><img src="geekinate-brand-assets/geekinate-mark-ink.svg" alt="mark ink"></div>
+      <div class="meta"><div class="fname">geekinate-mark-ink.svg</div><div class="use">Ink · avatar alt</div></div>
+    </div>
+    <div class="asset">
+      <div class="canvas"><img src="geekinate-brand-assets/geekinate-appicon-512.svg" alt="app icon"></div>
+      <div class="meta"><div class="fname">geekinate-appicon-512.svg</div><div class="use">App icon · M1, no border</div></div>
+    </div>
+    <div class="asset">
+      <div class="canvas wash"><img src="geekinate-brand-assets/geekinate-favicon-32.svg" alt="favicon 32" style="max-height:32px"></div>
+      <div class="meta"><div class="fname">geekinate-favicon-32.svg</div><div class="use">Favicon 32px</div></div>
+    </div>
+  </div>
+
+  <h2>04 · Raster exports (for slides · email · stores)</h2>
+  <div class="grid icons">
+    <div class="asset"><div class="canvas wash"><img src="geekinate-brand-assets/geekinate-appicon-512.png" alt="512"></div><div class="meta"><div class="fname">geekinate-appicon-512.png</div><div class="use">Store / social · 512</div></div></div>
+    <div class="asset"><div class="canvas wash"><img src="geekinate-brand-assets/geekinate-apple-touch-180.png" alt="180"></div><div class="meta"><div class="fname">geekinate-apple-touch-180.png</div><div class="use">Apple touch icon</div></div></div>
+    <div class="asset"><div class="canvas wash"><img src="geekinate-brand-assets/geekinate-appicon-192.png" alt="192"></div><div class="meta"><div class="fname">geekinate-appicon-192.png</div><div class="use">Android · PWA</div></div></div>
+    <div class="asset"><div class="canvas wash"><img src="geekinate-brand-assets/favicon.ico" alt="ico" style="max-height:32px"></div><div class="meta"><div class="fname">favicon.ico</div><div class="use">16·32·48 multi-res</div></div></div>
+  </div>
+
+  <h2>05 · Favicon / head snippet</h2>
+  <div class="snippet"><pre><span class="tag">&lt;link</span> <span class="attr">rel</span>="icon" <span class="attr">href</span>="/favicon.ico" <span class="attr">sizes</span>="any"<span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>="icon" <span class="attr">type</span>="image/svg+xml" <span class="attr">href</span>="/geekinate-favicon-32.svg"<span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>="apple-touch-icon" <span class="attr">href</span>="/geekinate-apple-touch-180.png"<span class="tag">&gt;</span>
+<span class="tag">&lt;link</span> <span class="attr">rel</span>="icon" <span class="attr">type</span>="image/png" <span class="attr">sizes</span>="192x192" <span class="attr">href</span>="/geekinate-appicon-192.png"<span class="tag">&gt;</span></pre></div>
+</div>
+</body>
+</html>

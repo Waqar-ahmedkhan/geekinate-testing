@@ -1,13 +1,12 @@
 // Every tunable number for the fixed particle scene, held here so the components below read as behaviour rather than as a pile of
-// magic floats. `count` and `fieldCount` are the only two entries that cost anything: they size the typed arrays allocated once at
-// mount, and nothing reallocates after that.
+// magic floats. `count` is the only entry that costs anything: it sizes the typed arrays allocated once at mount, and nothing
+// reallocates after that.
 //
 // Distances are world units on a plane at z = 0, seen by a camera parked at `cameraZ` with a vertical field of view of `cameraFov`.
 // The visible height at that plane is 2 * cameraZ * tan(cameraFov / 2) = 7.46, so a radius of 2.95 puts the mark at roughly
 // four-fifths of the viewport height.
 export const COSMOS = {
   count: 26000,
-  fieldCount: 3400,
   cameraFov: 45,
   cameraZ: 9,
   glyphRadius: 2.95,
@@ -56,20 +55,28 @@ export const COSMOS = {
   // printed ink, because the mark is a cloud of small spheres and a sphere lit from the front has a specular at its centre.
   sparkle: 0.34,
   gloss: 0.5,
-  fieldSpread: 34,
-  fieldDepth: 26,
-  // The field travels toward the camera rather than sitting still — this is the only thing on the page that supplies a sense of
-  // motion, so it is the number to reach for when the site feels parked. Units per second: at 3.2 a star crosses the whole span in
-  // about ten seconds.
-  fieldSpeed: 3.2,
-  // How close a star gets before it wraps back to the far plane. The camera is at 9, so this leaves four units of clearance — any
-  // nearer and the depth attenuation blows a five-pixel sprite up into a saucer on its way past.
-  fieldNear: 5,
-  fieldSize: 5,
-  parallax: 0.3,
+  // The substrate. A grid of cells running a Life-like rule, seeded by the mark — see substrateShaders for why this replaced a
+  // starfield. cell is CSS pixels per cell, so the grid is roughly 137 x 61 at desktop: two textures of a few thousand texels.
+  cell: 14,
+  // Generations per second, not frames. The afterglow covers the gap between them, so the field reads as continuous while the rule
+  // runs at a sixth of the render rate.
+  stepRate: 11,
+  decay: 0.86,
+  // Chance per cell per generation of a cell appearing out of nothing. Life on an empty grid settles at nothing, and a background
+  // that goes blank ten seconds after load is not a background.
+  spawn: 0.0007,
+  // How many cells wide the mark stamps per particle. Below about three the stamp lands sub-pixel in a grid this coarse and the wake
+  // comes out as speckle rather than a trail.
+  seedSpread: 4,
+  dotSize: 0.36,
+  substrateOpacity: 0.55,
+  // Rows the lattice travels per full page scroll, plus a slow idle. The scroll term is what makes the wake pull away from the mark;
+  // the idle term is what keeps the field moving when the page is not.
+  wake: 1.6,
+  wakeIdle: 0.012,
   // Idle life. Nothing here is triggered by anything — the mark is never truly still, because a fixed shape on a moving starfield
   // reads as a decal stuck to the glass. A slow sway on both axes and a long vertical bob, on different periods so they never line
-  // up into an obvious loop.
+  // up into an obvious loop. The substrate above carries the rest of the life.
   //
   // A travelling band of light across the body was tried here too and cut on sight — at any width it read as a stripe painted over
   // the mark rather than as light moving across it, because these particles are flat sprites with no normals for a highlight to

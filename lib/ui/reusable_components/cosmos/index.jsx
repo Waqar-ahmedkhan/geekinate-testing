@@ -52,7 +52,17 @@ export default function CosmosCanvas() {
         },
       }),
     ];
-    return () => triggers.forEach((trigger) => trigger.kill());
+    // Both triggers measure their section the moment they are created, and at that moment the display faces have not swapped in and
+    // the scene's own bundle is still compiling — so the hero can be measured at nearly no height. When it is, `start` and `end`
+    // collapse onto each other and the progress reads 1 forever: the mark spends the whole page in its footer pose, centred, and the
+    // hero looks like it simply ignored its own layout. Re-measuring once the fonts and the load event have landed is the fix.
+    const refresh = () => ScrollTrigger.refresh();
+    document.fonts?.ready.then(refresh);
+    window.addEventListener('load', refresh);
+    return () => {
+      window.removeEventListener('load', refresh);
+      triggers.forEach((trigger) => trigger.kill());
+    };
   }, []);
 
   return (

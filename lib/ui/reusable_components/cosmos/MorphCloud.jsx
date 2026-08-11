@@ -1,19 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useRef } from 'react';
+import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { BufferAttribute, BufferGeometry, Vector2, Vector3 } from 'three';
-import { cloudFragment, cloudVertex } from './shaders';
-import { readPalette } from './palette';
-import { sampleCloud } from '@/lib/shape/cloud';
-import { sampleGlyph } from '@/lib/shape/glyph';
-import { sampleSnake } from '@/lib/shape/snake';
+import { Vector3 } from 'three';
+import { getCloud } from './cloud';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { stage } from '@/lib/scroll/stage';
 import { COSMOS, LAYOUT } from '@/constants';
 
-const MARK = '/brand/geekinate-mark.svg';
 const HALF_FOV = (COSMOS.cameraFov * Math.PI) / 360;
 // The subject plane is at z = 0 and the camera never moves, so this is a constant. Deriving the frame from state.viewport instead
 // would tie the scene's size to the camera's distance from the origin and any camera move would feed straight back into it.
@@ -44,104 +39,18 @@ const anchorOffset = (target, markHalf) => {
   return offset;
 };
 
-const buildGeometry = () => {
-  const cloud = sampleCloud(COSMOS.count, { radius: COSMOS.cloudRadius, flatten: COSMOS.cloudFlatten });
-  const snake = sampleSnake(COSMOS.count, {
-    length: COSMOS.snakeLength,
-    radius: COSMOS.snakeRadius,
-    flatten: COSMOS.snakeFlatten,
-  });
-  const random = new Float32Array(COSMOS.count),
-    seed = new Float32Array(COSMOS.count),
-    tint = new Float32Array(COSMOS.count);
-  for (let i = 0; i < COSMOS.count; i += 1) {
-    random[i] = Math.random();
-    seed[i] = Math.random();
-    // How far this particle is lifted off volt toward paper. Zero for most of them, so the mark is the brand colour; squaring the
-    // roll on the rest clusters the highlights into patches instead of dusting them evenly over the whole body.
-    tint[i] = Math.random() < COSMOS.sparkle ? Math.random() * Math.random() : 0;
-  }
-  const geometry = new BufferGeometry();
-  geometry.setAttribute('position', new BufferAttribute(cloud, 3));
-  // Seeded with the cloud itself, so before the glyph resolves the morph is the identity and nothing jumps if it never arrives.
-  geometry.setAttribute('aGlyph', new BufferAttribute(cloud.slice(), 3));
-  geometry.setAttribute('aSnake', new BufferAttribute(snake.points, 3));
-  geometry.setAttribute('aArc', new BufferAttribute(snake.arc, 1));
-  geometry.setAttribute('aRand', new BufferAttribute(random, 1));
-  geometry.setAttribute('aSeed', new BufferAttribute(seed, 1));
-  geometry.setAttribute('aTint', new BufferAttribute(tint, 1));
-  return geometry;
-};
-
 export default function MorphCloud() {
   const material = useRef(null);
   const world = useRef(new Vector3());
   const smooth = useRef(new Vector3(0, 0, 40));
   const trail = useRef(new Vector3(0, 0, 40));
   const attention = useRef(0);
-  // The mark's true half-width in world units, filled in once the glyph is rasterised. Seeded at the radius so the first frames
-  // under-reach rather than overhang.
-  const halfWidth = useRef(COSMOS.glyphRadius);
-  const geometry = useMemo(() => buildGeometry(), []);
-  const uniforms = useMemo(() => {
-    const { paper, volt } = readPalette();
-    return {
-      uTime: { value: 0 },
-      // Assembled at rest, because the hero is the top of the page and the mark is formed there.
-      uForm: { value: 1 },
-      // 1 is the letterform, 0 the snake. The hero is the top of the page, so the mark starts assembled and lettered.
-      uPose: { value: 1 },
-      uCrawl: { value: 0 },
-      uWaves: { value: COSMOS.snakeWaves },
-      uWaveAmp: { value: COSMOS.snakeAmplitude },
-      uOffsetX: { value: 0 },
-      uTilt: { value: new Vector2() },
-      uFaceYaw: { value: 0 },
-      uSpread: { value: COSMOS.morphSpread },
-      uDrift: { value: COSMOS.driftAmount },
-      uDriftLoose: { value: COSMOS.driftLoose },
-      uDriftSpeed: { value: COSMOS.driftSpeed },
-      uPointer: { value: new Vector3(0, 0, 40) },
-      uPointerTrail: { value: new Vector3(0, 0, 40) },
-      uPointerActive: { value: 0 },
-      uPullRadius: { value: COSMOS.pullRadius },
-      uPullStrength: { value: COSMOS.pullStrength },
-      uSwirl: { value: COSMOS.swirl },
-      uGloss: { value: COSMOS.gloss },
-      uBob: { value: 0 },
-      uSize: { value: COSMOS.pointSize },
-      uScale: { value: 1 },
-      uCameraZ: { value: COSMOS.cameraZ },
-      uPixelRatio: { value: 1 },
-      uPaper: { value: paper },
-      uVolt: { value: volt },
-      uOpacity: { value: 1 },
-    };
-  }, []);
-
-  useEffect(() => () => geometry.dispose(), [geometry]);
-
-  // The letterform is rasterised off the brand SVG on the client, so it lands a frame or several after mount. Writing it straight
-  // into the live attribute avoids rebuilding the geometry and keeps every other buffer untouched.
-  useEffect(() => {
-    const controller = new AbortController();
-    let cancelled = false;
-    const options = { src: MARK, radius: COSMOS.glyphRadius, depth: COSMOS.glyphDepth, signal: controller.signal };
-    sampleGlyph(COSMOS.count, options).then((glyph) => {
-      if (cancelled || !glyph) return;
-      const attribute = geometry.getAttribute('aGlyph');
-      attribute.array.set(glyph.points);
-      attribute.needsUpdate = true;
-      halfWidth.current = glyph.halfWidth;
-    });
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [geometry]);
-
+  // getCloud() is called at each use rather than once into a local. The singleton is written to every frame and read during render,
+  // and the compiler will not allow one variable to do both — resolving it at the call site keeps each read local to its own scope.
+  // The call is a cache hit after the first.
   useFrame((state, delta) => {
-    const values = material.current.uniforms;
+    const cloud = getCloud();
+    const values = cloud.uniforms;
     const step = Math.min(1, delta * 60);
     const aspect = state.size.width / state.size.height;
     const scale = fitScale(aspect);
@@ -177,7 +86,7 @@ export default function MorphCloud() {
     // `halfWidth` is the mark's measured extent, not the radius, for the reason spelled out in lib/shape/glyph.
     //
     // Clamped at zero: on a phone the mark is as wide as the frame, there is no room to push it aside, and it centres instead.
-    const anchored = anchorOffset(containerHalf - COSMOS.heroEdgeMargin, halfWidth.current * posed);
+    const anchored = anchorOffset(containerHalf - COSMOS.heroEdgeMargin, cloud.halfWidth * posed);
     const offsetX = Math.max(0, anchored) * stage.offset;
     values.uOffsetX.value = offsetX;
     // The angle the mark is seen from, once it has moved off the camera axis. Negative because yawing by -a turns the mark's own +z
@@ -207,17 +116,5 @@ export default function MorphCloud() {
     values.uPointerActive.value = attention.current;
   });
 
-  return (
-    <points geometry={geometry} frustumCulled={false}>
-      <shaderMaterial
-        ref={material}
-        uniforms={uniforms}
-        vertexShader={cloudVertex}
-        fragmentShader={cloudFragment}
-        transparent
-        depthWrite={false}
-        depthTest={false}
-      />
-    </points>
-  );
+  return <points geometry={getCloud().geometry} material={getCloud().material} frustumCulled={false} />;
 }

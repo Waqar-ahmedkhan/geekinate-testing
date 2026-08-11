@@ -1,19 +1,28 @@
-import { Audiowide, IBM_Plex_Mono, Onest } from 'next/font/google';
+import { IBM_Plex_Mono, Instrument_Serif, Red_Hat_Display } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
-import { Nav } from '@/lib/ui/reusable_components';
+import { CosmosCanvas, Nav, SmoothScroll } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SITE } from '@/constants';
 import './globals.css';
 
-const onest = Onest({ subsets: ['latin'], display: 'swap', variable: '--font-onest' });
-const audiowide = Audiowide({ subsets: ['latin'], display: 'swap', weight: '400', variable: '--font-audiowide' });
+// Instrument Serif carries every heading and Red Hat Display everything else — the pairing from ricardochance.com, adopted whole on
+// 2026-08-11. The italic is loaded because the display face is used italic far more often than upright; it is the headline voice,
+// not an emphasis variant. Audiowide and Onest came out with the same decision, so the wordmark now sets in Red Hat Display.
+const display = Instrument_Serif({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: '400',
+  style: ['normal', 'italic'],
+  variable: '--font-instrument-serif',
+});
+const sans = Red_Hat_Display({ subsets: ['latin'], display: 'swap', variable: '--font-red-hat-display' });
 const mono = IBM_Plex_Mono({ subsets: ['latin'], display: 'swap', weight: ['400', '500'], variable: '--font-ibm-plex-mono' });
 const rootMetadata = buildMetadata({
   title: `${SITE.name} — AI, games, marketing systems, and web products`,
   description: SITE.description,
 });
-const fontVariables = `${onest.variable} ${audiowide.variable} ${mono.variable}`;
+const fontVariables = `${sans.variable} ${display.variable} ${mono.variable}`;
 
 export const metadata = {
   ...rootMetadata,
@@ -30,8 +39,12 @@ export const metadata = {
 export default function RootLayout({ children }) {
   return (
     <html lang='en' className={`${fontVariables} antialiased`}>
-      <body className='flex min-h-[200vh] flex-col'>
+      {/* SmoothScroll is the only writer of scrollProgress.reduced and CosmosCanvas reads it, so their order here is load-bearing:
+          sibling effects run in document order. */}
+      <body className='flex min-h-svh flex-col'>
         <JsonLd id='json-ld-site' nodes={[organizationJsonLd, websiteJsonLd]} />
+        <SmoothScroll />
+        <CosmosCanvas />
         <Nav />
         {children}
         <Footer />

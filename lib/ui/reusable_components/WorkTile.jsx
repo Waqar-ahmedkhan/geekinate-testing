@@ -16,7 +16,7 @@ export default function WorkTile({ title, disciplines = [], span = 1, href, medi
   const { videoRef, hoverHandlers } = useHoverVideo();
   // bg-black matters: the overlay is light text with no scrim, so a tile whose video has not painted yet — still loading, decode
   // failed, or no poster — would otherwise render that text onto the bare page background and vanish.
-  const className = cn('group relative block overflow-hidden rounded-lg bg-black', SPANS[span] ?? SPANS[1]);
+  const className = cn('group border-brutal relative block overflow-hidden rounded-lg bg-black shadow-brutal', SPANS[span] ?? SPANS[1]);
   // Placeholder entries have no case study to link to yet, and a dead link is worse than none.
   const Tag = href ? Link : 'div';
   const linkProps = href ? { href } : {};

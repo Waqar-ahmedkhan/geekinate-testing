@@ -9,6 +9,12 @@ import TestimonialCard from './TestimonialCard';
 const ANCHORS = ['end', 'start', 'end', 'center', 'end', 'center', 'start', 'end', 'start', 'center', 'start', 'end'];
 const ANCHOR_CLASS = { start: 'items-start', center: 'items-center', end: 'items-end' };
 const SPEED = 40;
+// Hover slows the row rather than halting it. A quarter speed still moves the card under the cursor, which is the trade being made
+// on purpose: the row stays legibly alive rather than reading as broken. A dead stop is the thing to avoid — the eye registers a
+// halted row as a bug, not as waiting. The ease is what makes the change felt as the row coming off the throttle rather than
+// snapping between two speeds.
+const SLOW = 0.3;
+const EASE = 3.5;
 const GAP = 30;
 
 // The list is rendered twice and the offset wraps at half the track width, which is what makes the loop seamless. Any wrap point
@@ -20,7 +26,8 @@ export default function TestimonialMarquee({ items }) {
   const offsetRef = useRef(0);
   const frameRef = useRef(0);
   const lastRef = useRef(0);
-  const pausedRef = useRef(false);
+  const speedRef = useRef(1);
+  const targetRef = useRef(1);
   const dragRef = useRef(null);
   const [badge, setBadge] = useState(null);
   const loop = [...items, ...items];
@@ -32,7 +39,8 @@ export default function TestimonialMarquee({ items }) {
       const half = track.scrollWidth / 2;
       const elapsed = lastRef.current ? Math.min((now - lastRef.current) / 1000, 0.1) : 0;
       lastRef.current = now;
-      if (!pausedRef.current && !dragRef.current) offsetRef.current -= SPEED * elapsed;
+      speedRef.current += (targetRef.current - speedRef.current) * Math.min(1, elapsed * EASE);
+      if (!dragRef.current) offsetRef.current -= SPEED * speedRef.current * elapsed;
       offsetRef.current = -wrap(-offsetRef.current, half);
       track.style.transform = `translate3d(${offsetRef.current}px, 0, 0)`;
       frameRef.current = requestAnimationFrame(step);
@@ -60,9 +68,9 @@ export default function TestimonialMarquee({ items }) {
     dragRef.current = null;
     event.currentTarget.releasePointerCapture(event.pointerId);
   };
-  const enter = () => (pausedRef.current = true);
+  const enter = () => (targetRef.current = SLOW);
   const leave = () => {
-    pausedRef.current = false;
+    targetRef.current = 1;
     dragRef.current = null;
     setBadge(null);
   };

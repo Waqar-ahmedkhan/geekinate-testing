@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import { BrandMark, InViewVideo } from '@/lib/ui/reusable_components';
-import { footerColumns, footerContent, footerMedia } from '@/lib/content';
+import { BrandMark } from '@/lib/ui/reusable_components';
+import { footerColumns, footerContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
 // Transcribed from wearestokt.com, measured live at 1920: a black card inset 16px on every side, 12px radius, 24px of inner
@@ -49,12 +49,13 @@ export default function Footer() {
   const copyright = `© ${new Date().getFullYear()} ${SITE.name}.`;
   return (
     <footer className='relative z-50 p-4'>
-      <div className='relative flex min-h-[calc(100svh-2rem)] flex-col justify-between overflow-hidden rounded-[12px] bg-black p-6'>
-        <div className='absolute inset-0'>
-          <InViewVideo media={footerMedia} fit='cover' />
-        </div>
+      {/* The footer is where the particle cloud finishes reforming as the mark, so this panel cannot be opaque and cannot blur: a
+          backdrop-filter here would soften the one frame of the page the whole scroll has been building toward. It is a plain
+          translucent tint behind a 1.5px rule, and the content is pushed to the top and bottom rails to leave the letterform the
+          middle of the viewport. The full-bleed video that used to fill it was removed on 2026-08-11 for the same reason. */}
+      <div className='border-brutal relative flex min-h-[calc(100svh-2rem)] flex-col justify-between overflow-hidden rounded-[12px] bg-void/30 p-6'>
         <div className='relative flex flex-col gap-12 md:flex-row md:items-start md:justify-between md:gap-8'>
-          <div className='flex flex-col items-start gap-2.5 md:w-1/2'>
+          <div className='flex flex-col items-start gap-2.5 md:w-auto md:shrink-0'>
             <Link
               href='/'
               aria-label={`${SITE.name} home`}
@@ -68,7 +69,10 @@ export default function Footer() {
               {SITE.email}
             </a>
           </div>
-          <div className='grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 md:flex md:w-1/2 md:justify-between md:gap-8'>
+          {/* Two by two on desktop, not a single row of four. A four-across row starts at the horizontal centre, which is exactly
+              where the particle cloud finishes assembling — the first column landed inside the counter of the G and neither the
+              letterform nor the links could be read. Folding to a 2x2 block halves the width and clears the middle. */}
+          <div className='grid grid-cols-2 gap-x-8 gap-y-10 sm:grid-cols-4 md:ml-auto md:w-auto md:grid-cols-2 md:gap-x-14 md:gap-y-12'>
             {footerColumns.map(({ title, links }) => (
               <FooterColumn key={title} title={title} links={links} />
             ))}

@@ -5,14 +5,16 @@ import useHoverVideo from './useHoverVideo';
 import { cn } from '@/lib/utils';
 
 // A 1px ring drawn as a gradient behind an inset fill, rather than a flat border — it catches light at the top-left and fades out,
-// which is what stops a large dark card reading as a plain rectangle.
-const RING = 'rounded-lg bg-[linear-gradient(126deg,rgba(253,253,251,0.18)_0%,rgba(253,253,251,0.04)_100%)] p-px';
+// which is what stops a large dark card reading as a plain rectangle. The hard offset shadow beneath it is the brand's, retuned to
+// volt for the dark ground where an ink shadow reads as nothing at all.
+const RING = 'rounded-lg bg-[linear-gradient(126deg,rgba(253,253,251,0.18)_0%,rgba(253,253,251,0.04)_100%)] p-px shadow-brutal';
 
 export default function HoverVideoCard({ title, summary, media, className }) {
   const { videoRef, hoverHandlers } = useHoverVideo();
   return (
     <div className={cn(RING, className)}>
-      <div {...hoverHandlers} className='group flex h-full flex-col rounded-[calc(var(--radius)-1px)] bg-black p-5'>
+      {/* glass, not bg-black: the particle scene is fixed behind every section and has to read through the card. */}
+      <div {...hoverHandlers} className='glass group flex h-full flex-col rounded-[calc(var(--radius)-1px)] p-5'>
         <div className='aspect-[9/10] w-full overflow-hidden'>
           <VideoSurface ref={videoRef} media={media} fit='contain' />
         </div>

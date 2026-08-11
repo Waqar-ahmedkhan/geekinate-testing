@@ -68,7 +68,14 @@ Geometry is as much the brand as the colour: **1.5px ink borders, 20px card radi
 **Stack decisions already made.** JavaScript, not TypeScript. App Router. **No `src/` directory.** Tailwind v4 CSS-first with **no
 `tailwind.config.js`**. shadcn emits `.jsx` (`tsx: false`). Reversing any of these is a decision to raise, not a refactor to perform.
 
-**No new dependencies without raising it.** There is deliberately no smooth-scroll, animation, form, or data library.
+**No new dependencies without raising it.** There is deliberately no smooth-scroll, form, or data library. `three`,
+`@react-three/fiber` and `@react-three/drei` are the one granted exception — raised and approved on 2026-08-10 for the hero brief in
+`docs/geekinate-hero-3d-prompt.md`. That approval covers the rest of that brief's list too (`lenis`, `zustand`, `maath`, `leva`,
+`@react-three/postprocessing`), but each installs with the phase that uses it. It does not extend to anything else.
+
+**The hero is 3D; nothing else is.** The soft-lit, glossy, depth-shaded treatment approved on 2026-08-10 applies to the mark in
+section 01 only. Every section below it stays on the flat system — ink borders, hard offset shadows, no blur-based depth. Reaching
+for a soft shadow or a gradient elsewhere because "the hero does it" is the misreading to avoid.
 
 ## Conventions
 
@@ -106,6 +113,45 @@ programmatic scroll in a paused tab never advances at all. That is the browser, 
 **`cn()` overrides do not cross breakpoints.** twMerge tracks each responsive variant separately, so passing `mb-0` to a component
 whose base classes are `mb-8 md:mb-10` kills only `mb-8` — the `md:mb-10` survives and stacks with whatever the parent applies. Pass
 `mb-0 md:mb-0`. This silently doubled a section's header gap.
+
+**A logo SVG is almost never a path you can sample.** `public/brand/geekinate-mark.svg` is a filled outline, so its `d` traces the
+*edge* of the letter, not its stroke. Feeding that to a tube builder wraps geometry around the glyph instead of running through it —
+and it looks plausible enough in a thumbnail to waste an hour. Check for a uniform stroke width before reaching for a tracing
+library; this mark has one, so `scripts/sample-g-path.mjs` derives the centreline arithmetically instead.
+
+**A positioned ancestor with a z-index traps a fixed child's z-index.** `Section` carries `relative z-10`, which opens a stacking
+context. The 3D canvas was rendered inside the hero's `Section` with `fixed inset-0 z-40`, and that 40 is scoped to the hero's own
+z-10 layer — so every later section painted over it. It renders correctly in the hero, because nothing overlaps the first section,
+which makes it present as "the mark vanishes as soon as you scroll past the hero" rather than as a layering fault. The canvas is a
+**sibling** of the section now. Two other diagnoses were chased first, so check the DOM ancestry before the maths.
+
+**R3F's `viewport` is measured from the camera to the world origin, so never derive a scale from it if anything moves the camera.**
+`state.viewport` is `getCurrentViewport(camera, [0,0,0], size)`. Panning the camera increases that distance, which grows
+`viewport.height`. Sizing the scene off it then makes a closed loop — bigger scene, centroid further out, camera pans further,
+bigger still — and the object leaves the frustum within a few frames. It presents as "the scene renders at load and disappears the
+moment you scroll", which reads like a scroll bug and is not one. Derive from the camera's own fov and its fixed distance to the
+subject plane instead, and take the aspect ratio from `state.size`.
+
+**Additively blended light particles are invisible on light ground.** The dot cloud is paper-white with `AdditiveBlending`, which
+is exactly right over the black hero and vanishes completely over the white Work and Testimonials sections. Three separate
+diagnoses were wasted on geometry before the buffers were read and turned out to be perfectly healthy the whole time — positions
+in frame, 18000 points drawn every frame, no NaN. If a particle layer "disappears", check what is behind it before touching the
+maths.
+
+**A curve's end tangent is not the direction you assume it is.** Joining Region B onto the letterform, the obvious move is to place
+the lead control point along +x, because both of the glyph's ends run along +x. They do not: the shallow sine in Z tilts each end
+tangent about seven degrees out of plane, and a lead placed along +x concentrates that seven degrees at a single point. It measured
+**1110 degrees of turn per unit of arc against the letterform's own corners at 410** — and on screen it looked like a shading seam,
+not a crease, so it was easy to dismiss as a reflection. Read the tangent off the curve with `getTangentAt` and it drops to 32.
+
+**Curvature on the spine is a measured quantity.** Screenshots cannot tell a crease from a hard-edged softbox reflection, and two
+wrong root causes survived visual inspection before the numbers were taken. Walk the spine at uniform arc length, take the angle
+between consecutive tangents, and compare against the letterform's own corners — nothing may turn harder than the mark already
+turns, and nothing may drop below a radius of curvature of the tube radius or the tube passes through itself.
+
+**A tube's silhouette is its spine plus its radius, on every side.** Fitting the 3D mark to the viewport off its centreline bounds
+under-reads the width by 17% and clips it off both edges of a phone. The camera's field of view is vertical, so width is the axis
+that fails first and it fails only at narrow aspect ratios — a desktop check will not catch it.
 
 **`max-width: 0` does not collapse a box that has padding.** Everything here is `box-sizing: border-box`, and a border-box element
 cannot shrink below its own padding — so a `max-width: 0` element with `pl-2` still occupies 8px. This silently knocked the nav mark

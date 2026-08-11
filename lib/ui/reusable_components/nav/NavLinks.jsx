@@ -27,14 +27,14 @@ export default function NavLinks({ items, className }) {
   };
   return (
     <ul ref={listRef} onMouseLeave={clear} onBlur={clear} className={cn('relative flex items-center whitespace-nowrap', className)}>
-      <span className='pointer-events-none absolute left-0 top-1/2 rounded-full bg-ink/[0.06]' style={highlightStyle} />
+      <span className='pointer-events-none absolute left-0 top-1/2 rounded-full bg-paper/[0.09]' style={highlightStyle} />
       {items.map(({ label, href }) => (
         <li key={href} className='relative'>
           <Link
             href={href}
             onMouseEnter={track}
             onFocus={track}
-            className='block rounded-full px-[14px] py-1.5 text-sm font-medium text-ink/60 transition-colors duration-200 hover:text-ink'
+            className='block rounded-full px-[14px] py-1.5 text-sm font-medium text-paper/60 transition-colors duration-200 hover:text-paper'
           >
             {label}
           </Link>

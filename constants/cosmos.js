@@ -56,19 +56,23 @@ export const COSMOS = {
   sparkle: 0.34,
   gloss: 0.5,
   // The substrate. A grid of cells running a Life-like rule, seeded by the mark — see substrateShaders for why this replaced a
-  // starfield. cell is CSS pixels per cell, so the grid is roughly 137 x 61 at desktop: two textures of a few thousand texels.
-  cell: 14,
+  // starfield. cell is CSS pixels per cell, so the grid is roughly 119 x 53 at desktop. Tuned at /lab, between the Sparse and Alive
+  // presets: sparse enough to sit behind body copy, live enough that the rule is visibly doing work rather than dusting the screen.
+  cell: 16,
   // Generations per second, not frames. The afterglow covers the gap between them, so the field reads as continuous while the rule
   // runs at a sixth of the render rate.
   stepRate: 11,
-  decay: 0.86,
+  decay: 0.89,
   // Chance per cell per generation of a cell appearing out of nothing. Life on an empty grid settles at nothing, and a background
   // that goes blank ten seconds after load is not a background.
-  spawn: 0.0007,
+  spawn: 0.0008,
   // How many cells wide the mark stamps per particle. Below about three the stamp lands sub-pixel in a grid this coarse and the wake
   // comes out as speckle rather than a trail.
-  seedSpread: 4,
-  dotSize: 0.36,
+  // The share of the mark's silhouette that seeds on any one generation. Stamping the whole thing eleven times a second saturates
+  // every cell it touches and the wake comes out as a solid block travelling down the page rather than a trail. Sparse seeding lets
+  // the rule do the work — most of what is visible was born from the seeds, not placed.
+  seedChance: 0.05,
+  dotSize: 0.32,
   substrateOpacity: 0.55,
   // Rows the lattice travels per full page scroll, plus a slow idle. The scroll term is what makes the wake pull away from the mark;
   // the idle term is what keeps the field moving when the page is not.

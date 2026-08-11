@@ -1,7 +1,7 @@
 import { IBM_Plex_Mono, Instrument_Serif, Red_Hat_Display } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
-import { CosmosCanvas, Nav, SmoothScroll } from '@/lib/ui/reusable_components';
+import { CosmosCanvas, Nav, SmoothScroll, SubstrateCanvas } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SITE } from '@/constants';
 import './globals.css';
@@ -44,6 +44,7 @@ export default function RootLayout({ children }) {
       <body className='flex min-h-svh flex-col'>
         <JsonLd id='json-ld-site' nodes={[organizationJsonLd, websiteJsonLd]} />
         <SmoothScroll />
+        <SubstrateCanvas />
         <CosmosCanvas />
         <Nav />
         {children}

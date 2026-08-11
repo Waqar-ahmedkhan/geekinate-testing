@@ -16,7 +16,8 @@ gsap.registerPlugin(ScrollTrigger);
 // Fixed to the viewport and rendered as a sibling of every section from the app shell, never nested inside one. `Section` carries
 // `relative z-10`, and a positioned element with a z-index opens a stacking context — a canvas parented inside one has its own
 // z-index trapped in that section's layer, which presents as the scene vanishing the moment you scroll past the first section
-// rather than as a layering fault. This sits at z-0 underneath every section, which is what makes the translucent surfaces read.
+// rather than as a layering fault. This sits under every section, which is what makes the translucent surfaces read, and one step
+// above the substrate canvas so the mark paints over its own wake.
 //
 // It was briefly moved to z-30 so the mark could be seen crossing the white sections, and that was wrong: on top it paints over
 // cards, project tiles and body copy, and the dispersal in particular landed as a grey haze across a screen of testimonials. Behind
@@ -66,7 +67,7 @@ export default function CosmosCanvas() {
   }, []);
 
   return (
-    <div aria-hidden='true' className='pointer-events-none fixed inset-0 z-0'>
+    <div aria-hidden='true' className='pointer-events-none fixed inset-0 z-[1]'>
       <Scene />
     </div>
   );

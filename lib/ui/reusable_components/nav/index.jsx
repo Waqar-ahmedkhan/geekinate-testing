@@ -64,6 +64,8 @@ export default function Nav() {
       const box = pill ? pill.getBoundingClientRect() : null;
       setThreshold(heroHeight * HERO_FRACTION);
       setPillLine(box ? box.top + box.height / 2 : 0);
+      // `.on-paper` only. The hero is white too and carries `.on-light`, but the progress ring reads this to pick a stroke that
+      // shows against the surface directly under it — and the hero's wash is only white for the top of its own scroll.
       setPaperBands([...document.querySelectorAll('.on-paper')].map((node) => [node.offsetTop, node.offsetTop + node.offsetHeight]));
     };
     measure();

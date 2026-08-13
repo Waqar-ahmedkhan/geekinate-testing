@@ -10,9 +10,14 @@ import { cn } from '@/lib/utils';
 //
 // Dark surfaces are pure black rather than --ink: #101613 carries a green cast that reads as a colour wash at section scale. --ink
 // stays the type, border and shadow token, where the difference from black is imperceptible.
+// `light` is `paper` without the fill: same ink-on-white tokens, but the white comes from the substrate canvas underneath the scene
+// instead of from the section, so the mark and its wake read through. It carries `on-paper` as well as `on-light` on purpose —
+// `on-light` is what the substrate collects to know where to paint, `on-paper` is what the navbar collects to know its ring is over
+// white, and a section that is genuinely both should answer to both.
 const variants = {
   clear: 'text-foreground',
   paper: 'on-paper bg-paper text-ink',
+  light: 'on-paper on-light text-ink',
   wash: 'bg-lift text-foreground',
   ink: 'bg-void/70 text-paper',
 };

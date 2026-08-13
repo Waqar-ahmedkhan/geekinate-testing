@@ -19,7 +19,19 @@ const HALF_FOV = (COSMOS.cameraFov * Math.PI) / 360;
 const VISIBLE_HEIGHT = 2 * COSMOS.cameraZ * Math.tan(HALF_FOV);
 const TAU = Math.PI * 2;
 const VOLT = '#b8e01b';
+const GREY = '#5b6b62';
 const PAPER = '#fdfdfb';
+const RAMP_STEPS = 8;
+
+// The field is green and grey and nothing else. Newly born cells used to paint paper, which put a white speckle across the whole
+// screen — the brightest thing on the page, moving, behind the copy. Fading volt toward grey as a cell dies keeps the birth frame
+// legible as the live edge of the rule without any of it reaching white.
+//
+// Precomputed as a short ramp rather than mixed per dot: this loop runs over every lit cell every frame, and a fillStyle string
+// built inside it is the one allocation here that would actually cost something.
+const channels = (hex) => [1, 3, 5].map((at) => parseInt(hex.slice(at, at + 2), 16));
+const mix = (from, to, amount) => `rgb(${from.map((value, index) => Math.round(value + (to[index] - value) * amount)).join(',')})`;
+const RAMP = Array.from({ length: RAMP_STEPS }, (_, index) => mix(channels(GREY), channels(VOLT), index / (RAMP_STEPS - 1)));
 
 // World coordinates to grid coordinates, in the drifted frame the paint uses — which is what makes the wake pull away from the mark
 // rather than sitting under it.
@@ -46,38 +58,59 @@ const stampGlyph = (life, cloud, view, posed) => {
   }
 };
 
-// The body, walked along its own arc. It is a straight rod bent by one travelling sine, so both the centre and the girth are formulae
-// — the same two the vertex shader uses, which is why the wake lines up with what is actually drawn.
-const stampSnake = (life, view, posed, crawl) => {
-  const length = COSMOS.snakeLength * posed;
-  for (let index = 0; index <= 160; index += 1) {
-    const t = index / 160;
-    const nose = Math.exp(-((t / 0.05) ** 2)) * 0.92;
-    const girth = COSMOS.snakeRadius * posed * Math.max(nose, Math.sin(Math.PI * Math.sqrt(t)) * (1 - t * 0.15));
-    const centreX = view.offsetX + Math.sin(t * COSMOS.snakeWaves * TAU - crawl) * COSMOS.snakeAmplitude * posed;
-    const cell = toGrid(centreX, view.bob + (t - 0.5) * length, view);
-    const spread = Math.ceil((girth / (2 * view.viewHalf)) * view.cols);
-    for (let offset = -spread; offset <= spread; offset += 1) {
-      if (Math.random() > COSMOS.seedChance) continue;
-      life.seed(cell.col + offset, cell.row);
-    }
-  }
+// The hero's paper ground, painted here rather than on `html` or on the section itself.
+//
+// Neither of those works. The section sits at z-10 above this canvas and the mark's, so a fill on it hides the scene it exists to
+// show. And `html` is the ground the whole page composites onto: Services is bg-void/70 and the footer bg-void/30, both translucent
+// so the mark reads through them, so a white page ground turns the two dark surfaces into grey. This canvas is already below the
+// mark, already fixed to the viewport and already painting every frame — one fillRect makes it the ground as well.
+//
+// Painted per light section, to its own measured box, and never faded over a scroll range. A band has to end exactly where its
+// section does — a pixel short and a strip of the void shows through, which is what a scroll-progress fade produced along the top of
+// the Work section. Whole pixels for the same reason: a fractional edge antialiases into the ground behind and paints a hairline.
+const wash = (context, size, bands) => {
+  context.clearRect(0, 0, size.width, size.height);
+  context.fillStyle = PAPER;
+  bands.forEach(([top, bottom]) => context.fillRect(0, top, size.width, bottom - top));
 };
 
-const paint = (context, life, size, drift) => {
+// How much of the field survives at each column, left to right.
+//
+// The hero is a column of type on the left and the mark on the right, and the wake was running under both — over the headline it is
+// texture behind text, which is where "excessive" comes from however far the density is turned down. Emptying the reading column and
+// leaving the field around the mark is a different fix from thinning it everywhere, and it is the one that was asked for.
+//
+// Masked at paint, not in the rule. The automata keep running across the full grid, so patterns still drift in and out of the visible
+// half and the right-hand field looks like part of something larger rather than like a patch that stops.
+const columnMask = (cols) =>
+  Float32Array.from({ length: cols }, (unused, col) => {
+    const t = Math.min(1, Math.max(0, ((col + 0.5) / cols - COSMOS.maskStart) / (COSMOS.maskEnd - COSMOS.maskStart)));
+    return t * t * (3 - 2 * t);
+  });
+
+const paint = (context, life, size, drift, bands, onLight, mask) => {
   const { cols, rows, pixels } = life;
   const cell = size.width / cols;
-  context.clearRect(0, 0, size.width, size.height);
+  // Each ground gets its own opacity, so tuning the light sections cannot quietly retune Services and the footer — they are on
+  // opposite sides of this number. One value for the whole frame rather than one per row: the light sections and the dark ones are
+  // a screen tall each, so the two are only ever on screen together across a single boundary, and at 0.38 against 0.44 there is not
+  // enough between them for the changeover to register.
+  const opacity = onLight ? COSMOS.substrateOpacityLight : COSMOS.substrateOpacity;
+  wash(context, size, bands);
   for (let row = 0; row < rows; row += 1) {
     for (let col = 0; col < cols; col += 1) {
+      // The mask belongs to the light sections, which are the ones the field sits behind rather than under. The dark sections carry
+      // their own fill over it, so there is no reading column to clear there and a right-weighted wake would only look lopsided.
+      const share = onLight ? mask[col] : 1;
+      if (share < 0.01) continue;
       const glow = pixels[(row * cols + col) * 4 + 1] / 255;
       if (glow < 0.02) continue;
       // The lattice slides and the grid wraps, so a cell leaving one edge reappears at the other and the field reads as travelling.
       const y = (((row - drift) % rows) + rows) % rows;
-      context.globalAlpha = glow * COSMOS.substrateOpacity;
-      // Only the birth frame is paper. A cell is born at exactly 1 and decays from there, so anything below that stays volt — a wider
-      // threshold catches the afterglow too and the whole field reads white.
-      context.fillStyle = glow > 0.99 ? PAPER : VOLT;
+      context.globalAlpha = glow * opacity * share;
+      // A cell is born at exactly 1 and decays from there, so glow doubles as the ramp index: live cells sit at the volt end and the
+      // afterglow walks down toward grey as it goes out.
+      context.fillStyle = RAMP[Math.min(RAMP_STEPS - 1, Math.floor(glow * RAMP_STEPS))];
       context.beginPath();
       context.arc((col + 0.5) * cell, (y + 0.5) * cell, cell * COSMOS.dotSize * (0.45 + glow * 0.55), 0, TAU);
       context.fill();
@@ -94,7 +127,19 @@ export default function SubstrateCanvas() {
     const context = element.getContext('2d');
     const life = createLife();
     const size = { width: 0, height: 0 };
-    let frame = 0,
+    // Read live rather than cached, because everything that would invalidate a cached value happens silently here: fonts swap, the
+    // hero is min-h-svh so the mobile URL bar resizes it, and Lenis drives the scroll position itself. One rect read a frame against
+    // a loop that already walks several thousand cells is not the cost worth avoiding.
+    const sections = [...document.querySelectorAll('.on-light')];
+    // Outward to whole pixels at both edges, for the hairline reason in `wash`. Adjacent sections then overlap by at most a pixel,
+    // which is two identical whites over each other and invisible.
+    const lightBands = () =>
+      sections
+        .map((node) => node.getBoundingClientRect())
+        .map((box) => [Math.max(0, Math.floor(box.top)), Math.min(size.height, Math.ceil(box.bottom))])
+        .filter(([top, bottom]) => bottom > top);
+    let mask = columnMask(1),
+      frame = 0,
       last = 0,
       clock = 0;
     // Measured inside the loop, not once on mount. The canvas is laid out by CSS and its first measurement can land before that has
@@ -107,7 +152,11 @@ export default function SubstrateCanvas() {
       size.height = height;
       element.width = width;
       element.height = height;
-      life.resize(Math.max(8, Math.round(width / COSMOS.cell)), Math.max(8, Math.round(height / COSMOS.cell)));
+      // resize reports whether it actually reallocated, which is the one moment the grid is empty and needs something to run on.
+      const allocated = life.resize(Math.max(8, Math.round(width / COSMOS.cell)), Math.max(8, Math.round(height / COSMOS.cell)));
+      if (!allocated) return;
+      life.scatter(COSMOS.seedDensity);
+      mask = columnMask(life.cols);
     };
     const tick = (now) => {
       measure();
@@ -131,13 +180,18 @@ export default function SubstrateCanvas() {
         };
         // Only an assembled mark leaves a wake. Mid-handover the particles are a loose cloud with no silhouette worth stamping, and
         // seeding off it would smear a rectangle of cells across the page.
-        if (stage.form > 0.4) {
-          if (stage.pose > 0.5) stampGlyph(life, getCloud(), view, values.uScale.value);
-          else stampSnake(life, view, values.uScale.value, values.uCrawl.value);
-        }
+        if (stage.form > 0.4) stampGlyph(life, getCloud(), view, values.uScale.value);
         life.step(COSMOS.decay, COSMOS.spawn);
       }
-      paint(context, life, size, drift);
+      const bands = lightBands();
+      // Taken at the middle of the viewport rather than from whether any band is visible at all, because this answers a question
+      // about the mark and the mark sits on that line. A sliver of a light section at the far edge of the screen is not the ground
+      // the mark is being seen against.
+      const middle = size.height / 2;
+      const onLight = bands.some(([top, bottom]) => middle >= top && middle <= bottom);
+      // Published for the mark, which shades its particles against whichever ground it is over — see the highlight note in shaders.
+      stage.light = onLight ? 1 : 0;
+      paint(context, life, size, drift, bands, onLight, mask);
       frame = requestAnimationFrame(tick);
     };
     frame = requestAnimationFrame(tick);

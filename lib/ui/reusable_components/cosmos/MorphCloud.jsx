@@ -45,6 +45,7 @@ export default function MorphCloud() {
   const smooth = useRef(new Vector3(0, 0, 40));
   const trail = useRef(new Vector3(0, 0, 40));
   const attention = useRef(0);
+  const ground = useRef(0);
   // getCloud() is called at each use rather than once into a local. The singleton is written to every frame and read during render,
   // and the compiler will not allow one variable to do both — resolving it at the call site keeps each read local to its own scope.
   // The call is a cache hit after the first.
@@ -57,20 +58,38 @@ export default function MorphCloud() {
     const viewHalf = (VISIBLE_HEIGHT * aspect) / 2;
     values.uTime.value = state.clock.elapsedTime;
     values.uPixelRatio.value = state.gl.getPixelRatio();
+    // Ink over the hero's paper wash, paper once the page is back on the void — off the same measurement the substrate paints the
+    // wash from, so the mark's shading and the ground under it can never disagree about which one they are on. That measurement is
+    // a hard switch, taken the frame the hero leaves the viewport; damping it here means that even if the timing ever slips, the
+    // mark crossfades over a few frames instead of snapping.
+    ground.current += (1 - stage.light - ground.current) * Math.min(1, delta * 6);
+    values.uHighlight.value.lerpColors(cloud.ink, cloud.paper, ground.current);
     // The whole journey comes off one derived number. `middle` is how far into the body of the page the scroll is: 0 at the top of
     // the hero, 1 anywhere between the hero and the footer, 0 again once the footer has arrived. The two triggers are the only
     // inputs, and multiplying rather than adding them is what makes the middle a plateau instead of a peak.
     const middle = clamp01(stage.heroOut) * (1 - clamp01(stage.footerIn));
-    // Pose follows it directly: letterform at both ends, snake in between.
-    // Form is the parabola through it — assembled at 0 and 1, fully scattered at the halfway point of each handover. That is what
-    // puts the cloud between the two shapes rather than cross-fading them, so the mark never reads as a letter melting into a body.
+    // Form is the curve through it — assembled at 0 and 1, fully scattered at the halfway point of each handover. There is only one
+    // assembled shape now, so this is the mark coming apart and gathering again rather than a handover between two of them.
+    //
+    // cos^2, not the parabola 1 - 4m(1 - m) it replaced. Both hit the same three points, but the parabola leaves 1 at a slope of 4:
+    // a quarter of the way into the hero's scroll the mark was already four-fifths of the way apart, so however long the trigger
+    // range is, the dispersal reads as a burst at the top of it. cos^2 leaves flat at both ends, which spends the same scroll with
+    // the letterform still legible for the first part of it and the break-up eased in.
     const settle = Math.min(1, delta * COSMOS.formLerp);
-    stage.pose += (1 - middle - stage.pose) * settle;
-    stage.form += (clamp01(1 - 4 * middle * (1 - middle)) - stage.form) * settle;
-    values.uPose.value = stage.pose;
-    // Scroll drives the crawl, so reversing the scroll crawls the body backwards. The idle term only keeps it breathing when the page
-    // is still — without it the snake freezes mid-slither the moment the wheel stops, which reads as a dropped frame.
-    values.uCrawl.value = scrollProgress.raw * COSMOS.crawlPerScroll + state.clock.elapsedTime * COSMOS.crawlIdle;
+    const held = Math.cos(Math.PI * middle);
+    stage.form += (held * held - stage.form) * settle;
+    // A bounded swing, not a free rotation, and both halves of that are deliberate.
+    //
+    // Bounded, because a letterform turned side-on is a sliver. The mark has real thickness now but nothing like its width, so a
+    // rotation that passes ninety degrees spends that moment showing almost nothing — the reading of a solid object being turned
+    // comes from the range where it is still legible. This swings a little over sixty degrees either way and holds inside it.
+    //
+    // Both terms are sines rather than anything that accumulates. The first version added `clock * rate` and it drifts without
+    // limit: the ends scale the whole angle by `middle`, and a small `middle` against an angle that has been growing for minutes is
+    // still a large angle — the mark sat edge-on in the footer, and worse the longer the page had been open.
+    const swing = Math.sin(scrollProgress.raw * COSMOS.spinTurns * Math.PI * 2) * COSMOS.spinRange;
+    const breathe = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle;
+    values.uSpin.value = middle * (swing + breathe);
     // `offset` is how much of the hero's pose is still in effect — it drives placement and size together, so the mark grows into the
     // middle of the frame on the way down rather than sliding across it at a fixed size.
     stage.offset += (1 - stage.heroOut - stage.offset) * Math.min(1, delta * COSMOS.formLerp);

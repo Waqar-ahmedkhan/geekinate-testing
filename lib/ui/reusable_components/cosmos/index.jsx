@@ -37,7 +37,12 @@ export default function CosmosCanvas() {
       ScrollTrigger.create({
         trigger: '#hero',
         start: 'top top',
-        end: 'bottom top',
+        // Not `bottom top`. The hero is one viewport tall, so that range spent the entire handover inside a single screen of scroll —
+        // and because form is a parabola through it, the mark went from assembled to fully scattered within the first half of that.
+        // The dispersal landed as a burst on the first flick of the wheel. Spread over 1.7 screens it reads as the mark coming apart
+        // as you leave, which is the same motion at a third of the rate. Nothing else measures this trigger, so lengthening it costs
+        // no layout anywhere.
+        end: '+=170%',
         scrub: true,
         onUpdate: (self) => {
           stage.heroOut = self.progress;
@@ -45,7 +50,9 @@ export default function CosmosCanvas() {
       }),
       ScrollTrigger.create({
         trigger: 'footer',
-        start: 'top bottom',
+        // Started well before the footer is on screen, for the same reason and with the same symmetry: reassembly wants more scroll
+        // than the footer's own arrival provides, or the mark snaps back into a letterform in the last few hundred pixels of the page.
+        start: 'top bottom+=70%',
         end: 'top top',
         scrub: true,
         onUpdate: (self) => {

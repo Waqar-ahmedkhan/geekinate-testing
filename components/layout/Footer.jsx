@@ -48,6 +48,8 @@ export default function Footer() {
   const { location, rights } = footerContent;
   const copyright = `© ${new Date().getFullYear()} ${SITE.name}.`;
   return (
+    // Deliberately not carrying `on-paper`/`on-light` with the rest of the page. It went light on 2026-08-13 and came straight back:
+    // this panel is the last screen of the site and the one the whole scroll builds toward, and it wants to land dark.
     <footer className='relative z-50 p-4'>
       {/* The footer is where the particle cloud finishes reforming as the mark, so this panel cannot be opaque and cannot blur: a
           backdrop-filter here would soften the one frame of the page the whole scroll has been building toward. It is a plain

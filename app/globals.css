@@ -96,6 +96,11 @@
   --glass-blur: blur(14px) saturate(125%);
   --glass-lift: rgba(253, 253, 251, 0.045);
   --paper-mut: rgba(253, 253, 251, 0.62);
+  /* The two stops of a card's edge light. Drawn as a gradient behind an inset fill rather than as a flat border, so it catches at the
+     top-left and fades out — a large card reads as lit rather than as a plain rectangle. Tokens because the page now runs light and
+     dark surfaces, and paper at low alpha is invisible on paper. */
+  --edge-hi: rgba(253, 253, 251, 0.18);
+  --edge-lo: rgba(253, 253, 251, 0.04);
   /* The brand's hard offset shadow, retuned for the dark ground: an ink shadow on near-black is not a shadow, it is nothing. Same
      geometry, volt at low alpha. `.on-paper` puts it back to ink. */
   --brutal: 3px 3px 0 rgba(184, 224, 27, 0.2);
@@ -152,16 +157,28 @@
    Scoped as a token override rather than as a second set of utilities, so `border-brutal`, `shadow-brutal`, `text-mut` and
    `text-foreground` all keep meaning the same thing and simply resolve differently inside this subtree. Adding a paper section costs
    one class, not a parallel palette. */
-.on-paper {
+/* `.on-light` is the same token flip without the fill, for a section that is on a light ground it does not paint itself — which is
+   the hero, whose wash is painted by the substrate canvas underneath it so the particle scene can still read through. It is a
+   separate class rather than `on-paper` on purpose: the navbar collects `.on-paper` elements to know when its progress ring is over
+   white, and the hero's ground is only white at the top of its own scroll, so including it there would flip the ring at the wrong
+   moment. Everything a section's subtree resolves stays identical between the two. */
+.on-paper,
+.on-light {
   --line: var(--ink);
   --line-volt: var(--ink);
   --paper-mut: var(--grey);
   --foreground: var(--ink);
-  --glass: var(--white);
-  --glass-blur: none;
+  /* Translucent, and it was opaque until the light sections stopped painting their own ground. A card's whole brief on the dark side
+     is that the scene reads through it; on paper that was moot, because the section behind the card was solid white. Now the section
+     is the scene, so the card goes back to being glass — enough fill that ink type stays comfortably readable over moving particles,
+     and a lighter blur than the dark side because there is far less contrast behind it to soften. */
+  --glass: rgba(253, 253, 251, 0.72);
+  --glass-blur: blur(10px) saturate(115%);
   --glass-lift: var(--wash);
   --brutal: 3px 3px 0 var(--ink);
   --brutal-sm: 2px 2px 0 var(--ink);
+  --edge-hi: rgba(16, 22, 19, 0.22);
+  --edge-lo: rgba(16, 22, 19, 0.06);
 }
 
 .dark {
@@ -247,6 +264,12 @@
   background: var(--glass);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
+}
+
+/* A card's edge light, as a gradient the card sits one pixel inside of. Both stops are tokens so the same card reads on either
+   ground — see --edge-hi in the palette above. */
+@utility ring-edge {
+  background: linear-gradient(126deg, var(--edge-hi) 0%, var(--edge-lo) 100%);
 }
 
 /* --gk-hl. Volt marker that sits behind a run of text rather than filling its box. */

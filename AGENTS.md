@@ -56,6 +56,12 @@ looks wrong, check that file before changing it.
 | `--wash` | `#f4f7ea` | Volt-tinted panels |
 | `--footer-mut` / `--footer-line` | `#b9c2bc` / `#2a312c` | Reserved for the dark footer |
 
+**The hero globe is on volt, and the blue it was built in has been reversed.** The reference agreed on 2026-08-13
+(`docs/istockphoto-1405728317-612x612.jpg`) is blue on navy, and the first build copied that palette with volt held back for the arcs
+and flares. It was rejected the same day: blue is a second accent this site does not have, and it made the hero read as a different
+product from the page under it. `GLOBE_PALETTE` in `constants/globe.js` is now volt, paper and black — the three values the mark is
+already built from. There is no approved blue anywhere in this project.
+
 **Dark surfaces are pure black `#000`, not `--ink`.** The logo file backs its dark blocks with `--gk-ink`, but at full-section scale
 `#101613` reads as a green colour wash and was rejected on sight (2026-08-07) — the same objection that moved section 02 off `wash`.
 `--ink` remains the type, border and shadow token, where the difference from black is imperceptible. Every dark *fill* —
@@ -73,9 +79,25 @@ Geometry is as much the brand as the colour: **1.5px ink borders, 20px card radi
 `docs/geekinate-hero-3d-prompt.md`. That approval covers the rest of that brief's list too (`lenis`, `zustand`, `maath`, `leva`,
 `@react-three/postprocessing`), but each installs with the phase that uses it. It does not extend to anything else.
 
-**The hero is 3D; nothing else is.** The soft-lit, glossy, depth-shaded treatment approved on 2026-08-10 applies to the mark in
-section 01 only. Every section below it stays on the flat system — ink borders, hard offset shadows, no blur-based depth. Reaching
-for a soft shadow or a gradient elsewhere because "the hero does it" is the misreading to avoid.
+**One particle system holds the whole page, and it wears three shapes.** There is a single WebGL canvas, mounted from the app shell
+as a fixed sibling of every section (`lib/ui/reusable_components/cosmos`). The 26,000 particles in it are the hero's globe, the
+scattered field through the body, and the letterform the footer reassembles — in that order down the page, driven by two independent
+ScrollTriggers (`#hero` closes the globe, `footer` opens the mark) and mixed against the scattered pose in the vertex shader.
+
+This replaced two separate scenes on 2026-08-13, and the reason is worth keeping: a stock-illustration globe bolted above a site with
+its own material reads as two products. A globe made of the mark's own beads, shaded by the mark's own shader and disturbed by the
+mark's own cursor, reads as one object wearing a different shape. **Do not give the globe its own canvas, its own camera or its own
+dot material.** `lib/globe` owns the land *pose*, the fit, and the shells and network around it — never the particles.
+
+The camera is the other load-bearing pair: 7.1 degrees at a distance of 60. It is a long lens on purpose, and changing either number
+without the other rescales the entire scene. See the note at the top of `constants/cosmos.js`.
+
+**Nothing below the hero is 3D.** Work, Services and Testimonials stay on the flat system — white ground, ink borders, hard offset
+shadows, no blur-based depth — and they are opaque, which is what hides the scattered field behind them. Reaching for a soft shadow,
+a glow or a gradient down there because "the hero does it" is the misreading to avoid.
+
+**The hero paints no ground of its own.** The canvas is fixed at `z-[1]` and every `Section` is `relative z-10`, so a background on
+section 01 would cover the very thing it exists to frame. The black comes from `html`.
 
 ## Conventions
 

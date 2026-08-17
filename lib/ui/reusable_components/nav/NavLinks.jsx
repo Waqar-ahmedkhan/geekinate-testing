@@ -15,7 +15,10 @@ export default function NavLinks({ items, className }) {
     if (!list) return;
     const item = event.currentTarget.getBoundingClientRect();
     const bounds = list.getBoundingClientRect();
-    setHighlight({ x: Math.round(item.left - bounds.left), width: Math.round(item.width), height: Math.round(item.height) });
+    // Plus the scroll offset: the highlight is positioned against the list's content box, while both rects are measured against the
+    // visible one. The two only agree while the list is not scrolled, which it now can be at phone widths.
+    const x = item.left - bounds.left + list.scrollLeft;
+    setHighlight({ x: Math.round(x), width: Math.round(item.width), height: Math.round(item.height) });
   };
   const clear = () => setHighlight(null);
   const highlightStyle = {
@@ -34,7 +37,7 @@ export default function NavLinks({ items, className }) {
             href={href}
             onMouseEnter={track}
             onFocus={track}
-            className='block rounded-full px-[14px] py-1.5 text-sm font-medium text-paper/60 transition-colors duration-200 hover:text-paper'
+            className='block rounded-full px-1.5 py-1.5 text-xs font-medium text-paper/60 transition-colors duration-200 hover:text-paper sm:px-[14px] sm:text-sm'
           >
             {label}
           </Link>

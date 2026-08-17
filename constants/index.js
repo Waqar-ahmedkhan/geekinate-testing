@@ -1,4 +1,5 @@
 export * from './cosmos';
+export * from './globe';
 export * from './lab';
 export * from './snake';
 

@@ -4,113 +4,143 @@ import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
 import { Vector3 } from 'three';
 import { getCloud } from './cloud';
+import { createGovernor } from './quality';
+import { fitGlobe, getGlobe } from '@/lib/globe/scene';
+import { coastGlobe, globe } from '@/lib/input/globe';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { stage } from '@/lib/scroll/stage';
-import { COSMOS, LAYOUT } from '@/constants';
+import { COSMOS, GLOBE } from '@/constants';
 
 const HALF_FOV = (COSMOS.cameraFov * Math.PI) / 360;
 // The subject plane is at z = 0 and the camera never moves, so this is a constant. Deriving the frame from state.viewport instead
 // would tie the scene's size to the camera's distance from the origin and any camera move would feed straight back into it.
 const VISIBLE_HEIGHT = 2 * COSMOS.cameraZ * Math.tan(HALF_FOV);
+const HALF_HEIGHT = VISIBLE_HEIGHT / 2;
+// How near the cursor an anchor has to be, in world units at the subject plane, before the network answers. Wide enough that the
+// nearest junction lights without hunting for it, narrow enough that moving the cursor across the globe hands off one at a time.
+const FOCUS_REACH = 1.5;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
-// A point cloud's silhouette is its extent plus half a particle. The letterform is the widest thing the scene ever holds, and the
+// A point cloud's silhouette is its extent plus half a particle. The letterform is the widest thing the mark ever holds, and the
 // field of view is vertical — width is the axis that fails first, and it only fails at narrow aspect ratios, which a desktop check
 // will never catch.
 const fitScale = (aspect) => Math.min(1, (VISIBLE_HEIGHT * aspect * 0.4) / COSMOS.glyphRadius);
 
-// Where to put the mark's centre so that its right edge lands on `target`, measured after projection.
+// Which junction the cursor is nearest, or -1 for none.
 //
-// Subtracting the half-width is the obvious answer and it is wrong by about 65px at desktop width. The mark is yawed to face the
-// camera, which swings its right half *toward* the camera by half-width * sin(yaw) — and a point nearer the camera projects further
-// from the centre. So the painted edge overshoots the geometric one by roughly cameraZ / (cameraZ - lift), and the yaw that causes it
-// is itself a function of the offset being solved for.
+// Walked on the CPU because there are only about fifty of them and the answer is a single uniform. The alternative — a per-particle
+// distance test in the shader — would light whatever happened to be closest to each fragment rather than picking one node, which is
+// the opposite of what a network firing looks like.
 //
-// Three fixed-point passes. It converges in two; the third is free insurance and this runs once a frame.
-const anchorOffset = (target, markHalf) => {
-  let offset = target - markHalf;
-  for (let pass = 0; pass < 3; pass += 1) {
-    const yaw = -Math.atan2(offset, COSMOS.cameraZ);
-    const reach = markHalf * Math.cos(yaw),
-      lift = -markHalf * Math.sin(yaw);
-    offset = (target * (COSMOS.cameraZ - lift)) / COSMOS.cameraZ - reach;
-  }
-  return offset;
+// Both the anchor and the pointer are compared after a perspective divide. The lens is long, but the globe is eight world units deep
+// and skipping it puts the answer a node out along the limb, which is exactly where the cursor spends most of its time.
+const nearestAnchor = (anchors, spin, lean, radius, centreY, target) => {
+  const cosSpin = Math.cos(spin),
+    sinSpin = Math.sin(spin);
+  const cosLean = Math.cos(lean),
+    sinLean = Math.sin(lean);
+  let best = -1,
+    closest = FOCUS_REACH * FOCUS_REACH;
+  anchors.forEach(({ point, index }) => {
+    // The same pair of rotations the shader applies, in the same order: spin about the sphere's vertical, then the axial lean.
+    const spunX = point[0] * cosSpin + point[2] * sinSpin,
+      spunZ = point[2] * cosSpin - point[0] * sinSpin;
+    const normalZ = spunZ;
+    if (normalZ < 0.05) return;
+    const normalX = spunX * cosLean - point[1] * sinLean,
+      normalY = spunX * sinLean + point[1] * cosLean;
+    const depth = COSMOS.cameraZ - normalZ * radius;
+    const scale = COSMOS.cameraZ / depth;
+    const dx = normalX * radius * scale - target.x,
+      dy = (normalY * radius + centreY) * scale - target.y;
+    const gap = dx * dx + dy * dy;
+    if (gap >= closest) return;
+    closest = gap;
+    best = index;
+  });
+  return best;
 };
 
-export default function MorphCloud() {
-  const material = useRef(null);
+export default function MorphCloud({ onFirstFrame }) {
+  const drawn = useRef(0);
   const world = useRef(new Vector3());
   const smooth = useRef(new Vector3(0, 0, 40));
   const trail = useRef(new Vector3(0, 0, 40));
   const attention = useRef(0);
   const ground = useRef(0);
+  // One per mount, in a ref rather than at module scope: the governor carries the machine's verdict, and a module singleton would
+  // hand a dev remount the previous mount's demotions on top of its own.
+  const governor = useRef(createGovernor());
   // getCloud() is called at each use rather than once into a local. The singleton is written to every frame and read during render,
   // and the compiler will not allow one variable to do both — resolving it at the call site keeps each read local to its own scope.
   // The call is a cache hit after the first.
   useFrame((state, delta) => {
+    // Before anything else, and off the raw delta: this is the only reading of how the machine is coping, and it has to be taken
+    // from the frame that was actually delivered rather than from anything this callback goes on to smooth.
+    const demoted = governor.current(delta);
+    if (demoted) state.setDpr(demoted);
+    // On the second frame, not the first: useFrame runs *before* the render it belongs to, so announcing on frame one would start
+    // the stand-in fading against a canvas that is still empty. By the time this callback runs a second time, frame one is on
+    // screen and there is something to cross into.
+    drawn.current += 1;
+    if (drawn.current === 2) onFirstFrame?.();
     const cloud = getCloud();
     const values = cloud.uniforms;
+    const shell = getGlobe();
     const step = Math.min(1, delta * 60);
     const aspect = state.size.width / state.size.height;
     const scale = fitScale(aspect);
     const viewHalf = (VISIBLE_HEIGHT * aspect) / 2;
     values.uTime.value = state.clock.elapsedTime;
     values.uPixelRatio.value = state.gl.getPixelRatio();
-    // Ink over the hero's paper wash, paper once the page is back on the void — off the same measurement the substrate paints the
-    // wash from, so the mark's shading and the ground under it can never disagree about which one they are on. That measurement is
-    // a hard switch, taken the frame the hero leaves the viewport; damping it here means that even if the timing ever slips, the
-    // mark crossfades over a few frames instead of snapping.
+    // Paper highlights on the void. `stage.light` used to flip this to ink wherever the mark was over the white hero; the hero is
+    // dark and the mark is only ever seen over it and the footer, so the flag is a constant. The damping stays: it costs one lerp
+    // and it is what would keep a future light surface from snapping the shading between frames.
     ground.current += (1 - stage.light - ground.current) * Math.min(1, delta * 6);
     values.uHighlight.value.lerpColors(cloud.ink, cloud.paper, ground.current);
-    // The whole journey comes off one derived number. `middle` is how far into the body of the page the scroll is: 0 at the top of
-    // the hero, 1 anywhere between the hero and the footer, 0 again once the footer has arrived. The two triggers are the only
-    // inputs, and multiplying rather than adding them is what makes the middle a plateau instead of a peak.
-    const middle = clamp01(stage.heroOut) * (1 - clamp01(stage.footerIn));
-    // Form is the curve through it — assembled at 0 and 1, fully scattered at the halfway point of each handover. There is only one
-    // assembled shape now, so this is the mark coming apart and gathering again rather than a handover between two of them.
+
+    // The page in two numbers, and they no longer interact. `heroOut` runs 0 to 1 as the globe's section scrolls away and `footerIn`
+    // 0 to 1 as the footer arrives; the scattered cloud is simply what is left when neither pose is claimed.
     //
-    // cos^2, not the parabola 1 - 4m(1 - m) it replaced. Both hit the same three points, but the parabola leaves 1 at a slope of 4:
-    // a quarter of the way into the hero's scroll the mark was already four-fifths of the way apart, so however long the trigger
-    // range is, the dispersal reads as a burst at the top of it. cos^2 leaves flat at both ends, which spends the same scroll with
-    // the letterform still legible for the first part of it and the break-up eased in.
+    // This replaced a single `middle` progress that multiplied the two together and drove one form curve. That construction was
+    // right when the letterform was the only shape and had to be assembled at both ends of the page — with the globe holding the
+    // hero it left the mark *assembling* underneath exactly as the world came apart, so the globe morphed into a G in mid-air.
     const settle = Math.min(1, delta * COSMOS.formLerp);
-    const held = Math.cos(Math.PI * middle);
-    stage.form += (held * held - stage.form) * settle;
-    // A bounded swing, not a free rotation, and both halves of that are deliberate.
-    //
-    // Bounded, because a letterform turned side-on is a sliver. The mark has real thickness now but nothing like its width, so a
-    // rotation that passes ninety degrees spends that moment showing almost nothing — the reading of a solid object being turned
-    // comes from the range where it is still legible. This swings a little over sixty degrees either way and holds inside it.
-    //
-    // Both terms are sines rather than anything that accumulates. The first version added `clock * rate` and it drifts without
-    // limit: the ends scale the whole angle by `middle`, and a small `middle` against an angle that has been growing for minutes is
-    // still a large angle — the mark sat edge-on in the footer, and worse the longer the page had been open.
-    const swing = Math.sin(scrollProgress.raw * COSMOS.spinTurns * Math.PI * 2) * COSMOS.spinRange;
-    const breathe = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle;
-    values.uSpin.value = middle * (swing + breathe);
-    // `offset` is how much of the hero's pose is still in effect — it drives placement and size together, so the mark grows into the
-    // middle of the frame on the way down rather than sliding across it at a fixed size.
-    stage.offset += (1 - stage.heroOut - stage.offset) * Math.min(1, delta * COSMOS.formLerp);
-    const posed = scale * (1 - stage.offset * (1 - COSMOS.heroScale));
+    const arriving = clamp01(stage.footerIn);
+    stage.form += (arriving * arriving * (3 - 2 * arriving) - stage.form) * settle;
+    stage.globe += (1 - clamp01(stage.heroOut) - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
     values.uForm.value = stage.form;
-    values.uScale.value = posed;
-    // Measured against the hero's container, not the viewport. Past 1440 the copy stops widening and centres, so an offset taken
-    // from the viewport keeps pushing the mark right while the column it belongs to stands still — on a wide monitor they end up in
-    // different compositions. Below 1440 the two are the same number.
-    const containerHalf = viewHalf * Math.min(1, LAYOUT.container / state.size.width);
-    // Anchored by its right edge, not by its centre. The brief is that the mark finishes exactly where the navbar's own right edge
-    // does, and a centre-and-fraction placement cannot hold that as the mark resizes — the leftover margin changes with every scale.
-    // `halfWidth` is the mark's measured extent, not the radius, for the reason spelled out in lib/shape/glyph.
-    //
-    // Clamped at zero: on a phone the mark is as wide as the frame, there is no room to push it aside, and it centres instead.
-    const anchored = anchorOffset(containerHalf - COSMOS.heroEdgeMargin, cloud.halfWidth * posed);
-    const offsetX = Math.max(0, anchored) * stage.offset;
-    values.uOffsetX.value = offsetX;
-    // The angle the mark is seen from, once it has moved off the camera axis. Negative because yawing by -a turns the mark's own +z
-    // normal toward -x, which is where the camera is once the mark has gone right.
-    values.uFaceYaw.value = -Math.atan2(offsetX, COSMOS.cameraZ);
+    values.uGlobeMix.value = stage.globe;
+    values.uScale.value = scale;
+    // The letterform is centred and square to the camera wherever it appears. It used to be anchored by its right edge against the
+    // hero's container and yawed to face the camera from there; the hero is the globe now, so both the offset and the correction
+    // that went with it are constants at zero and the swing is only the idle breathe, faded out as the mark resolves.
+    values.uOffsetX.value = 0;
+    values.uFaceYaw.value = 0;
+    values.uSpin.value = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle * (1 - stage.form);
+
+    // The globe's frame, solved from the viewport and published on the cloud's own uniforms — which is also where the shells read it
+    // from, so the world and the shells around it cannot disagree about where the world is. See GlobeShell.
+    const fit = fitGlobe(aspect);
+    const radius = fit.radius * HALF_HEIGHT;
+    coastGlobe(delta);
+    // Three sources of turn on one axis: the slow idle, whatever the reader has dragged, and the scroll running it on as the hero
+    // leaves. The scroll term is what stops the exit reading as the globe being slid off screen — it leaves under its own power.
+    const spin = state.clock.elapsedTime * GLOBE.spin + globe.angle + clamp01(stage.heroOut) * COSMOS.scrollSpin;
+    const centreY = fit.centreY * HALF_HEIGHT - clamp01(stage.heroOut) * COSMOS.scrollSink * radius;
+    values.uGlobeRadius.value = radius;
+    values.uGlobeY.value = centreY;
+    values.uGlobeSpin.value = spin;
+    // The land is sized against the viewport rather than left at a fixed pixel size: the globe's own radius in pixels tracks the
+    // frame, so a constant dot is a solid crust on a phone and a scatter of specks on a 4K monitor.
+    const density = Math.min(1.35, Math.max(0.6, Math.min(state.size.width / 1440, state.size.height / 900)));
+    values.uGlobeSize.value = COSMOS.globePoint * density;
+    shell.shared.uTime.value = state.clock.elapsedTime;
+    shell.shared.uPixelRatio.value = state.gl.getPixelRatio();
+    shell.shared.uScale.value = density;
+    shell.shared.uOpacity.value = stage.globe;
+
     if (scrollProgress.reduced) return;
     // The bob rides on the clock, not on the scroll, so the mark keeps breathing while the page is still.
     const clock = state.clock.elapsedTime;
@@ -133,6 +163,12 @@ export default function MorphCloud() {
     values.uPointer.value.copy(smooth.current);
     values.uPointerTrail.value.copy(trail.current);
     values.uPointerActive.value = attention.current;
+    // Off the raw pointer, not the damped one. The lift and the comet want to lag the cursor because they are made of matter; the
+    // node the cursor is *pointing at* is a selection, and a selection that eases into place reads as the page being slow.
+    const focused =
+      stage.globe > 0.4 && pointer.active > 0.5 ? nearestAnchor(shell.anchors, spin, GLOBE.tilt, radius, centreY, world.current) : -1;
+    shell.select.uFocus.value = focused;
+    shell.select.uPillar.value = stage.globe > 0.4 ? globe.pillar : -1;
   });
 
   return <points geometry={getCloud().geometry} material={getCloud().material} frustumCulled={false} />;

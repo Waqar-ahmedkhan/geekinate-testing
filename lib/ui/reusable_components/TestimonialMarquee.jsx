@@ -15,7 +15,6 @@ const SPEED = 40;
 // snapping between two speeds.
 const SLOW = 0.3;
 const EASE = 3.5;
-const GAP = 30;
 
 // The list is rendered twice and the offset wraps at half the track width, which is what makes the loop seamless. Any wrap point
 // short of that reveals the seam as a gap on the right edge.
@@ -85,11 +84,15 @@ export default function TestimonialMarquee({ items }) {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
     >
-      <div ref={trackRef} className='flex w-max' style={{ gap: `${GAP}px` }}>
+      {/* The gap is a class rather than the inline style it used to be, so it can come down on a phone with the card. Nothing in the
+          loop maths cares: the wrap point is half of the track's *measured* scrollWidth, which already includes whatever the gap
+          resolves to at this breakpoint. The slot height comes down with it — 520px of a 660px phone screen is the row taking the
+          whole viewport for a stagger that cannot be seen at that width anyway. */}
+      <div ref={trackRef} className='flex w-max gap-4 sm:gap-[30px]'>
         {loop.map((item, index) => (
           <div
             key={`${item.name}-${index}`}
-            className={`flex h-[520px] w-[370px] shrink-0 ${ANCHOR_CLASS[ANCHORS[index % ANCHORS.length]]}`}
+            className={`flex h-[420px] w-[280px] shrink-0 sm:h-[520px] sm:w-[370px] ${ANCHOR_CLASS[ANCHORS[index % ANCHORS.length]]}`}
             aria-hidden={index >= items.length}
           >
             <TestimonialCard quote={item.quote} name={item.name} role={item.role} />

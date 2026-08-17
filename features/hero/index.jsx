@@ -1,66 +1,74 @@
+'use client';
+
+import { Fragment } from 'react';
 import Link from 'next/link';
 import { Eyebrow, Section } from '@/components';
 import { cn } from '@/lib/utils';
+import { globe } from '@/lib/input/globe';
 import { heroContent } from '@/lib/content';
 import { LAYOUT } from '@/constants';
 
-// Section 01. The particle scene is not here — it is fixed to the viewport from the app shell, behind every section, because it
-// travels the whole page and reforms as the mark at the footer. A canvas parented to this section would have its z-index trapped in
-// the section's own stacking context and would vanish the moment you scrolled past it.
+// Section 01. Rebuilt on 2026-08-13 against docs/istockphoto-1405728317-612x612.jpg: the copy stacked at the top of a dark screen
+// and a dot-matrix Earth rising out of the bottom edge.
 //
-// So the hero is a two-column split where the right column is deliberately empty: the mark occupies it, and the grid exists to keep
-// the copy out of it. Everything on the left is one stack — eyebrow, headline, paragraph, actions — centred against the mark rather
-// than pinned to the top and bottom rails. The earlier version pushed the actions to the bottom edge and hung the paragraph off the
-// bottom-right corner, which read as two unrelated fragments with a hole between them.
-// Both actions are on the ink-on-paper system now that the hero's ground is paper. The accent one is filled rather than outlined:
-// volt as type on white is under 2:1 against the ground, which is not a contrast a label can be read at — the same reason the
-// navbar's CTA has always been a filled pill. Volt carries the accent as a surface here and ink carries the type.
+// **There is no canvas in here.** The globe is a pose of the page's own particle cloud, on the fixed canvas the app shell mounts, so
+// this section paints nothing and holds nothing — it is the copy, and the ground it stands on is the page's. That is also why it has
+// no fill: a background on this section would sit at z-10 and cover the very thing it exists to frame.
+//
+// A client component only because the pillars are controls. Hovering one writes into the scene's input singleton and lights that
+// quarter of the globe's network — see lib/input/globe.
 const ACTION = 'border-brutal rounded-full px-6 py-3 text-sm transition-colors duration-200 ease-brutal';
+const PILLAR = 'cursor-default rounded-sm px-1 outline-none transition-colors duration-200 hover:text-volt focus-visible:text-volt';
 
 export default function Hero() {
-  const { eyebrow, headline, body, actions } = heroContent;
+  const { pillars, headline, actions } = heroContent;
+  // Written straight into the singleton the frame loop samples rather than through state. The hover changes nothing React renders —
+  // the highlight itself is a CSS hover — so a state update here would re-render the section to tell the scene a number.
+  const light = (index) => () => {
+    globe.pillar = index;
+  };
+  const clear = () => {
+    globe.pillar = -1;
+  };
+  const pillarEls = pillars.map((label, index) => (
+    <Fragment key={label}>
+      {index > 0 ? <span aria-hidden='true'>·</span> : null}
+      <span tabIndex={0} className={PILLAR} onMouseEnter={light(index)} onMouseLeave={clear} onFocus={light(index)} onBlur={clear}>
+        {label}
+      </span>
+    </Fragment>
+  ));
   const actionEls = actions.map(({ label, href, accent }) => (
     <Link
       key={label}
       href={href}
-      className={cn(ACTION, accent ? 'bg-volt text-ink shadow-brutal-sm hover:bg-volt/85' : 'text-foreground hover:bg-wash')}
+      className={cn(ACTION, accent ? 'bg-volt text-ink shadow-brutal-sm hover:bg-volt/85' : 'text-paper hover:bg-lift')}
     >
       {label}
     </Link>
   ));
   return (
-    // Two things here are load-bearing and neither is obvious.
-    //
-    // The negative top margin cancels the navbar's rail. The rail is sticky, so it occupies flow space and pushes this section down
-    // by its own height — the section box then runs from the rail to the fold, its centre sits half a rail below the viewport's, and
-    // the copy ends up centred against nothing. The mark is on a fixed canvas centred on the *viewport*, so the two disagreed by
-    // ~38px and the hero read as top-heavy with dead space under the navbar. Pulling the section up under the rail puts both on the
-    // same centre line. The navbar simply floats over it, which is what it does on the reference anyway.
-    //
-    // The gutter is wider than the rest of the site. Every other section is a full-bleed grid whose content starts at the rule; this
-    // one is a single column of type with a mark beside it, and at the standard gutter the headline sat against the edge of the glass.
-    // `on-light` and not the `paper` variant. The variant paints a fill, and this section's fill would cover the particle scene it
-    // exists to frame — the wash under the hero is painted by the substrate canvas beneath the scene instead. The class carries only
-    // the token flip, so the type, rules and shadows in here resolve ink-on-white exactly as they do in a paper section.
+    // The negative top margin cancels the navbar's rail, which is sticky and so occupies flow space at the top of the page. Without
+    // it the section runs from the rail to the fold rather than filling the viewport, and the globe — which is fitted to the
+    // viewport, not to the document — sits a rail's height lower than the composition it was measured for.
     <Section
       id='hero'
       variant='clear'
-      className='on-light -mt-[var(--nav-rail)] flex min-h-svh items-center px-6 py-16 md:px-14 md:py-20 lg:px-20'
+      className='-mt-[var(--nav-rail)] flex min-h-svh flex-col items-center px-6 pb-0 pt-[calc(var(--nav-rail)+3.5rem)] md:px-10'
     >
-      {/* The hero composes inside a fixed container rather than the full viewport, and the navbar and the particle scene both measure
-          against the same number — see LAYOUT.container. Past that width the copy would keep spreading away from the mark. */}
-      <div className='mx-auto grid w-full items-center gap-12 md:grid-cols-2' style={{ maxWidth: LAYOUT.container }}>
-        {/* Measured to close the gap to the mark. At 34rem the type block ended a third of the way across and left a viewport-wide
-            hole between it and the G; the headline now runs the full column and only the paragraph keeps a reading measure. */}
-        <div className='flex max-w-[42rem] flex-col items-start gap-6'>
-          <Eyebrow>{eyebrow}</Eyebrow>
-          {/* The second half at low alpha is the reference's device and the reason the copy is authored as two halves. */}
-          <h1 className='font-display text-[clamp(2.5rem,4.9vw,4.6rem)] italic leading-[1.04] tracking-[-0.01em]'>
-            {headline.lead} <span className='text-ink/35'>{headline.trail}</span>
-          </h1>
-          <p className='max-w-[48ch] text-base leading-[1.7] text-mut'>{body}</p>
-          <div className='mt-2 flex flex-wrap gap-3'>{actionEls}</div>
-        </div>
+      {/* Centred rather than left-aligned: the composition is top-to-bottom now, so a column of type hanging off the left rail would
+          sit against the widest part of the globe's curve with nothing balancing it. */}
+      <div className='relative flex w-full flex-col items-center text-center' style={{ maxWidth: LAYOUT.container }}>
+        <Eyebrow>
+          <span className='flex flex-wrap justify-center gap-x-2'>{pillarEls}</span>
+        </Eyebrow>
+        {/* The second half at low alpha is the reference's device and the reason the copy is authored as two halves. Paper rather
+            than ink now that the ground is dark, and at a higher alpha than the ink version ran at: 35% of ink on white is legible
+            as a grey, 35% of paper on near-black is almost gone. */}
+        <h1 className='mt-6 max-w-[18ch] font-display text-[clamp(2.6rem,5.4vw,5rem)] italic leading-[1.04] tracking-[-0.01em] text-paper'>
+          {headline.lead} <span className='text-paper/45'>{headline.trail}</span>
+        </h1>
+        <div className='mt-9 flex flex-wrap justify-center gap-3'>{actionEls}</div>
       </div>
     </Section>
   );

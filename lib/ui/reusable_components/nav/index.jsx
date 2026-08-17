@@ -30,12 +30,25 @@ const CTA = { label: 'Start a project', href: '#contact' };
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 
+// The links give way before the call to action does.
+//
+// This pill carries four links and a CTA, and below about 480px of viewport their natural widths add up to more than the bar has —
+// on a 390px phone by 105px, on a 320px one by 175px. Left to overflow, the thing that hung off the right-hand edge was the CTA: on
+// every phone in portrait the site's primary conversion control was partly or mostly off screen and could not be tapped.
+//
+// So the row is told explicitly which half is allowed to lose. `min-w-0` lets the list shrink below its content — a flex item will
+// not otherwise go under its own min-content width, which is what forced the overflow onto its sibling — and `shrink-0` pins the
+// CTA at full width whatever is left. The links then scroll horizontally in the space that remains rather than pushing anything out
+// of the bar. Their own padding and type come down a step at phone sizes first, so on the common widths there is nothing to scroll.
 const MenuPill = ({ className }) => (
-  <GlassPill className={cn('h-[45px] gap-2 px-1.5', className)}>
-    <NavLinks items={NAV_LINKS} />
+  <GlassPill className={cn('h-[45px] gap-1.5 px-1.5 sm:gap-2', className)}>
+    <NavLinks
+      items={NAV_LINKS}
+      className='min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+    />
     <Link
       href={CTA.href}
-      className='border-brutal rounded-full bg-volt px-5 py-1.5 text-sm font-semibold whitespace-nowrap text-ink shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85'
+      className='border-brutal shrink-0 rounded-full bg-volt px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-ink shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85 sm:px-5 sm:text-sm'
     >
       {CTA.label}
     </Link>
@@ -64,8 +77,8 @@ export default function Nav() {
       const box = pill ? pill.getBoundingClientRect() : null;
       setThreshold(heroHeight * HERO_FRACTION);
       setPillLine(box ? box.top + box.height / 2 : 0);
-      // `.on-paper` only. The hero is white too and carries `.on-light`, but the progress ring reads this to pick a stroke that
-      // shows against the surface directly under it — and the hero's wash is only white for the top of its own scroll.
+      // `.on-paper` is every white section. The ring reads this to pick a stroke that shows against the surface directly under it,
+      // and the pill itself is one glass surface on every ground — see GlassPill.
       setPaperBands([...document.querySelectorAll('.on-paper')].map((node) => [node.offsetTop, node.offsetTop + node.offsetHeight]));
     };
     measure();

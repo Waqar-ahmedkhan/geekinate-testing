@@ -157,13 +157,10 @@
    Scoped as a token override rather than as a second set of utilities, so `border-brutal`, `shadow-brutal`, `text-mut` and
    `text-foreground` all keep meaning the same thing and simply resolve differently inside this subtree. Adding a paper section costs
    one class, not a parallel palette. */
-/* `.on-light` is the same token flip without the fill, for a section that is on a light ground it does not paint itself — which is
-   the hero, whose wash is painted by the substrate canvas underneath it so the particle scene can still read through. It is a
-   separate class rather than `on-paper` on purpose: the navbar collects `.on-paper` elements to know when its progress ring is over
-   white, and the hero's ground is only white at the top of its own scroll, so including it there would flip the ring at the wrong
-   moment. Everything a section's subtree resolves stays identical between the two. */
-.on-paper,
-.on-light {
+/* There was a second class here, `.on-light`, carrying the same token flip without the fill — for sections whose white ground was
+   painted by the substrate canvas behind the page rather than by the section itself. The substrate was retired on 2026-08-13 along
+   with the light hero, and both sections that used it paint their own white again. */
+.on-paper {
   --line: var(--ink);
   --line-volt: var(--ink);
   --paper-mut: var(--grey);

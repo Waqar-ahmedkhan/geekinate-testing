@@ -1,7 +1,7 @@
 import { IBM_Plex_Mono, Instrument_Serif, Red_Hat_Display } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
-import { CosmosCanvas, Nav, SmoothScroll, SubstrateCanvas } from '@/lib/ui/reusable_components';
+import { CosmosCanvas, Nav, SmoothScroll } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SITE } from '@/constants';
 import './globals.css';
@@ -40,11 +40,14 @@ export default function RootLayout({ children }) {
   return (
     <html lang='en' className={`${fontVariables} antialiased`}>
       {/* SmoothScroll is the only writer of scrollProgress.reduced and CosmosCanvas reads it, so their order here is load-bearing:
-          sibling effects run in document order. */}
+          sibling effects run in document order.
+
+          The hero's globe is not here. It scrolls away with its own section, so it lives inside it — only the particle mark needs
+          to be fixed, because only the particle mark travels the page. The substrate canvas that used to sit between the two was
+          retired on 2026-08-13 with the light hero it painted the ground for. */}
       <body className='flex min-h-svh flex-col'>
         <JsonLd id='json-ld-site' nodes={[organizationJsonLd, websiteJsonLd]} />
         <SmoothScroll />
-        <SubstrateCanvas />
         <CosmosCanvas />
         <Nav />
         {children}

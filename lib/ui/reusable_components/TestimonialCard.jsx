@@ -22,7 +22,11 @@ export default function TestimonialCard({ quote, name, role, className }) {
     // at exactly the moment the card is being looked at.
     <figure
       className={cn(
-        'group flex w-[370px] shrink-0 flex-col gap-8 rounded-[14px] bg-black p-8 transition-colors duration-300 ease-brutal hover:bg-volt',
+        // 370px is the reference's width and it holds from `sm` up. Below that it is wider than the phone it is being read on, and
+        // because the row drifts continuously there is no moment at which a card is fully on screen — every quote loses its first
+        // few characters to the left edge for the whole of its pass. 280px is the width that leaves a card readable end to end on a
+        // 320px screen and still shows the edge of its neighbour, so the row reads as a row rather than as one clipped card.
+        'group flex w-[280px] shrink-0 flex-col gap-6 rounded-[14px] bg-black p-6 transition-colors duration-300 ease-brutal hover:bg-volt sm:w-[370px] sm:gap-8 sm:p-8',
         className
       )}
     >

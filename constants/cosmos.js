@@ -3,12 +3,26 @@
 // reallocates after that.
 //
 // Distances are world units on a plane at z = 0, seen by a camera parked at `cameraZ` with a vertical field of view of `cameraFov`.
-// The visible height at that plane is 2 * cameraZ * tan(cameraFov / 2) = 7.46, so a radius of 2.95 puts the mark at roughly
+// The visible height at that plane is 2 * cameraZ * tan(cameraFov / 2) = 7.456, so a radius of 2.95 puts the mark at roughly
 // four-fifths of the viewport height.
+//
+// **The camera is a long lens on purpose, and the pair is load-bearing.** It was 45 degrees at a distance of 9; it is now 7.1
+// degrees at 60, which leaves that visible height unchanged to three decimal places and therefore leaves the letterform's framing,
+// its fit and every number below it exactly where they were. What it buys is the globe.
+//
+// The hero pose is a sphere whose radius is about 8.8 world units — the reference's horizon is a wide shallow curve, and a shallow
+// curve means a sphere several times taller than the frame. At a camera distance of 9 that sphere's front surface is nearer to the
+// camera than the camera is to its own centre: the frustum swallows it and no field of view fixes that. At 60 the same sphere sits
+// comfortably in front of the lens, the projection is near enough orthographic that the atmosphere shaders' screen-offset
+// derivation holds to a few percent, and the depth cue on the point sizes is a gentle 17% across the globe rather than a fisheye.
+//
+// Changing one of the two without the other rescales the entire scene.
 export const COSMOS = {
-  count: 12000,
-  cameraFov: 45,
-  cameraZ: 9,
+  // Raised from 12,000 when the globe became a pose of this same cloud. The letterform never needed more; a world map does — below
+  // about twenty thousand the coastlines break up into speckle and the continents stop being recognisable.
+  count: 26000,
+  cameraFov: 7.111,
+  cameraZ: 60,
   glyphRadius: 2.95,
   // How far the middle of a stroke stands off the page. This used to be a random z spread and had to be held at 0.15, because
   // scattering particles through a slab blurs the silhouette across a band and buys no solidity at all — the mark read as a flat
@@ -83,57 +97,9 @@ export const COSMOS = {
   // the opposite of the dense field this is meant to be.
   shadeDepth: 0.28,
   sheenLift: 0.7,
-  // The substrate. A grid of cells running a Life-like rule, seeded by the mark — see substrateShaders for why this replaced a
-  // starfield. cell is CSS pixels per cell, so the grid is roughly 107 x 60 at desktop. Coarsened from 16: cell area is the real
-  // density control here, and 16 put around 8,400 cells on a desktop screen, which read as a dense field rather than a background.
-  // Not coarser than this, though — the stamp is lattice-aligned, and past about 20 the rows and columns of the seeded region become
-  // legible as a grid instead of as a wake.
-  cell: 18,
-  // Generations per second, not frames. The afterglow covers the gap between them, so the field reads as continuous while the rule
-  // runs at a tenth of the render rate. Halved from 11 — this is the number that governs how fast the field appears to move, and at
-  // eleven the churn was quick enough to pull the eye off the copy in front of it.
-  stepRate: 6,
-  // Per generation, so the wall-clock length of the fade is decay against stepRate, not decay alone — and that is why it came back
-  // down when the rate did. Raising it to 0.92 alongside the slower rule was the intuitive move and it worked against the density
-  // cut: a longer fade means more cells lit at once, so the field filled in again as the page was scrolled. At 0.88 against six
-  // generations a second a cell still takes most of a second to go out, which is smooth, without holding the whole trail alive.
-  decay: 0.88,
-  // Chance per cell per generation of a cell appearing out of nothing. Life on an empty grid settles at nothing, and a background
-  // that goes blank ten seconds after load is not a background.
-  //
-  // It was halved to 0.0004 to thin the field and that was the wrong lever. Spontaneous births are the only source of life anywhere
-  // the mark is not, so cutting them does not make the field sparser — it makes one side of the page arrive a minute late. The
-  // opening state is `seedDensity` below and the thinning is carried by opacity instead, where it belongs.
-  spawn: 0.0009,
-  // How much of the grid is alive the moment it is allocated. Around a tenth is the classic Life soup: dense enough that the rule
-  // has something to work with immediately across the full width, sparse enough that it settles into structure rather than mush.
-  seedDensity: 0.09,
-  // How many cells wide the mark stamps per particle. Below about three the stamp lands sub-pixel in a grid this coarse and the wake
-  // comes out as speckle rather than a trail.
-  // The share of the mark's silhouette that seeds on any one generation. Stamping the whole thing eleven times a second saturates
-  // every cell it touches and the wake comes out as a solid block travelling down the page rather than a trail. Sparse seeding lets
-  // the rule do the work — most of what is visible was born from the seeds, not placed.
-  seedChance: 0.04,
-  dotSize: 0.3,
-  // Two absolute opacities, one per ground, lerped between as the wash fades — not a single value with a discount on paper, which
-  // is what this was first. The assumption behind the discount was that white would carry the dots harder than the void does; it is
-  // volt and grey on paper against volt and grey on near-black, and the paper side actually came out the weaker of the two. The
-  // "too heavy" note that started all of this was about the black hero, which no longer exists.
-  substrateOpacity: 0.38,
-  substrateOpacityLight: 0.44,
-  // Where the hero's field starts and finishes coming in, as a fraction of viewport width. The copy column runs out at about 0.39
-  // and the mark starts at about 0.57, so the ramp sits in the gap between them: nothing under the type, full strength by the time
-  // the mark is reached. Measured against the viewport rather than the container because the field is full-bleed.
-  maskStart: 0.42,
-  maskEnd: 0.68,
-  // Rows the lattice travels per full page scroll, plus a slow idle. The scroll term is what makes the wake pull away from the mark;
-  // the idle term is what keeps the field moving when the page is not. Both cut: the idle drift is the motion present on a page
-  // nobody is touching, so it is the one that has to sit below notice.
-  wake: 1.2,
-  wakeIdle: 0.006,
   // Idle life. Nothing here is triggered by anything — the mark is never truly still, because a fixed shape on a moving starfield
   // reads as a decal stuck to the glass. A slow sway on both axes and a long vertical bob, on different periods so they never line
-  // up into an obvious loop. The substrate above carries the rest of the life.
+  // up into an obvious loop.
   //
   // A travelling band of light across the body was tried here too and cut on sight — at any width it read as a stripe painted over
   // the mark rather than as light moving across it, because these particles are flat sprites with no normals for a highlight to
@@ -144,4 +110,41 @@ export const COSMOS = {
   bobSpeed: 0.31,
   tilt: 0.16,
   tiltLerp: 0.06,
+  // The globe pose ------------------------------------------------------------------------------------------------------------
+  // Everything from here down belongs to the hero, where this same cloud wears the Earth. The shape of that sphere and the shells
+  // around it are GLOBE's; these are the numbers the *particles* need, which is why they live with the rest of the cloud's.
+  //
+  // Point size in pixels at rest, against the letterform's 8.6. A world map is a field of pins, not a field of beads: at the mark's
+  // size the coastlines merge into a solid band well before there are enough particles to draw them.
+  globePoint: 3.4,
+  // How hard a particle turning away from the camera goes out. This is the globe's entire occlusion strategy — there is no depth
+  // test anywhere in the scene, and there does not need to be, because a sphere hides its own back by simply not drawing it. The
+  // window is deliberately narrow and biased a hair past the limb, so the field ends *at* the silhouette instead of thinning toward
+  // it, which is what makes the rim read as an edge.
+  globeFadeIn: -0.08,
+  globeFadeOut: 0.05,
+  // The cursor lift. `liftRadius` is measured on screen rather than in space — the particle and the pointer are compared on x and y
+  // only — because the globe is eight world units deep and a true 3D radius reaches the front of it and nothing else. `lift` is how
+  // far a particle rises along its own surface normal at the centre of that circle, so the field peels off the sphere rather than
+  // sliding across it.
+  globeLift: 0.42,
+  globeLiftRadius: 1.3,
+  // Drag to spin. `dragTurn` is radians of turn per pixel dragged and `dragDecay` how fast a fling bleeds off, per second — at 2.6
+  // a hard throw coasts for about a second and a half, which is long enough to read as momentum and short enough not to fight the
+  // idle turn.
+  //
+  // `dragTurn` is far smaller than one-to-one with the cursor, and that is not a mistake. The frame only ever shows the band near
+  // the limb, where foreshortening squeezes a great deal of longitude into very few pixels — the map crosses that band several times
+  // faster than the sphere is actually turning, so the honest ratio feels like a shove. It went 0.0052, where a three-hundred-pixel
+  // drag spun the globe ninety degrees and the world tore past under the cursor, then 0.0016, and is 0.0008 now: the same drag turns
+  // it about fourteen degrees, which is a hand resting on a heavy thing and pushing it round.
+  dragTurn: 0.0008,
+  dragDecay: 2.6,
+  // What the scroll does on the way out of the hero: extra turns of spin, and how far the globe sinks in its own radii. Both ride on
+  // the same progress that disperses the cloud, so the globe leaves under its own power rather than being slid off screen.
+  scrollSpin: 3.4,
+  scrollSink: 0.42,
+  // How fast the pose crossfades chase the scroll. Lower than formLerp because this handover is a whole world coming apart rather
+  // than a letterform loosening, and it wants to be seen.
+  globeLerp: 2.2,
 };

@@ -3,8 +3,8 @@
 // reallocates after that.
 //
 // Distances are world units on a plane at z = 0, seen by a camera parked at `cameraZ` with a vertical field of view of `cameraFov`.
-// The visible height at that plane is 2 * cameraZ * tan(cameraFov / 2) = 7.456, so a radius of 2.95 puts the mark at roughly
-// four-fifths of the viewport height.
+// The visible height at that plane is 2 * cameraZ * tan(cameraFov / 2) = 7.456, so a radius of 2.05 puts the mark at a little over
+// half the viewport height.
 //
 // **The camera is a long lens on purpose, and the pair is load-bearing.** It was 45 degrees at a distance of 9; it is now 7.1
 // degrees at 60, which leaves that visible height unchanged to three decimal places and therefore leaves the letterform's framing,
@@ -18,12 +18,24 @@
 //
 // Changing one of the two without the other rescales the entire scene.
 export const COSMOS = {
-  // Raised from 12,000 when the globe became a pose of this same cloud. The letterform never needed more; a world map does — below
-  // about twenty thousand the coastlines break up into speckle and the continents stop being recognisable.
-  count: 26000,
+  // The size of the one buffer, and therefore the globe's own grain count — a world map is what needs the particles, and below about
+  // twenty thousand the coastlines break up into speckle and the continents stop being recognisable.
+  //
+  // It used to be the letterform's count as well, because one buffer holding three poses gave the two shapes no way to disagree. The
+  // mark wants far fewer than the map: at 26,000 packed into a glyph half a viewport tall the beads overlapped into a solid green
+  // slab and the grain stopped reading as grain. `glyphCount` below is what separates them.
+  count: 30000,
+  // How many of those particles the letterform is made of. The rest keep their scattered position as their glyph target and fade out
+  // as the mark assembles — see `aMark` in cloud and the `vFade` line in the vertex shader — so the mark is exactly this many beads
+  // while the globe is still the full `count`. Must not exceed `count`.
+  glyphCount: 20000,
   cameraFov: 7.111,
   cameraZ: 60,
-  glyphRadius: 2.95,
+  // Cut from 2.95 on 2026-08-20. At four-fifths of the viewport height the mark was the footer rather than an element in it, and it
+  // could not share the panel with anything — the content had to be pushed to the top and bottom rails to leave it the middle. At
+  // this size it holds the right of the panel and the content holds the left. Taken back up from 1.7 the same day: half a viewport
+  // read as timid in a half of its own, and the right half has the width for it.
+  glyphRadius: 2.05,
   // How far the middle of a stroke stands off the page. This used to be a random z spread and had to be held at 0.15, because
   // scattering particles through a slab blurs the silhouette across a band and buys no solidity at all — the mark read as a flat
   // stencil whatever the number was. It is now the height of a profile taken from the distance to the stroke's own edge, so the
@@ -47,12 +59,12 @@ export const COSMOS = {
   // eye tracks the explosion instead of the shape leaving.
   cloudRadius: 3,
   cloudFlatten: 0.5,
-  // Breathing room between the mark and the container edge it is anchored to, in world units. The mark is placed by its right edge
-  // rather than by a centre offset — see MorphCloud — so this is the only placement number left.
+  // Breathing room between the mark and the container edge it was anchored to, in world units. Nothing reads it: the mark is placed
+  // by the centre of the footer's right half now — see MorphCloud — and a centre offset has no edge to keep clear.
   heroEdgeMargin: 0.08,
   // The hero pose, relative to the footer one. It was cut to 0.68 while a paragraph still hung off the bottom-right corner and the
   // mark had to clear it; with that gone the mark can hold the right half properly, and at anything smaller it floats in the middle
-  // of its own column with dead space on both sides.
+  // of its own column with dead space on both sides. Nothing reads it since the hero became the globe.
   heroScale: 0.9,
   // Pointer attraction. `pullRadius` is the world radius of influence and `pullStrength` the fraction of the remaining distance a
   // particle covers at the centre of it. Both were cut hard after the first pass: a wide radius at full strength peels half the mark
@@ -73,7 +85,11 @@ export const COSMOS = {
   morphSpread: 0.55,
   // How fast the scene damps toward whatever the scroll triggers are asking for. This is the brake on the handover, not the trigger
   // range — the range says how much scroll the change is spread over, this says how hard the scene chases it within that.
-  formLerp: 3,
+  //
+  // Raised from 3 when the form curve went linear. At 3 the mark trails the scroll by about a third of a second, which is invisible
+  // on a slow read and reads as the letterform snapping together a beat late when the wheel is spun — the lag was doing some of the
+  // easing, and with the curve no longer front-loading anything there is nothing for it to smooth over.
+  formLerp: 4.5,
   pointSize: 8.6,
   // The mark is volt. `sparkle` is the share of particles lifted toward paper so the cloud carries highlights instead of reading as
   // one flat green, and `gloss` is the white core every bead gets — that core is what makes the volt read as glossy rather than as

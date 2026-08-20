@@ -70,9 +70,16 @@ export default function CosmosCanvas() {
       }),
       ScrollTrigger.create({
         trigger: 'footer',
-        // Started well before the footer is on screen: reassembly wants more scroll than the footer's own arrival provides, or the
-        // mark snaps back into a letterform in the last few hundred pixels of the page.
-        start: 'top bottom+=70%',
+        // Exactly the footer's own arrival, and the two ends are the point. `top bottom` is the frame the panel's first pixel
+        // appears in, so the cloud is still fully scattered when the footer starts to show; `top top` is the last pixel of the
+        // document, because the footer is one viewport tall — so the letterform completes on the scroll that runs out and nowhere
+        // before it.
+        //
+        // It used to start at `bottom+=70%`, on the reasoning that reassembly wanted more scroll than the footer's arrival provides.
+        // That was written for a mark four fifths of the viewport tall, and it front-loaded the whole thing: a 1.7-viewport range
+        // ending at the document's foot is already 71 per cent spent by the time the panel is half open, which put a finished G on
+        // screen with a screen of scrolling still to go. The mark is half that size now and one viewport is scroll enough.
+        start: 'top bottom',
         end: 'top top',
         scrub: true,
         onUpdate: (self) => {

@@ -2,6 +2,7 @@ import Hero from '@/features/hero';
 import Work from '@/features/work';
 import Services from '@/features/services';
 import Testimonials from '@/features/testimonials';
+import Contact from '@/features/contact';
 
 export default function Home() {
   return (
@@ -10,6 +11,7 @@ export default function Home() {
       <Work />
       <Services />
       <Testimonials />
+      <Contact />
     </main>
   );
 }

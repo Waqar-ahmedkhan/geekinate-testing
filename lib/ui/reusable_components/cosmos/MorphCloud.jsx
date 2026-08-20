@@ -27,6 +27,16 @@ const clamp01 = (value) => Math.min(1, Math.max(0, value));
 // will never catch.
 const fitScale = (aspect) => Math.min(1, (VISIBLE_HEIGHT * aspect * 0.4) / COSMOS.glyphRadius);
 
+// The middle of the footer panel's right half, in world units at the subject plane. The panel is inset 16px from the page and
+// carries 24px of its own padding, so its content box runs 40px in from each edge of the viewport; the copy holds the left half of
+// that box and the mark stands in the centre of the right one. That inset is a pixel measurement rather than a fraction of the
+// frame, which is why this takes the width in pixels and not the aspect.
+//
+// Centred rather than anchored by its right edge. The edge anchor put the letterform hard against the rail with the whole inner side
+// of its half empty, so the split read as a column of copy and a mark stuck in the corner rather than as two halves.
+const PANEL_RAIL = 40;
+const rightHalfCentre = (width, viewHalf) => (0.5 - PANEL_RAIL / width) * viewHalf;
+
 // Which junction the cursor is nearest, or -1 for none.
 //
 // Walked on the CPU because there are only about fifty of them and the answer is a single uniform. The alternative — a per-particle
@@ -106,18 +116,31 @@ export default function MorphCloud({ onFirstFrame }) {
     // This replaced a single `middle` progress that multiplied the two together and drove one form curve. That construction was
     // right when the letterform was the only shape and had to be assembled at both ends of the page — with the globe holding the
     // hero it left the mark *assembling* underneath exactly as the world came apart, so the globe morphed into a G in mid-air.
+    // Linear, and both curves this replaced were wrong at one end. Smoothstep is symmetric and sits at 0.82 by three quarters of the
+    // scroll, which on top of the shader's stagger put a finished letterform on screen with a quarter of the footer still to come.
+    // x² fixed that ending and broke the opening instead: it is under 0.1 for the first third, so the cloud visibly does not move
+    // while the panel is arriving and then assembles all at once near the foot of the page.
+    //
+    // Straight through is what the gesture actually is. The stagger in the shader is the easing — `morphSpread` gives every particle
+    // its own slice of this range, so the mark gathers over the whole of it rather than stepping between two states, and a curve on
+    // top of that only decides which part of the scroll the gathering is crowded into. Nothing needs it crowded.
     const settle = Math.min(1, delta * COSMOS.formLerp);
     const arriving = clamp01(stage.footerIn);
-    stage.form += (arriving * arriving * (3 - 2 * arriving) - stage.form) * settle;
+    stage.form += (arriving - stage.form) * settle;
     stage.globe += (1 - clamp01(stage.heroOut) - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
     values.uForm.value = stage.form;
     values.uGlobeMix.value = stage.globe;
     values.uScale.value = scale;
-    // The letterform is centred and square to the camera wherever it appears. It used to be anchored by its right edge against the
-    // hero's container and yawed to face the camera from there; the hero is the globe now, so both the offset and the correction
-    // that went with it are constants at zero and the swing is only the idle breathe, faded out as the mark resolves.
-    values.uOffsetX.value = 0;
-    values.uFaceYaw.value = 0;
+    // The letterform holds the right half of the footer and the copy holds the left, so the mark is moved out to the middle of that
+    // half rather than left on the camera axis. uFaceYaw is the correction that goes with the offset, not an effect: a flat mark
+    // parked off the axis is seen at an angle and its own depth shears sideways under perspective, and yawing it back puts that
+    // depth along the view ray.
+    //
+    // Both are scaled by `stage.form`, because this buffer is also the scattered pose. Applied flat, the offset would drag the whole
+    // mid-page cloud to the right along with the letterform it becomes.
+    const anchor = rightHalfCentre(state.size.width, viewHalf);
+    values.uOffsetX.value = anchor * stage.form;
+    values.uFaceYaw.value = Math.atan2(anchor, COSMOS.cameraZ) * stage.form;
     values.uSpin.value = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle * (1 - stage.form);
 
     // The globe's frame, solved from the viewport and published on the cloud's own uniforms — which is also where the shells read it

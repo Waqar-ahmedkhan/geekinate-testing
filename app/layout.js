@@ -1,7 +1,7 @@
 import { IBM_Plex_Mono, Instrument_Serif, Red_Hat_Display } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
-import { CosmosCanvas, Nav, SmoothScroll } from '@/lib/ui/reusable_components';
+import { CosmosCanvas, GrainWake, Nav, SmoothScroll, SubstrateField } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SITE } from '@/constants';
 import './globals.css';
@@ -43,12 +43,21 @@ export default function RootLayout({ children }) {
           sibling effects run in document order.
 
           The hero's globe is not here. It scrolls away with its own section, so it lives inside it — only the particle mark needs
-          to be fixed, because only the particle mark travels the page. The substrate canvas that used to sit between the two was
-          retired on 2026-08-13 with the light hero it painted the ground for. */}
+          to be fixed, because only the particle mark travels the page.
+
+          SubstrateField and GrainWake sit below both for the same ordering reason as CosmosCanvas — they read the same reduced-motion
+          flag SmoothScroll writes. Both are 2D canvases rather than second GL contexts.
+
+          Their z-indices are the whole reason they are here and not in the components they belong to. The scene is z-[1]; the
+          substrate is the Life field *behind* the footer's letterform, so it has to be under that, and nothing parented inside the
+          footer can be — the panel is z-50 and would paint the field over the mark. GrainWake is grain the cursor leaves on the page,
+          so it goes the other way at z-20: over the sections and their cards, under the navbar and the footer panel. */}
       <body className='flex min-h-svh flex-col'>
         <JsonLd id='json-ld-site' nodes={[organizationJsonLd, websiteJsonLd]} />
         <SmoothScroll />
+        <SubstrateField />
         <CosmosCanvas />
+        <GrainWake />
         <Nav />
         {children}
         <Footer />

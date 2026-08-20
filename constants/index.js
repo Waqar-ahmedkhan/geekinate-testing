@@ -1,7 +1,9 @@
 export * from './cosmos';
 export * from './globe';
+export * from './grain';
 export * from './lab';
 export * from './snake';
+export * from './substrate';
 
 export const SITE = {
   name: 'Geekinate',
@@ -26,8 +28,12 @@ export const NAV_LINKS = [
 ];
 
 // PLACEHOLDER: swap for the real profiles before launch.
+//
+// `icon` is the glyph to draw when it is not the label. Only X needs it: the platform renamed and the mark did not, so the glyph
+// alone is still read as X while the word most people would look for is Twitter. Labelling it X next to its own X-shaped mark says
+// the same thing twice and answers nobody who does not already know.
 export const SOCIALS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/geekinate' },
   { label: 'GitHub', href: 'https://github.com/geekinate' },
-  { label: 'X', href: 'https://x.com/geekinate' },
+  { label: 'Twitter', icon: 'X', href: 'https://x.com/geekinate' },
 ];

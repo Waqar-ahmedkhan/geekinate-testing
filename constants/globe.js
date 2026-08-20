@@ -44,6 +44,14 @@ export const GLOBE = {
   arcCount: 26,
   arcSegments: 56,
   arcSpan: [0.3, 0.85],
+  // Where a route fades out as it turns behind the globe, as the view-space z of its own direction: gone by the first number, full
+  // by the second. The arcs were the one layer with no facing test — the land fades and the flares discard, so only the network kept
+  // drawing on the far side, and an additive line with no depth test came out as a lit thread across the black with no ends on it.
+  //
+  // Wider than the land's own [-0.08, 0.05] on purpose. An arc is lifted `arcLift` off the surface, so it clears the horizon further
+  // round than the ground under it does, and cutting it at the land's threshold would take the crown off a route that really does
+  // climb over the limb.
+  arcFade: [-0.3, -0.04],
   arcLift: 0.11,
   arcSpeed: 0.13,
   arcBase: 0.38,

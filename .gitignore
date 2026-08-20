@@ -48,3 +48,6 @@ next-env.d.ts
 
 # duplicated source drops — the shipped copies live in public/media/services
 /assets/
+
+.vercel
+.env*.local

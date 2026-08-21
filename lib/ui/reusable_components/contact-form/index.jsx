@@ -11,28 +11,20 @@ import { cn } from '@/lib/utils';
 import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
-// The contact form, and the only client component on this section. The heading and the ground it sits on are server rendered; only
-// the part that holds state crosses the boundary.
-//
-// **Borders are written as `border-[1.5px] border-ink` here rather than as `border-brutal`.** That utility sets the whole `border`
-// shorthand, so twMerge cannot see it conflicting with the `border border-input` the shadcn primitives already carry, and which of
-// the two wins comes down to stylesheet order. Splitting width and colour into classes twMerge understands makes the override
-// deterministic, and it is what lets the error state swap the colour without touching the width. The geometry is unchanged: 1.5px,
-// ink, hard offset shadow, no soft elevation.
-//
-// Fields are 48px tall, not the shadcn default of 32. Anything a thumb has to hit wants 44px at minimum, and a 32px input on a phone
-// is also short enough that iOS zooms the viewport when it takes focus.
 const FIELD =
   'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base';
 const FIELD_BAD = 'border-destructive';
 const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
+const FORM = 'flex flex-col gap-6 rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
+const CHIP =
+  'cursor-pointer rounded-full border-[1.5px] border-ink px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink transition-colors duration-200 ease-brutal disabled:cursor-default';
+const CHIP_ON = 'bg-volt shadow-brutal-sm';
+const CHIP_OFF = 'bg-paper hover:bg-wash';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 12;
 
-// Cause and fix, per field. Returned as an object rather than thrown one at a time so a single submit can report everything that is
-// wrong at once instead of making the reader discover it a field per attempt.
 const validate = ({ name, email, message }) => {
   const { errors } = contactContent;
   const found = {};
@@ -44,10 +36,10 @@ const validate = ({ name, email, message }) => {
   return found;
 };
 
-const EMPTY = { name: '', email: '', company: '', message: '' };
+const EMPTY = { name: '', email: '', company: '', message: '', topic: '' };
 
 export default function ContactForm() {
-  const { fields, submit, success, failure } = contactContent;
+  const { fields, topics, submit, success, failure } = contactContent;
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -58,9 +50,6 @@ export default function ContactForm() {
   const change = (field) => (event) => {
     const merged = { ...values, [field]: event.target.value };
     setValues(merged);
-    // Only re-validate a field the reader has already finished once, and only that field. Validating on every keystroke shows
-    // somebody an error for a half typed address while they are still typing it, and validating the whole form here would light up
-    // fields they have not reached yet.
     if (!touched[field]) return;
     setErrors((current) => ({ ...current, [field]: validate(merged)[field] }));
   };
@@ -69,6 +58,9 @@ export default function ContactForm() {
     const found = validate(values);
     setErrors((current) => ({ ...current, [field]: found[field] }));
   };
+  const pick = (topic) => () => {
+    setValues((current) => ({ ...current, topic: current.topic === topic ? '' : topic }));
+  };
   const send = async (event) => {
     event.preventDefault();
     const found = validate(values);
@@ -76,8 +68,6 @@ export default function ContactForm() {
     setErrors(found);
     const first = ['name', 'email', 'message'].find((field) => found[field]);
     if (first) {
-      // Focus the first field that failed. Without it a reader on a keyboard is told the form is wrong and left at the submit button
-      // with no route back to the thing that caused it.
       formRef.current?.elements[first]?.focus();
       return;
     }
@@ -112,10 +102,20 @@ export default function ContactForm() {
     'aria-describedby': errors[field] ? `${field}-error` : undefined,
     disabled: pending,
   });
+  const topicEls = topics.options.map(({ value, label }) => (
+    <button
+      key={value}
+      type='button'
+      onClick={pick(value)}
+      aria-pressed={values.topic === value}
+      disabled={pending}
+      className={cn(CHIP, values.topic === value ? CHIP_ON : CHIP_OFF)}
+    >
+      {label}
+    </button>
+  ));
   const errorFor = (field) =>
     errors[field] ? (
-      // role='alert' rather than colour alone. A red outline says nothing to a screen reader and nothing at all to a reader who
-      // cannot separate the two colours, so the text carries the meaning and the colour only draws the eye to it.
       <p id={`${field}-error`} role='alert' className='flex items-start gap-1.5 text-sm leading-[1.4] text-ink'>
         <CircleAlert aria-hidden='true' className='mt-0.5 size-4 shrink-0 text-destructive' />
         {errors[field]}
@@ -130,9 +130,6 @@ export default function ContactForm() {
         </span>
         <h3 className='font-display text-3xl leading-none tracking-[-0.01em] text-ink'>{success.title}</h3>
         <p className='text-base leading-[1.6] text-mut'>{success.body}</p>
-        {/* bg-paper and text-ink are stated rather than left to the outline variant. That variant resolves to `bg-background`, and
-            `--background` is the page's dark void everywhere, including inside `.on-paper`, which flips the border, shadow and muted
-            tokens but deliberately not the page ground. Left alone the button would come out near black on a white section. */}
         <Button
           type='button'
           onClick={reset}
@@ -145,7 +142,16 @@ export default function ContactForm() {
     );
 
   return (
-    <form ref={formRef} noValidate onSubmit={send} className='flex flex-col gap-6'>
+    <form ref={formRef} noValidate onSubmit={send} className={FORM}>
+      <div className='flex flex-col gap-3'>
+        <span className={LABEL}>
+          {topics.label}
+          <span className='text-grey/70'> ({topics.optional})</span>
+        </span>
+        <div role='group' aria-label={topics.label} className='flex flex-wrap gap-2'>
+          {topicEls}
+        </div>
+      </div>
       <div className='grid gap-6 md:grid-cols-2'>
         <div className='flex flex-col gap-2'>
           <Label htmlFor='name' className={LABEL}>
@@ -166,7 +172,6 @@ export default function ContactForm() {
             {fields.email.label}
             <span className='text-destructive'>*</span>
           </Label>
-          {/* type='email' rather than text, which is what puts the @ key on a phone keyboard. */}
           <Input
             {...fieldProps('email')}
             type='email'
@@ -207,8 +212,6 @@ export default function ContactForm() {
         />
         {errorFor('message')}
       </div>
-      {/* Honeypot. Off screen rather than display:none, because a field that is not rendered is not filled in by the scripts this is
-          meant to catch. Hidden from assistive technology and out of the tab order, so no human ever meets it. */}
       <input
         ref={trapRef}
         type='text'
@@ -227,7 +230,6 @@ export default function ContactForm() {
         {pending ? submit.pending : submit.idle}
       </Button>
       {status === 'failed' ? (
-        // A failure the reader can act on. Retry first, then the address, so nobody who wanted to reach us is left with a dead end.
         <div role='alert' className='flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-destructive bg-paper p-5'>
           <p className='flex items-start gap-2 text-base leading-[1.5] text-ink'>
             <CircleAlert aria-hidden='true' className='mt-1 size-4 shrink-0 text-destructive' />

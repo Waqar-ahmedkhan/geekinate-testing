@@ -9,7 +9,7 @@ import { fitGlobe, getGlobe } from '@/lib/globe/scene';
 import { coastGlobe, globe } from '@/lib/input/globe';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
-import { stage } from '@/lib/scroll/stage';
+import { measureStage, stage } from '@/lib/scroll/stage';
 import { COSMOS, GLOBE } from '@/constants';
 
 const HALF_FOV = (COSMOS.cameraFov * Math.PI) / 360;
@@ -57,11 +57,14 @@ export default function MorphCloud({ onFirstFrame }) {
   const attention = useRef(0);
   const ground = useRef(0);
   const governor = useRef(createGovernor());
+  const wasArriving = useRef(-1);
+  const wasOrbiting = useRef(-1);
   useFrame((state, delta) => {
     const demoted = governor.current(delta);
     if (demoted) state.setDpr(demoted);
     drawn.current += 1;
     if (drawn.current === 2) onFirstFrame?.();
+    measureStage();
     const cloud = getCloud();
     const values = cloud.uniforms;
     const shell = getGlobe();
@@ -76,7 +79,12 @@ export default function MorphCloud({ onFirstFrame }) {
 
     const arriving = clamp01(stage.footerIn);
     const orbiting = 1 - clamp01(stage.heroOut);
-    const adopting = state.clock.elapsedTime < COSMOS.adoptWindow;
+    const adopting =
+      wasArriving.current < 0 ||
+      Math.abs(arriving - wasArriving.current) > COSMOS.adoptJump ||
+      Math.abs(orbiting - wasOrbiting.current) > COSMOS.adoptJump;
+    wasArriving.current = arriving;
+    wasOrbiting.current = orbiting;
     stage.form = adopting ? arriving : stage.form + (arriving - stage.form) * Math.min(1, delta * COSMOS.formLerp);
     stage.globe = adopting ? orbiting : stage.globe + (orbiting - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
     values.uForm.value = stage.form;

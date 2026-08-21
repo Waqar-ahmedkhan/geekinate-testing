@@ -74,10 +74,11 @@ export default function MorphCloud({ onFirstFrame }) {
     ground.current += (1 - stage.light - ground.current) * Math.min(1, delta * 6);
     values.uHighlight.value.lerpColors(cloud.ink, cloud.paper, ground.current);
 
-    const settle = Math.min(1, delta * COSMOS.formLerp);
     const arriving = clamp01(stage.footerIn);
-    stage.form += (arriving - stage.form) * settle;
-    stage.globe += (1 - clamp01(stage.heroOut) - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
+    const orbiting = 1 - clamp01(stage.heroOut);
+    const adopting = state.clock.elapsedTime < COSMOS.adoptWindow;
+    stage.form = adopting ? arriving : stage.form + (arriving - stage.form) * Math.min(1, delta * COSMOS.formLerp);
+    stage.globe = adopting ? orbiting : stage.globe + (orbiting - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
     values.uForm.value = stage.form;
     values.uGlobeMix.value = stage.globe;
     values.uScale.value = scale;

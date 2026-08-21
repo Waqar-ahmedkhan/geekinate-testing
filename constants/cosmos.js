@@ -24,6 +24,7 @@ export const COSMOS = {
   driftLoose: 2.6,
   morphSpread: 0.55,
   formLerp: 4.5,
+  adoptWindow: 1.6,
   pointSize: 8.6,
   sparkle: 0.26,
   beadCore: 0.4,

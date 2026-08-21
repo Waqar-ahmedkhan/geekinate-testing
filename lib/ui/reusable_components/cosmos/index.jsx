@@ -24,27 +24,32 @@ export default function CosmosCanvas() {
 
   useEffect(() => {
     if (scrollProgress.reduced) return undefined;
+    const readHero = (self) => {
+      stage.heroOut = self.progress;
+    };
+    const readFooter = (self) => {
+      stage.footerIn = self.progress;
+    };
     const triggers = [
       ScrollTrigger.create({
         trigger: '#hero',
         start: 'top top',
         end: '+=140%',
         scrub: true,
-        onUpdate: (self) => {
-          stage.heroOut = self.progress;
-        },
+        onUpdate: readHero,
+        onRefresh: readHero,
       }),
       ScrollTrigger.create({
         trigger: 'footer',
         start: 'top bottom',
         end: 'top top',
         scrub: true,
-        onUpdate: (self) => {
-          stage.footerIn = self.progress;
-        },
+        onUpdate: readFooter,
+        onRefresh: readFooter,
       }),
     ];
     const refresh = () => ScrollTrigger.refresh();
+    refresh();
     document.fonts?.ready.then(refresh);
     window.addEventListener('load', refresh);
     return () => {

@@ -11,7 +11,8 @@ One Next.js application at the repo root. There is no backend service, no API la
 geekinate/                   the repo, and the application
   AGENTS.md  ARCHITECTURE.md  WORKFLOW.md  QUALITY_AND_SAFETY.md  CLAUDE.md
   geekinate new logo/        brand source assets (see Design system)
-  app/  components/  features/  lib/  constants/  public/
+  docs/                      briefs written elsewhere and pasted in — the request, not our source
+  app/  components/  features/  lib/  constants/  scripts/  public/
 ```
 
 The repo is named `geekinate`; the folder it is checked out into locally is `geekinate-v1`. The repo named `geekinate-v1` is the
@@ -25,11 +26,14 @@ archive of the two older sites and holds nothing from this build.
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `nav/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `nav/`, `snake/` |
+| `lib/curve/` | The letterform as geometry | `g-points.json` (generated, gitignored from Prettier), `gCurve.js` |
 | `lib/content.js` | Every user-facing string | Sections read their copy from here |
 | `lib/seo.js` | Metadata + JSON-LD builders | Single definition of metadata shape |
 | `lib/utils.js` | `cn` | shadcn's class merger |
-| `constants/index.js` | `SITE`, `NAV_LINKS`, `SOCIALS` | Site identity and static data |
+| `constants/index.js` | `SITE`, `NAV_LINKS`, `SOCIALS` | Site identity and static data; re-exports `snake.js` |
+| `constants/snake.js` | Every tunable the 3D mark reads | One place for the magic numbers, per the brief |
+| `scripts/` | One-off build scripts | `sample-g-path.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
 
 The split between `components/layout` and `lib/ui/reusable_components` is by **kind**, not convenience: the former is
@@ -47,14 +51,15 @@ Shape inherited from `../Eleve/development/frontend`:
 - `lib/content.js` — every user-facing string. Sections destructure their content object on the first line of the component.
 - `app/` pages compose sections and do nothing else.
 
-Built so far, in page order: `features/work` (02), `features/services` (03), `features/testimonials` (04). The hero is 01 and does
-not exist yet. Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes.
+Built so far, in page order: `features/hero` (01), `features/work` (02), `features/services` (03), `features/testimonials` (04).
+Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes. The hero carries no copy yet,
+so it has no entry there.
 
 ## Routes
 
 | Route | File | Rendering |
 |---|---|---|
-| `/` | `app/page.js` | Static. Composes work, services, testimonials |
+| `/` | `app/page.js` | Static. Composes hero, work, services, testimonials |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. **Routes are listed by hand** — nothing is discovered |
 | `/robots.txt` | `app/robots.js` | Static |
@@ -71,6 +76,9 @@ max-width wrapper is a decision to raise, not a detail.
 Two things follow. Grids get the whole viewport minus the gutter, so column counts have to hold up on a wide monitor rather than
 inside a 1240 box. And overriding the gutter needs **both** breakpoints — `px-0 md:px-0` — because twMerge tracks responsive
 variants separately and a bare `px-0` leaves `md:px-10` standing.
+
+`Section` also carries `relative z-10`, which is what lifts every section over the fixed 3D canvas at `z-0`. Opaque variants
+therefore occlude the mark and transparent ones let it through — see *The 3D mark* below.
 
 ## Design system
 
@@ -92,6 +100,77 @@ rule against inventing values.
 - JSON-LD is one `@graph` per page through `components/layout/JsonLd.jsx`. Organization is the anchor; `WebSite` and `Service`
   reference it by `@id`. Preserve that linkage when adding node types.
 - `next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on any `*.vercel.app` host so previews cannot outrank production.
+
+## The 3D mark
+
+`features/hero` (01) plus `lib/ui/reusable_components/snake`, `lib/curve` and `lib/scroll`. Built to the brief in
+`docs/geekinate-hero-3d-prompt.md`, which specifies five phases. **Phases 1 and 2 are built:** the letterform renders, and the
+scroll-driven unravel and reassembly work. The journey's shape, the camera rig, the length gradient, the taper and the
+post-processing chain are all still unbuilt.
+
+| File | Responsibility |
+|---|---|
+| `scripts/sample-g-path.mjs` | Bakes the centreline to `lib/curve/g-points.json`. Run by hand |
+| `lib/curve/gCurve.js` | JSON to a `CatmullRomCurve3`, with a shallow sine in Z |
+| `lib/curve/journeyCurve.js` | Region B. Waypoints from constants, lead points from the letterform's end tangents |
+| `lib/curve/masterSpine.js` | A + B + C as one curve, and the sliding window over it |
+| `lib/scroll/progress.js` | The single scroll-progress store. A mutated module singleton, deliberately |
+| `constants/snake.js` | Every tunable |
+| `smooth-scroll/index.jsx` | Lenis at the app shell. Renders nothing |
+| `snake/index.jsx` | Fixed full-viewport wrapper; dynamic-imports the scene with `ssr: false` |
+| `snake/Scene.jsx` | `<Canvas>`. No lights, no environment — points are unlit |
+| `snake/SnakeDots.jsx` | The particle cloud, the per-frame window, the pointer gather, the camera rig |
+
+Mechanics worth knowing before editing:
+
+- **`public/brand/geekinate-mark.svg` is a filled outline, not a stroke.** Sampling its path traces the *edge* of the letter and
+  produces a tube running around the glyph rather than through it. The outline does carry a dead-uniform 260-unit stroke width, so
+  the centreline is exact arithmetic — five straight runs and four quarter-arcs of radius 235 — and no tracing library is needed.
+  The derivation is written out at the top of the generator. **Never sample the SVG at runtime.**
+- The centreline is an **open spiral** of roughly one and a half turns: tail at the bottom spur, head at the bar tip inside the
+  bowl. Being open it has no seam, so the brief's advice about hiding the join in the letter's gap does not apply here.
+- **Silhouette is the centreline bounds grown by the tube radius on every side.** Sizing off the bounds alone under-reads the mark
+  by twice the radius, which is 17% of its width. Scale is derived per frame from `viewport` rather than fixed, because the camera's
+  field of view is vertical and a fixed scale that frames well on a laptop runs off both edges of a phone.
+- **Tube radius is capped by the bowl's aperture.** The bar tip and the right-hand run sit 0.18203 apart in normalised units, so
+  anything from 0.091 up closes the opening the head has to travel out through from Phase 2 onward. It runs at 0.085.
+- **The mark is a particle cloud, not a solid tube.** That was a direction change on 2026-08-10: the reference is the centre
+  element on thestart.com.au, which the brief's §15 explicitly said not to copy. The instruction supersedes the brief; raise it in
+  the Asana thread rather than reverting it. Points are unlit, so the material, taper, gradient, three lights and the whole
+  environment rig came out with the tube.
+- 18000 dots, each with a fixed place in the ribbon — distance along the window, angle, radius, shade — recomputed into a position
+  every frame. **Fixed, not re-randomised:** rolling new values per frame boils the cloud instead of carrying it along the spine.
+  Radius is `sqrt` of a uniform random, which fills the volume evenly; a raw uniform crowds the axis and leaves the surface bare.
+- Frames are cross-product, not Frenet. The dots sit symmetrically around the axis, so the frame's roll is invisible and none of
+  Frenet propagation's flipping is worth paying for.
+- **Volt, with normal blending.** Paper-white additive dots were built first and read beautifully on the black hero, then vanished
+  completely over the white Work and Testimonials sections. Volt is the one palette token with contrast against both grounds, and
+  it forces opaque normal blending, because additive light dots on white saturate to nothing.
+- The pointer gathers dots toward itself and tints them paper, measured off the reference, which gathers rather than repels. It is
+  tracked on `window`, not through R3F's `state.pointer`, because the canvas is `pointer-events: none` and so receives no events.
+- **The canvas is a sibling of the hero section, never a child.** See the stacking-context trap in `AGENTS.md`.
+- The camera pans after the window's centre. Not decoration: see the curvature note below.
+
+### The spine and the window
+
+One curve — letterform, journey, letterform — with a fixed-arc-length window sliding along it. Not a morph between two shapes: the
+unravel and the reassembly are both just the window moving, so neither needs any code of its own.
+
+- **The window is exactly the letterform's arc length** (`windowSlack` 1). Shorter and the G never looks complete at either end.
+- **The journey is resampled to the letterform's point spacing before concatenation.** A Catmull-Rom answers a spacing jump with a
+  curvature spike, and the raw gap between the two regions is 0.012 against 1.3.
+- **Curvature is a measured quantity here, not an aesthetic one.** Turn rate in degrees per unit of arc: the letterform's own
+  corners run about 410 and are the ceiling, because those corners are what the mark already reads correctly through. Current spine:
+  joins 32 and 39, journey 367. Tightest radius of curvature anywhere is 0.139 against a tube radius of 0.085 — below that the tube
+  passes through itself. **Re-author the journey and re-measure; do not eyeball it.**
+- Geometry is rebuilt every frame from the window and the previous one disposed, which is the brief's accepted v1. The rebuild is
+  skipped when damped progress has not moved by `progressEpsilon`, so a hero at rest costs nothing.
+- Scroll never touches React state. Lenis writes `raw`, the scene damps toward `damped` inside `useFrame`, and the tube reads only
+  `damped`. A re-render per scroll frame would cost more than the scene it drives.
+- **`html { scroll-behavior: smooth }` had to come out of `globals.css`.** Lenis drives the scroll position itself and the CSS
+  smoothing fights it; anchor links are handed back to Lenis through its own `anchors` option.
+- Under `prefers-reduced-motion` **Lenis is never instantiated** and the window stays parked on Region A. The journey is the whole
+  effect and there is no meaningful quieter version of it, so the honest reduction is no motion at all.
 
 ## The navbar
 
@@ -273,9 +352,14 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 | `lucide-react` | Icon set shadcn is configured against |
 | `sonner` + `next-themes` | Toaster; `next-themes` arrives only as sonner's peer |
 | `shadcn` | The CLI, kept as a dependency by its own installer |
+| `three`, `@react-three/fiber`, `@react-three/drei` | The 3D mark. Raised and approved 2026-08-10 against the standing no-new-deps rule |
+| `lenis` | Scroll smoothing, and the clock the 3D mark runs on. Same approval, added with Phase 2 |
 
-Deliberately absent: no smooth-scroll library, no animation library, no form library, no data layer. Adding any of those is an
-architectural decision, not a detail — raise it first.
+Deliberately absent: no form library, no data layer. Adding either is an architectural decision, not a detail — raise it first. The
+3D stack is the one exception and it was granted for the hero brief specifically; the remainder of that brief's list — `zustand`,
+`maath`, `leva`, `@react-three/postprocessing` — is approved in principle but **not installed**, because nothing built so far uses
+any of it. Install each with the phase that needs it, not ahead of it. Scroll progress is a plain module singleton rather than
+Zustand, which the brief explicitly allows and which costs one file.
 
 ## Known gaps
 
@@ -304,5 +388,17 @@ architectural decision, not a detail — raise it first.
   either, so the avatar renders the speaker's initials rather than stock faces standing in for clients.
 - The footer's Legal column links nowhere — no privacy or terms page exists.
 - `NAV_LINKS` points at anchors no section defines yet.
+- **The hero has no copy.** No H1, no CTA, no eyebrow — the mark alone. The brief requires those to be real DOM above the canvas,
+  and they wait on wording rather than being invented. Nothing in `lib/content.js` covers section 01 yet.
+- **The 3D mark stops at Phase 2.** No camera rig, no length gradient, no taper, no post-processing, no mobile downgrade. Phases 3
+  to 5 in `docs/geekinate-hero-3d-prompt.md` are unbuilt.
+- **The journey is invisible.** Every section below the hero is opaque and sits above the canvas, so the mark only shows through
+  the hero's own viewport and, at the very bottom, over the footer. Which sections go transparent is the brief's §9 per-section
+  design decision and belongs to Phase 3, alongside the camera rig that frames the travelling head.
+- **The journey waypoints are shape control points, not section keyframes.** They are tuned for curvature, not for where any
+  section actually sits, and there are five of them because one had to be chamfered. Phase 3 re-authors them against real sections
+  and adds the per-section swing the brief asks for.
+- Frame rate has not been measured on real hardware. Verification ran under SwiftShader, which proves it renders, not that it is
+  fast — and the per-frame geometry rebuild is the thing most likely to cost. Phase 5 owns the performance guards.
 - The `nextjs-agent-rules` block at the bottom of `AGENTS.md` is written by `next dev` on every run and is **not** part of this
   document set. Commit it rather than fighting the diff.

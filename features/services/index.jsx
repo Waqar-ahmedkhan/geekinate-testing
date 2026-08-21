@@ -6,8 +6,8 @@ export default function Services() {
   const { eyebrow, heading, body } = servicesContent;
   return (
     <Section id='services' variant='ink'>
-      <SectionHead tone='dark' eyebrow={eyebrow} heading={heading} body={body} />
-      <div className='grid gap-4 sm:grid-cols-2 xl:grid-cols-4'>
+      <SectionHead eyebrow={eyebrow} heading={heading} body={body} />
+      <div className='grid gap-4 md:grid-cols-3'>
         {services.map(({ slug, title, summary, media }) => (
           <HoverVideoCard key={slug} title={title} summary={summary} media={media} />
         ))}

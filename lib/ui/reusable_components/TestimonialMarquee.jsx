@@ -3,16 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import TestimonialCard from './TestimonialCard';
 
-// The drifting, draggable row from wearestokt.com, measured live: 370px cards, 30px gaps, and each card anchored to the top,
-// middle or bottom of a fixed 520px slot. That anchor sequence is what produces the stagger — without it the row is a flat strip.
-// It is authored per card on the reference, so it is transcribed rather than generated.
 const ANCHORS = ['end', 'start', 'end', 'center', 'end', 'center', 'start', 'end', 'start', 'center', 'start', 'end'];
 const ANCHOR_CLASS = { start: 'items-start', center: 'items-center', end: 'items-end' };
 const SPEED = 40;
-const GAP = 30;
+const SLOW = 0.3;
+const EASE = 3.5;
 
-// The list is rendered twice and the offset wraps at half the track width, which is what makes the loop seamless. Any wrap point
-// short of that reveals the seam as a gap on the right edge.
 const wrap = (offset, half) => (half > 0 ? ((offset % half) + half) % half : 0);
 
 export default function TestimonialMarquee({ items }) {
@@ -20,11 +16,11 @@ export default function TestimonialMarquee({ items }) {
   const offsetRef = useRef(0);
   const frameRef = useRef(0);
   const lastRef = useRef(0);
-  const pausedRef = useRef(false);
+  const speedRef = useRef(1);
+  const targetRef = useRef(1);
   const dragRef = useRef(null);
   const [badge, setBadge] = useState(null);
   const loop = [...items, ...items];
-  // Reduced motion gets a plain scrollable row: the drift is the whole effect, and there is no meaningful reduced version of it.
   useEffect(() => {
     const track = trackRef.current;
     if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -32,13 +28,13 @@ export default function TestimonialMarquee({ items }) {
       const half = track.scrollWidth / 2;
       const elapsed = lastRef.current ? Math.min((now - lastRef.current) / 1000, 0.1) : 0;
       lastRef.current = now;
-      if (!pausedRef.current && !dragRef.current) offsetRef.current -= SPEED * elapsed;
+      speedRef.current += (targetRef.current - speedRef.current) * Math.min(1, elapsed * EASE);
+      if (!dragRef.current) offsetRef.current -= SPEED * speedRef.current * elapsed;
       offsetRef.current = -wrap(-offsetRef.current, half);
       track.style.transform = `translate3d(${offsetRef.current}px, 0, 0)`;
       frameRef.current = requestAnimationFrame(step);
     };
     frameRef.current = requestAnimationFrame(step);
-    // The id has to go back to 0. StrictMode remounts in dev, and a stale non-zero id makes the second mount skip scheduling.
     return () => {
       cancelAnimationFrame(frameRef.current);
       frameRef.current = 0;
@@ -60,9 +56,9 @@ export default function TestimonialMarquee({ items }) {
     dragRef.current = null;
     event.currentTarget.releasePointerCapture(event.pointerId);
   };
-  const enter = () => (pausedRef.current = true);
+  const enter = () => (targetRef.current = SLOW);
   const leave = () => {
-    pausedRef.current = false;
+    targetRef.current = 1;
     dragRef.current = null;
     setBadge(null);
   };
@@ -77,11 +73,11 @@ export default function TestimonialMarquee({ items }) {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
     >
-      <div ref={trackRef} className='flex w-max' style={{ gap: `${GAP}px` }}>
+      <div ref={trackRef} className='flex w-max gap-4 sm:gap-[30px]'>
         {loop.map((item, index) => (
           <div
             key={`${item.name}-${index}`}
-            className={`flex h-[520px] w-[370px] shrink-0 ${ANCHOR_CLASS[ANCHORS[index % ANCHORS.length]]}`}
+            className={`flex h-[420px] w-[280px] shrink-0 sm:h-[520px] sm:w-[370px] ${ANCHOR_CLASS[ANCHORS[index % ANCHORS.length]]}`}
             aria-hidden={index >= items.length}
           >
             <TestimonialCard quote={item.quote} name={item.name} role={item.role} />

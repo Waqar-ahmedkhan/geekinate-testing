@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// Capsule outline split at top centre and drawn clockwise, so progress grows out of the middle of the pill's top edge.
 const buildOutline = (width, height) => {
   const radius = height / 2;
   const mid = width / 2;
@@ -18,10 +17,11 @@ const buildOutline = (width, height) => {
   ].join(' ');
 };
 
-export default function ProgressRing({ width, height, progress, visible }) {
+export default function ProgressRing({ width, height, progress, visible, onPaper }) {
   const pathRef = useRef(null);
   const [head, setHead] = useState(null);
   const outline = buildOutline(width, height);
+  const stroke = onPaper ? 'var(--ink)' : 'var(--white)';
   useEffect(() => {
     const path = pathRef.current;
     if (!path) return;
@@ -37,19 +37,19 @@ export default function ProgressRing({ width, height, progress, visible }) {
       className='pointer-events-none absolute left-0 top-0 overflow-visible'
       style={{ opacity: visible ? 1 : 0, transition: 'opacity 600ms cubic-bezier(0.65, 0, 0.35, 1)' }}
     >
-      <path d={outline} fill='none' stroke='var(--ink)' strokeOpacity='0.06' strokeWidth='1' />
+      <path d={outline} fill='none' stroke={stroke} strokeOpacity='0.18' strokeWidth='1' />
       <path
         ref={pathRef}
         d={outline}
         fill='none'
-        stroke='var(--volt)'
+        stroke={stroke}
         strokeWidth='1.5'
         strokeLinecap='round'
         pathLength='1'
         strokeDasharray='1'
         strokeDashoffset={1 - progress}
       />
-      {head ? <circle cx={head.x} cy={head.y} r='2.5' fill='var(--volt)' /> : null}
+      {head ? <circle cx={head.x} cy={head.y} r='2.5' fill={stroke} /> : null}
     </svg>
   );
 }

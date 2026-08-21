@@ -5,7 +5,6 @@ import VideoSurface from './VideoSurface';
 import useHoverVideo from './useHoverVideo';
 import { cn } from '@/lib/utils';
 
-// Written out in full rather than composed, so Tailwind can find the class names.
 const SPANS = {
   1: 'lg:col-span-1 aspect-square',
   2: 'lg:col-span-2 aspect-square sm:aspect-[2/1]',
@@ -14,10 +13,7 @@ const SPANS = {
 
 export default function WorkTile({ title, disciplines = [], span = 1, href, media }) {
   const { videoRef, hoverHandlers } = useHoverVideo();
-  // bg-black matters: the overlay is light text with no scrim, so a tile whose video has not painted yet — still loading, decode
-  // failed, or no poster — would otherwise render that text onto the bare page background and vanish.
-  const className = cn('group relative block overflow-hidden rounded-lg bg-black', SPANS[span] ?? SPANS[1]);
-  // Placeholder entries have no case study to link to yet, and a dead link is worse than none.
+  const className = cn('group border-brutal relative block overflow-hidden rounded-lg bg-black shadow-brutal', SPANS[span] ?? SPANS[1]);
   const Tag = href ? Link : 'div';
   const linkProps = href ? { href } : {};
   return (

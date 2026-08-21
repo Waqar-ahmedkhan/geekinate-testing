@@ -14,16 +14,21 @@
   --color-grey: var(--grey);
   --color-wash: var(--wash);
   --color-line: var(--line);
+  --color-void: var(--void);
+  --color-glass: var(--glass);
+  --color-lift: var(--glass-lift);
+  --color-mut: var(--paper-mut);
   --color-footer-mut: var(--footer-mut);
   --color-footer-line: var(--footer-line);
   --radius-chip: 10px;
   --radius-tile: 22%;
-  --font-sans: var(--font-onest);
-  --font-logo: var(--font-audiowide);
+  --font-sans: var(--font-red-hat-display);
+  --font-display: var(--font-instrument-serif);
+  --font-logo: var(--font-red-hat-display);
   --font-mono: var(--font-ibm-plex-mono);
-  --font-heading: var(--font-onest);
-  --shadow-brutal: 3px 3px 0 var(--ink);
-  --shadow-brutal-sm: 2px 2px 0 var(--ink);
+  --font-heading: var(--font-instrument-serif);
+  --shadow-brutal: var(--brutal);
+  --shadow-brutal-sm: var(--brutal-sm);
   --ease-brutal: cubic-bezier(0.16, 1, 0.3, 1);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -63,7 +68,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Brand palette. Source of truth: ../geekinate new logo/geekinate-homepage-v2.html and the logo SVGs beside it. */
 :root {
   --volt: #b8e01b;
   --ink: #101613;
@@ -71,42 +75,72 @@
   --grey: #5b6b62;
   --white: #fdfdfb;
   --wash: #f4f7ea;
-  --line: #101613;
   --footer-mut: #b9c2bc;
   --footer-line: #2a312c;
-  --background: var(--white);
-  --foreground: var(--ink);
-  --card: var(--white);
-  --card-foreground: var(--ink);
-  --popover: var(--white);
-  --popover-foreground: var(--ink);
+  --void: #050704;
+  --line: rgba(253, 253, 251, 0.13);
+  --line-volt: rgba(184, 224, 27, 0.38);
+  --glass: rgba(5, 7, 4, 0.5);
+  --glass-blur: blur(14px) saturate(125%);
+  --glass-lift: rgba(253, 253, 251, 0.045);
+  --paper-mut: rgba(253, 253, 251, 0.62);
+  --edge-hi: rgba(253, 253, 251, 0.18);
+  --edge-lo: rgba(253, 253, 251, 0.04);
+  --brutal: 3px 3px 0 rgba(184, 224, 27, 0.2);
+  --brutal-sm: 2px 2px 0 rgba(184, 224, 27, 0.2);
+  --background: var(--void);
+  --foreground: var(--white);
+  --card: var(--glass);
+  --card-foreground: var(--white);
+  --popover: #0a0d08;
+  --popover-foreground: var(--white);
   --primary: var(--volt);
   --primary-foreground: var(--ink);
-  --secondary: var(--wash);
-  --secondary-foreground: var(--ink);
-  --muted: var(--wash);
-  --muted-foreground: var(--grey);
-  --accent: var(--wash);
-  --accent-foreground: var(--ink);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: var(--ink);
-  --input: var(--ink);
+  --secondary: var(--glass-lift);
+  --secondary-foreground: var(--white);
+  --muted: var(--glass-lift);
+  --muted-foreground: var(--paper-mut);
+  --accent: var(--glass-lift);
+  --accent-foreground: var(--white);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: var(--line);
+  --input: var(--line);
   --ring: var(--volt);
   --chart-1: var(--volt);
   --chart-2: var(--ink);
   --chart-3: var(--grey);
   --chart-4: var(--ink-soft);
   --chart-5: var(--wash);
-  /* --gk-r-card. shadcn derives its sm/md/lg scale from this, so it is the one number that sets card geometry. */
   --radius: 1.25rem;
-  --sidebar: var(--white);
-  --sidebar-foreground: var(--ink);
+  --sidebar: var(--popover);
+  --sidebar-foreground: var(--white);
   --sidebar-primary: var(--volt);
   --sidebar-primary-foreground: var(--ink);
-  --sidebar-accent: var(--wash);
-  --sidebar-accent-foreground: var(--ink);
-  --sidebar-border: var(--ink);
+  --sidebar-accent: var(--glass-lift);
+  --sidebar-accent-foreground: var(--white);
+  --sidebar-border: var(--line);
   --sidebar-ring: var(--volt);
+  --nav-rail: 62px;
+}
+
+@media (min-width: 768px) {
+  :root {
+    --nav-rail: 76px;
+  }
+}
+
+.on-paper {
+  --line: var(--ink);
+  --line-volt: var(--ink);
+  --paper-mut: var(--grey);
+  --foreground: var(--ink);
+  --glass: rgba(253, 253, 251, 0.72);
+  --glass-blur: blur(10px) saturate(115%);
+  --glass-lift: var(--wash);
+  --brutal: 3px 3px 0 var(--ink);
+  --brutal-sm: 2px 2px 0 var(--ink);
+  --edge-hi: rgba(16, 22, 19, 0.22);
+  --edge-lo: rgba(16, 22, 19, 0.06);
 }
 
 .dark {
@@ -143,11 +177,15 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-transparent text-foreground;
   }
   html {
     @apply font-sans;
-    scroll-behavior: smooth;
+    background-color: var(--void);
+    background-image:
+      radial-gradient(125% 85% at 50% 116%, rgba(184, 224, 27, 0.13), transparent 60%),
+      radial-gradient(95% 55% at 50% -12%, rgba(253, 253, 251, 0.045), transparent 58%);
+    background-attachment: fixed;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -166,19 +204,25 @@
   }
 }
 
-/* --gk-border. The 1.5px ink rule is the neo-brutalist signature; Tailwind has no half-pixel border width. */
 @utility border-brutal {
   border: 1.5px solid var(--line);
 }
 
-/* --gk-hl. Volt marker that sits behind a run of text rather than filling its box. */
+@utility border-volt {
+  border: 1.5px solid var(--line-volt);
+}
+
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+@utility ring-edge {
+  background: linear-gradient(126deg, var(--edge-hi) 0%, var(--edge-lo) 100%);
+}
+
 @utility text-marker {
   background: linear-gradient(transparent 56%, var(--volt) 56%, var(--volt) 92%, transparent 92%);
   padding: 0 3px;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  html {
-    scroll-behavior: auto;
-  }
 }

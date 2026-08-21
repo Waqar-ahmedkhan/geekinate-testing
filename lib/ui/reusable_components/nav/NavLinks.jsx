@@ -15,8 +15,6 @@ export default function NavLinks({ items, className }) {
     if (!list) return;
     const item = event.currentTarget.getBoundingClientRect();
     const bounds = list.getBoundingClientRect();
-    // Plus the scroll offset: the highlight is positioned against the list's content box, while both rects are measured against the
-    // visible one. The two only agree while the list is not scrolled, which it now can be at phone widths.
     const x = item.left - bounds.left + list.scrollLeft;
     setHighlight({ x: Math.round(x), width: Math.round(item.width), height: Math.round(item.height) });
   };

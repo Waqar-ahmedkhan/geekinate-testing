@@ -3,11 +3,6 @@
 import { useEffect, useRef } from 'react';
 import VideoSurface from './VideoSurface';
 
-// Scroll-into-view playback, measured off wearestokt.com's footer: the render is a one-shot that starts as the panel arrives, not a
-// background loop. IntersectionObserver rather than the autoplay attribute — an autoplaying video at the bottom of the page spends
-// bandwidth and decode budget before anyone has scrolled to it.
-//
-// Leaving rewinds to frame 0 for the same reason useHoverVideo does: resuming a one-shot mid-motion reads as a stall.
 export default function InViewVideo({ media, fit = 'cover', loop = false, threshold = 0.2, className }) {
   const videoRef = useRef(null);
   useEffect(() => {

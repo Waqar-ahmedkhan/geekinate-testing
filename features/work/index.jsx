@@ -18,7 +18,6 @@ export default function Work() {
   return (
     <Section id='work' variant='paper'>
       <div className='mb-8 flex items-end justify-between gap-6 md:mb-10'>
-        {/* Both breakpoints, or SectionHead's own md:mb-10 survives twMerge and stacks on the wrapper's margin. */}
         <SectionHead eyebrow={eyebrow} heading={heading} className='mb-0 md:mb-0' />
         {allWorkEl}
       </div>

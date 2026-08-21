@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-// Capsule outline split at top centre and drawn clockwise, so progress grows out of the middle of the pill's top edge.
 const buildOutline = (width, height) => {
   const radius = height / 2;
   const mid = width / 2;
@@ -18,9 +17,6 @@ const buildOutline = (width, height) => {
   ].join(' ');
 };
 
-// The ring is drawn on the pill's own outline, which sits exactly on the boundary between the volt pill and whatever section is
-// behind it — so its colour cannot be fixed. Volt is out for the obvious reason once the pill went volt, and one neutral does not
-// work either: it flips with the ground, paper over the dark sections and ink over the paper ones.
 export default function ProgressRing({ width, height, progress, visible, onPaper }) {
   const pathRef = useRef(null);
   const [head, setHead] = useState(null);

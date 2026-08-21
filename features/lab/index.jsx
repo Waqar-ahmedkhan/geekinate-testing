@@ -4,12 +4,6 @@ import { useEffect, useRef, useState } from 'react';
 import { createLife } from '@/lib/ui/reusable_components/cosmos/automata';
 import { LAB_PRESETS } from '@/constants';
 
-// A prototype, not a section. It exists so the background can be judged before it is wired into the site, and it deliberately does
-// not go through three.js — the rule and the look are the questions here, and a 2D canvas answers both in a tenth of the code. If the
-// look is approved, the same automata module drives the real one on the GPU.
-//
-// The stamp follows the cursor and stands in for the mark. On the site the G and the snake do this, which is the whole point of the
-// idea: the background is the mark's wake, not a texture behind it.
 const STAMP = 3.2;
 
 const paint = (context, life, preset, size, drift) => {
@@ -20,12 +14,9 @@ const paint = (context, life, preset, size, drift) => {
     for (let col = 0; col < cols; col += 1) {
       const glow = pixels[(row * cols + col) * 4 + 1] / 255;
       if (glow < 0.02) continue;
-      // The lattice slides, and the grid wraps, so a cell leaving the bottom reappears at the top and the field reads as travelling.
       const y = (((row - drift) % rows) + rows) % rows;
       const radius = cell * preset.dot * (0.45 + glow * 0.55);
       context.globalAlpha = glow * preset.opacity;
-      // Only the birth frame is paper. A cell is born at exactly 1 and decays from there, so anything below that is volt — at 0.85
-      // the threshold caught most of the afterglow too and the whole field read white instead of green.
       context.fillStyle = glow > 0.99 ? '#fdfdfb' : '#b8e01b';
       context.beginPath();
       context.arc((col + 0.5) * cell, (y + 0.5) * cell, radius, 0, Math.PI * 2);
@@ -50,8 +41,6 @@ export default function BackgroundLab() {
       last = 0,
       clock = 0,
       drift = 0;
-    // Measured inside the loop, not once on mount. The canvas is laid out by CSS and its first measurement can land before that has
-    // happened — a zero there sizes the grid to nothing and the field never appears, with no error to point at it.
     const measure = () => {
       const width = element.clientWidth,
         height = element.clientHeight;
@@ -71,7 +60,6 @@ export default function BackgroundLab() {
       const interval = 1 / preset.rate;
       if (clock >= interval) {
         clock %= interval;
-        // The stamp, in grid coordinates, offset by the same drift the paint uses — so what it leaves behind travels away from it.
         const col = pointer.current.x * life.cols,
           row = pointer.current.y * life.rows + drift;
         const spread = STAMP;
@@ -91,7 +79,6 @@ export default function BackgroundLab() {
     };
     window.addEventListener('pointermove', track, { passive: true });
     frame = requestAnimationFrame(tick);
-    // The id has to go back to 0. StrictMode remounts in dev, and a stale non-zero id makes the second mount skip scheduling.
     return () => {
       cancelAnimationFrame(frame);
       frame = 0;

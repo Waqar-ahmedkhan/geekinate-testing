@@ -12,31 +12,18 @@ const TAU = Math.PI * 2;
 const UP = new Vector3(0, 0, 1);
 const ASIDE = new Vector3(0, 1, 0);
 const GROUND = new Plane(new Vector3(0, 0, 1), 0);
-// Silhouette, not centreline: the dot cloud's own radius sticks out on every side and is what meets the viewport edge.
 const markWidth = gBounds.width + 2 * SNAKE.tubeRadius;
 const markHeight = gBounds.height + 2 * SNAKE.tubeRadius;
-// Derived from the camera's own fov and its fixed distance to the z=0 plane, deliberately NOT from R3F's `viewport`. That value is
-// computed against the camera's distance to the world origin, so once the rig pans the camera it grows — which would scale the
-// cloud up, push its centroid further out, pan the camera further, and run away inside a few frames.
 const visibleHeight = 2 * Math.tan((SNAKE.cameraFov * Math.PI) / 360) * SNAKE.cameraPosition[2];
 const fitScale = (aspect) => Math.min((visibleHeight * aspect * SNAKE.fill) / markWidth, (visibleHeight * SNAKE.fill) / markHeight);
-// Derived from the aspect every frame, not a constant. The visible width in world units grows with the aspect ratio, so a fixed
-// world offset drifts toward the middle of the frame on wider windows — the mark has to be placed as a fraction of what is seen.
-//
-// The offset also eases back to centre as the frame narrows. A portrait viewport has no room to hold the mark off to one side: at
-// 0.46 aspect the full offset ran it from 49% to 111% of width, hanging off the right edge and crossing the middle at the same
-// time. Below `alignNarrowAspect` it is centred, above `alignWideAspect` it is fully offset, and it blends between.
 const alignOffset = (aspect) => {
   const settle = Math.min(1, Math.max(0, (aspect - SNAKE.alignNarrowAspect) / (SNAKE.alignWideAspect - SNAKE.alignNarrowAspect)));
   return (SNAKE.alignScreen - 0.5) * settle * visibleHeight * aspect;
 };
 
-// Every dot's place in the ribbon, fixed once. Position is recomputed each frame from these, so a dot keeps its identity as the
-// window slides — re-randomising per frame would boil the whole cloud instead of carrying it along the spine.
 const createDots = (count) => ({
   along: Float32Array.from({ length: count }, () => Math.random()),
   angle: Float32Array.from({ length: count }, () => Math.random() * TAU),
-  // sqrt maps a uniform random onto a uniform *area*, which is what fills the volume evenly rather than crowding the axis.
   radius: Float32Array.from({ length: count }, () => Math.sqrt(Math.random())),
   shade: Float32Array.from({ length: count }, () => {
     const [low, high] = SNAKE.dotShadeRange;
@@ -44,8 +31,6 @@ const createDots = (count) => ({
   }),
 });
 
-// A frame per spine sample. Dots are scattered symmetrically around the axis, so the frame's roll is invisible and a cross-product
-// frame does the job — no Frenet propagation, and none of its flipping.
 const buildFrames = (points, normals, binormals) =>
   points.forEach((point, index) => {
     const next = points[Math.min(index + 1, points.length - 1)];
@@ -58,8 +43,6 @@ const buildFrames = (points, normals, binormals) =>
     binormals[index].crossVectors(tangent, normals[index]).normalize();
   });
 
-// Everything the frame loop writes to, built once. It lives behind a ref rather than useMemo because every field here is mutated
-// in place each frame, and mutating a memo's result is exactly what `react-hooks/immutability` forbids.
 const createStore = () => {
   const geometry = new BufferGeometry();
   const samples = Array.from({ length: SNAKE.spineSamples }, () => new Vector3());
@@ -78,7 +61,6 @@ const createStore = () => {
     centre: new Vector3(),
     base: new Color(SNAKE.dotColor),
     accent: new Color(SNAKE.hoverColor),
-    // Where the pointer is in the cloud's own space, eased so the gather trails the cursor rather than snapping to it.
     focus: { x: 0, y: 0, strength: 0 },
     ndc: { x: 0, y: 0, active: false },
   };
@@ -89,16 +71,12 @@ export default function SnakeDots() {
   const store = useRef(null);
   if (store.current === null) store.current = createStore();
 
-  // Attached here rather than passed as a prop: reading a ref during render is forbidden, and the buffers have to stay the same
-  // objects across every frame so the attribute updates land on the geometry the renderer is actually drawing.
   useEffect(() => {
     const built = store.current.geometry;
     cloud.current.geometry = built;
     return () => built.dispose();
   }, []);
   useEffect(() => {
-    // R3F's own `state.pointer` is fed by events on the canvas, and the canvas is pointer-events:none so it never intercepts a
-    // click or a focus ring. Tracking on the window keeps both: the dots react, the DOM stays reachable.
     const { ndc } = store.current;
     const track = ({ clientX, clientY }) => {
       ndc.x = (clientX / window.innerWidth) * 2 - 1;
@@ -115,7 +93,6 @@ export default function SnakeDots() {
       document.removeEventListener('pointerleave', release);
     };
   }, []);
-  // State comes off the frame callback rather than useThree so that nothing mutated here was handed out by a hook.
   useFrame(({ camera, size }) => {
     const { geometry, samples, spine, dots, normals, binormals, raycaster, hit, centre, base, accent, focus, ndc } = store.current;
     const gap = scrollProgress.raw - scrollProgress.damped;
@@ -125,7 +102,6 @@ export default function SnakeDots() {
     const offsetX = alignOffset(aspect);
     raycaster.setFromCamera(ndc, camera);
     const aimed = ndc.active && raycaster.ray.intersectPlane(GROUND, hit);
-    // World to the cloud's own space. The cloud is offset right, so that offset comes back out or the gather lands beside the mark.
     if (aimed) {
       focus.x += ((hit.x - offsetX) / scale - focus.x) * SNAKE.hoverEase;
       focus.y += (hit.y / scale - focus.y) * SNAKE.hoverEase;
@@ -133,9 +109,6 @@ export default function SnakeDots() {
     focus.strength += ((aimed ? 1 : 0) - focus.strength) * SNAKE.hoverEase;
     getWindowPoints(spine.curve, scrollProgress.damped, spine.window, samples);
     buildFrames(samples, normals, binormals);
-    // Follow the window's centre in y only, and never the head — the head alone whips the frame at every turn, while the centre of
-    // mass trails the ribbon and keeps both ends in shot. X is pinned so the mark holds its place on the right of the frame and the
-    // travel reads as a straight vertical line. At both ends of the scroll the centre is the letterform's own, so it settles.
     centre.set(0, 0, 0);
     samples.forEach((sample) => centre.add(sample));
     centre.divideScalar(samples.length);
@@ -180,8 +153,6 @@ export default function SnakeDots() {
   });
   return (
     <points ref={cloud} frustumCulled={false}>
-      {/* Normal blending, not additive: additive light dots over the white sections saturate to nothing. Opaque grains that write
-          depth, so the cloud occludes itself and reads as a solid ribbon rather than a glow. */}
       <pointsMaterial vertexColors size={SNAKE.dotSize} sizeAttenuation toneMapped={false} />
     </points>
   );

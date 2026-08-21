@@ -11,13 +11,9 @@ export const SITE = {
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   locale: 'en_US',
   ogImage: '/images/openGraph.png',
-  // PLACEHOLDER: confirm the public contact address before launch.
   email: 'hello@geekinate.com',
 };
 
-// The container the hero composes inside. Single source: the navbar animates its rail to this width, the hero caps its grid at it,
-// and the particle scene measures the mark's offset against it — three places that have to agree or the mark drifts out of the
-// column the copy is in.
 export const LAYOUT = { container: 1440 };
 
 export const NAV_LINKS = [
@@ -27,11 +23,6 @@ export const NAV_LINKS = [
   { label: 'Contact', href: '#contact' },
 ];
 
-// PLACEHOLDER: swap for the real profiles before launch.
-//
-// `icon` is the glyph to draw when it is not the label. Only X needs it: the platform renamed and the mark did not, so the glyph
-// alone is still read as X while the word most people would look for is Twitter. Labelling it X next to its own X-shaped mark says
-// the same thing twice and answers nobody who does not already know.
 export const SOCIALS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/geekinate' },
   { label: 'GitHub', href: 'https://github.com/geekinate' },

@@ -27,10 +27,6 @@
   --font-logo: var(--font-red-hat-display);
   --font-mono: var(--font-ibm-plex-mono);
   --font-heading: var(--font-instrument-serif);
-  /* Indirected through a second variable on purpose. This theme block is `inline`, so Tailwind bakes the resolved value into the
-     utility — a literal here would make `shadow-brutal` unscopable, and the page alternates between a dark ground where the shadow
-     must be volt and paper sections where it must be ink. Pointing at a variable keeps the utility as `box-shadow: var(--brutal)`,
-     which `.on-paper` below can then redefine for its whole subtree. */
   --shadow-brutal: var(--brutal);
   --shadow-brutal-sm: var(--brutal-sm);
   --ease-brutal: cubic-bezier(0.16, 1, 0.3, 1);
@@ -72,7 +68,6 @@
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Brand palette. Source of truth: ../geekinate new logo/geekinate-homepage-v2.html and the logo SVGs beside it. */
 :root {
   --volt: #b8e01b;
   --ink: #101613;
@@ -82,27 +77,15 @@
   --wash: #f4f7ea;
   --footer-mut: #b9c2bc;
   --footer-line: #2a312c;
-  /* The dark cosmic ground, added 2026-08-11 when the site moved onto the ricardochance.com structure. #000 is still the darkest
-     surface in the system; --void is the page behind everything and carries the faintest volt cast, so the glow rising at the foot
-     of the page has a colour to rise out of rather than appearing from nowhere. */
   --void: #050704;
-  /* Every border on the site. It was ink on paper; on this ground an ink rule is invisible, so the 1.5px signature is carried by
-     paper at low alpha instead. The geometry is unchanged — only what makes it legible is. */
   --line: rgba(253, 253, 251, 0.13);
   --line-volt: rgba(184, 224, 27, 0.38);
-  /* Card fill. Translucent on purpose: the particle scene is fixed behind every section and has to read through the surfaces, which
-     is the whole reason the sections are not opaque black. */
   --glass: rgba(5, 7, 4, 0.5);
   --glass-blur: blur(14px) saturate(125%);
   --glass-lift: rgba(253, 253, 251, 0.045);
   --paper-mut: rgba(253, 253, 251, 0.62);
-  /* The two stops of a card's edge light. Drawn as a gradient behind an inset fill rather than as a flat border, so it catches at the
-     top-left and fades out — a large card reads as lit rather than as a plain rectangle. Tokens because the page now runs light and
-     dark surfaces, and paper at low alpha is invisible on paper. */
   --edge-hi: rgba(253, 253, 251, 0.18);
   --edge-lo: rgba(253, 253, 251, 0.04);
-  /* The brand's hard offset shadow, retuned for the dark ground: an ink shadow on near-black is not a shadow, it is nothing. Same
-     geometry, volt at low alpha. `.on-paper` puts it back to ink. */
   --brutal: 3px 3px 0 rgba(184, 224, 27, 0.2);
   --brutal-sm: 2px 2px 0 rgba(184, 224, 27, 0.2);
   --background: var(--void);
@@ -128,7 +111,6 @@
   --chart-3: var(--grey);
   --chart-4: var(--ink-soft);
   --chart-5: var(--wash);
-  /* --gk-r-card. shadcn derives its sm/md/lg scale from this, so it is the one number that sets card geometry. */
   --radius: 1.25rem;
   --sidebar: var(--popover);
   --sidebar-foreground: var(--white);
@@ -138,9 +120,6 @@
   --sidebar-accent-foreground: var(--white);
   --sidebar-border: var(--line);
   --sidebar-ring: var(--volt);
-  /* The navbar's rail: its top offset plus the pill's own height, from lib/ui/reusable_components/nav. The rail is sticky, so it
-     occupies flow space at the top of the page and pushes the first section down by exactly this much. The hero has to know the
-     number because its content is centred against a mark that is centred on the viewport, not on the section — see the note there. */
   --nav-rail: 62px;
 }
 
@@ -150,25 +129,11 @@
   }
 }
 
-/* The paper sections. The page alternates — dark hero, paper work, dark services, paper testimonials, dark footer — and the two
-   paper blocks are the original neo-brutalist system unchanged: white ground, 1.5px ink rules, hard ink offset shadows, grey muted
-   type. They are also the sections that deliberately hide the particle scene behind them.
-
-   Scoped as a token override rather than as a second set of utilities, so `border-brutal`, `shadow-brutal`, `text-mut` and
-   `text-foreground` all keep meaning the same thing and simply resolve differently inside this subtree. Adding a paper section costs
-   one class, not a parallel palette. */
-/* There was a second class here, `.on-light`, carrying the same token flip without the fill — for sections whose white ground was
-   painted by the substrate canvas behind the page rather than by the section itself. The substrate was retired on 2026-08-13 along
-   with the light hero, and both sections that used it paint their own white again. */
 .on-paper {
   --line: var(--ink);
   --line-volt: var(--ink);
   --paper-mut: var(--grey);
   --foreground: var(--ink);
-  /* Translucent, and it was opaque until the light sections stopped painting their own ground. A card's whole brief on the dark side
-     is that the scene reads through it; on paper that was moot, because the section behind the card was solid white. Now the section
-     is the scene, so the card goes back to being glass — enough fill that ink type stays comfortably readable over moving particles,
-     and a lighter blur than the dark side because there is far less contrast behind it to soften. */
   --glass: rgba(253, 253, 251, 0.72);
   --glass-blur: blur(10px) saturate(115%);
   --glass-lift: var(--wash);
@@ -211,14 +176,9 @@
   * {
     @apply border-border outline-ring/50;
   }
-  /* Transparent, not bg-background. The ground and its glow are painted on <html> below, and a solid body would cover them. */
   body {
     @apply bg-transparent text-foreground;
   }
-  /* No scroll-behavior here. Lenis drives the scroll position itself and CSS smoothing fights it; anchor links are handed back to
-     Lenis through its own `anchors` option instead. See lib/ui/reusable_components/smooth-scroll.
-     The glow lives on <html> as a fixed-attachment background rather than on a pseudo-element, because a fixed pseudo-element needs
-     a z-index to sit anywhere useful and that puts it into the same stacking fight as the particle canvas for no gain. */
   html {
     @apply font-sans;
     background-color: var(--void);
@@ -244,36 +204,25 @@
   }
 }
 
-/* --gk-border. The 1.5px ink rule is the neo-brutalist signature; Tailwind has no half-pixel border width. */
 @utility border-brutal {
   border: 1.5px solid var(--line);
 }
 
-/* The volt keyline, for the one border per section that has to be the accent rather than the default hairline. */
 @utility border-volt {
   border: 1.5px solid var(--line-volt);
 }
 
-/* Card fill on the dark ground. The blur is what makes the particle scene behind it read as depth rather than as noise printed on
-   the card — and it is confined to cards on purpose: a backdrop-filter spanning a full section is a full-viewport readback of a live
-   WebGL canvas every frame, which is the one version of this that costs real milliseconds. */
 @utility glass {
   background: var(--glass);
   backdrop-filter: var(--glass-blur);
   -webkit-backdrop-filter: var(--glass-blur);
 }
 
-/* A card's edge light, as a gradient the card sits one pixel inside of. Both stops are tokens so the same card reads on either
-   ground — see --edge-hi in the palette above. */
 @utility ring-edge {
   background: linear-gradient(126deg, var(--edge-hi) 0%, var(--edge-lo) 100%);
 }
 
-/* --gk-hl. Volt marker that sits behind a run of text rather than filling its box. */
 @utility text-marker {
   background: linear-gradient(transparent 56%, var(--volt) 56%, var(--volt) 92%, transparent 92%);
   padding: 0 3px;
 }
-
-/* Reduced motion needs no rule for scrolling any more — SmoothScroll never instantiates Lenis under it, so the browser's own
-   instant scroll stands. The 3D mark parks on the letterform for the same reason. */

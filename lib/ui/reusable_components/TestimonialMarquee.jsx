@@ -3,21 +3,12 @@
 import { useEffect, useRef, useState } from 'react';
 import TestimonialCard from './TestimonialCard';
 
-// The drifting, draggable row from wearestokt.com, measured live: 370px cards, 30px gaps, and each card anchored to the top,
-// middle or bottom of a fixed 520px slot. That anchor sequence is what produces the stagger — without it the row is a flat strip.
-// It is authored per card on the reference, so it is transcribed rather than generated.
 const ANCHORS = ['end', 'start', 'end', 'center', 'end', 'center', 'start', 'end', 'start', 'center', 'start', 'end'];
 const ANCHOR_CLASS = { start: 'items-start', center: 'items-center', end: 'items-end' };
 const SPEED = 40;
-// Hover slows the row rather than halting it. A quarter speed still moves the card under the cursor, which is the trade being made
-// on purpose: the row stays legibly alive rather than reading as broken. A dead stop is the thing to avoid — the eye registers a
-// halted row as a bug, not as waiting. The ease is what makes the change felt as the row coming off the throttle rather than
-// snapping between two speeds.
 const SLOW = 0.3;
 const EASE = 3.5;
 
-// The list is rendered twice and the offset wraps at half the track width, which is what makes the loop seamless. Any wrap point
-// short of that reveals the seam as a gap on the right edge.
 const wrap = (offset, half) => (half > 0 ? ((offset % half) + half) % half : 0);
 
 export default function TestimonialMarquee({ items }) {
@@ -30,7 +21,6 @@ export default function TestimonialMarquee({ items }) {
   const dragRef = useRef(null);
   const [badge, setBadge] = useState(null);
   const loop = [...items, ...items];
-  // Reduced motion gets a plain scrollable row: the drift is the whole effect, and there is no meaningful reduced version of it.
   useEffect(() => {
     const track = trackRef.current;
     if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
@@ -45,7 +35,6 @@ export default function TestimonialMarquee({ items }) {
       frameRef.current = requestAnimationFrame(step);
     };
     frameRef.current = requestAnimationFrame(step);
-    // The id has to go back to 0. StrictMode remounts in dev, and a stale non-zero id makes the second mount skip scheduling.
     return () => {
       cancelAnimationFrame(frameRef.current);
       frameRef.current = 0;
@@ -84,10 +73,6 @@ export default function TestimonialMarquee({ items }) {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
     >
-      {/* The gap is a class rather than the inline style it used to be, so it can come down on a phone with the card. Nothing in the
-          loop maths cares: the wrap point is half of the track's *measured* scrollWidth, which already includes whatever the gap
-          resolves to at this breakpoint. The slot height comes down with it — 520px of a 660px phone screen is the row taking the
-          whole viewport for a stagger that cannot be seen at that width anyway. */}
       <div ref={trackRef} className='flex w-max gap-4 sm:gap-[30px]'>
         {loop.map((item, index) => (
           <div

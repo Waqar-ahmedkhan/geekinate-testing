@@ -1,8 +1,3 @@
-// Presets for the background prototype at /lab. They exist so the idea can be judged before it is wired into the site, and they are
-// deliberately spread wide — the point is to find out which end of the range reads as atmosphere and which reads as wallpaper.
-//
-// `cell` is CSS pixels per cell, `rate` generations per second, `spawn` the chance of a cell appearing out of nothing, `decay` how
-// slowly a dead cell fades, `drift` rows travelled per second.
 export const LAB_PRESETS = [
   {
     name: 'Sparse',

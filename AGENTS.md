@@ -109,6 +109,7 @@ The global guidelines in `~/.claude/CLAUDE.md` apply in full. Project-specific a
 - Computations come out of JSX. `SectionHead` builds `eyebrowEl` / `bodyEl` above the return rather than inlining ternaries.
 - Copy does not get hardcoded into components. If you are writing English inside a `.jsx` file, it belongs in a content module.
 - Prettier config is `prettier.config.js` — 140 print width, single quotes, JSX single quotes. Run `npm run format` before finishing.
+- **No comments in code.** The whole tree was stripped on 2026-08-21 — no `//`, no `/* */`, no `{/* */}` in JSX, no `/* */` in CSS, none inside the GLSL held in template literals, and no banner emitted by `scripts/build-land-mask.mjs`. Do not reintroduce them. Rationale goes in these four `.md` files or in the commit message; the **Traps** section above is where a hard-won debugging lesson belongs now. A tool directive (`eslint-disable`, `prettier-ignore`) is the only exception, and needs a reason before it is added.
 
 ## Traps
 

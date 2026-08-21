@@ -1,11 +1,3 @@
-// The three brand glyphs, inlined for the same reason BrandMark is: no request, and they sit inside a text run.
-//
-// **Not from lucide.** The set dropped its brand icons at v1.0 and the package here is 1.28, so `Github` and `Linkedin` no longer
-// exist — and the `X` it still exports is the close cross, which would put a dismiss control where a link to X is meant to be. These
-// are the marks' own paths on their own 24 grid.
-//
-// `currentColor` throughout, so the icon inherits the link's colour and its hover with it rather than carrying a second copy of the
-// footer's palette that would have to be kept in step.
 const GLYPHS = {
   LinkedIn:
     'M20.45 20.45h-3.56v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.15 1.45-2.15 2.94v5.67H9.35V9h3.41v1.56h.05a3.74 3.74 0 0 1 3.37-1.85' +

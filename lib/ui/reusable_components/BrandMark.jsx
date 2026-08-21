@@ -1,4 +1,3 @@
-// Inlined from public/brand/geekinate-mark.svg so the mark costs no request and can sit inside a text run.
 const GLYPH =
   'M1298 -104Q1298 -171 1281.0 -224.5Q1264 -278 1236.0 -318.5Q1208 -359 1171.0 -387.5Q1134 -416 1093.5 -434.0Q1053 -452 1011.5 -460.5' +
   'Q970 -469 933 -469H464V-209H933Q986 -209 1012.0 -182.0Q1038 -155 1038 -104V717Q1038 768 1012.0 794.5Q986 821 933 821H464' +
@@ -7,8 +6,6 @@ const GLYPH =
   'Q153 917 181.5 954.0Q210 991 250.5 1019.0Q291 1047 344.0 1064.0Q397 1081 464 1081H933Q970 1081 1011.5 1072.5' +
   'Q1053 1064 1093.5 1046.0Q1134 1028 1171.0 999.5Q1208 971 1236.0 930.5Q1264 890 1281.0 837.0Q1298 784 1298 717Z';
 
-// `bare` drops the volt tile and its ink keyline and renders the letterform alone. On a volt surface the tile *is* the surface, so
-// drawing it again puts a badge inside a badge — the navbar's brand pill wants the G on its own.
 export default function BrandMark({ size = 24, bare = false, className }) {
   const tile = bare ? null : (
     <>

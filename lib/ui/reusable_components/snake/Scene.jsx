@@ -4,7 +4,6 @@ import { Canvas } from '@react-three/fiber';
 import SnakeDots from './SnakeDots';
 import { SNAKE } from '@/constants';
 
-// No lights, no environment, no post-processing. Points are unlit, so all three were dead weight once the solid tube went.
 export default function Scene() {
   const { cameraPosition, cameraFov, dpr } = SNAKE;
   return (

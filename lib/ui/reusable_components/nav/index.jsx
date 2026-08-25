@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import BrandMark from '../BrandMark';
 import GlassPill from './GlassPill';
@@ -43,15 +43,29 @@ const MenuPill = ({ className }) => (
 );
 
 export default function Nav() {
-  const { offset, smoothOffset, maxScroll } = useScrollProgress();
   const pillRef = useRef(null);
   const railRef = useRef(null);
+  const ringRef = useRef(null);
   const [threshold, setThreshold] = useState(0);
   const [paperBands, setPaperBands] = useState([]);
   const [pillLine, setPillLine] = useState(0);
   const [railWidth, setRailWidth] = useState(0);
   const [ringWidth, setRingWidth] = useState(PILL_EXPANDED);
   const [overFooter, setOverFooter] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [onPaper, setOnPaper] = useState(false);
+  const sample = useCallback(
+    (offset, smoothOffset, maxScroll) => {
+      const past = threshold > 0 && offset >= threshold;
+      const span = maxScroll - threshold;
+      const pillAt = offset + pillLine;
+      setCollapsed(past);
+      setOnPaper(paperBands.some(([top, bottom]) => pillAt >= top && pillAt <= bottom));
+      if (ringRef.current) ringRef.current(past && span > 0 ? clamp((smoothOffset - threshold) / span) : 0);
+    },
+    [threshold, pillLine, paperBands]
+  );
+  useScrollProgress(sample);
   useEffect(() => {
     const measure = () => {
       const hero = document.querySelector('#hero');
@@ -101,16 +115,11 @@ export default function Nav() {
       window.removeEventListener('resize', watch);
     };
   }, []);
-  const collapsed = threshold > 0 && offset >= threshold;
-  const span = maxScroll - threshold;
-  const progress = collapsed && span > 0 ? clamp((smoothOffset - threshold) / span) : 0;
   const pillStyle = { width: `${collapsed ? PILL_COLLAPSED : PILL_EXPANDED}px`, height: `${PILL_HEIGHT}px`, transition: WIDTH_TRANSITION };
   const brandTone = collapsed ? 'border-0 bg-volt text-ink shadow-none backdrop-blur-none' : '';
   const wordmarkStyle = { maxWidth: collapsed ? 0 : '12rem', paddingLeft: collapsed ? 0 : '0.5rem', transition: WORDMARK_TRANSITION };
   const railStyle = { transform: overFooter ? 'translateY(-100%)' : 'translateY(0)', transition: RETREAT_TRANSITION };
   const contained = !collapsed;
-  const pillAt = offset + pillLine;
-  const onPaper = paperBands.some(([top, bottom]) => pillAt >= top && pillAt <= bottom);
   const spreadStyle = { maxWidth: `${contained ? LAYOUT.container : railWidth || LAYOUT.container}px`, transition: SPREAD_TRANSITION };
   const mobileRailStyle = {
     transform: overFooter ? 'translateY(calc(100% + 1rem))' : 'translateY(0)',
@@ -133,7 +142,7 @@ export default function Nav() {
                     {SITE.name}
                   </span>
                 </Link>
-                <ProgressRing width={ringWidth} height={PILL_HEIGHT} progress={progress} visible={collapsed} onPaper={onPaper} />
+                <ProgressRing ref={ringRef} width={ringWidth} height={PILL_HEIGHT} visible={collapsed} onPaper={onPaper} />
               </GlassPill>
             </div>
             <div className='absolute right-0 top-0 hidden lg:block'>

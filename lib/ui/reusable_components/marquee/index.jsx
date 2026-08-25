@@ -29,22 +29,36 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
   }, [gap]);
 
   useEffect(() => {
-    const track = trackRef.current;
-    if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    let frame = 0,
+    const frame = frameRef.current,
+      track = trackRef.current;
+    if (!frame || !track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    let running = 0,
       last = 0,
-      offset = 0;
+      offset = 0,
+      visible = false;
     const step = (now) => {
-      frame = requestAnimationFrame(step);
+      if (!visible) {
+        running = 0;
+        return;
+      }
+      running = requestAnimationFrame(step);
       const delta = last ? Math.min((now - last) / 1000, 0.1) : 0;
       last = now;
       offset = -wrap(speed * delta - offset, spanRef.current);
       track.style.transform = `translate3d(${offset}px, 0, 0)`;
     };
-    frame = requestAnimationFrame(step);
+    const watcher = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !running) {
+        last = 0;
+        running = requestAnimationFrame(step);
+      }
+    });
+    watcher.observe(frame);
     return () => {
-      cancelAnimationFrame(frame);
-      frame = 0;
+      watcher.disconnect();
+      cancelAnimationFrame(running);
+      running = 0;
     };
   }, [speed]);
 

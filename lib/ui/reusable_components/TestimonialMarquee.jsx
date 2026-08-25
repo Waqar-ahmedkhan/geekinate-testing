@@ -23,19 +23,37 @@ export default function TestimonialMarquee({ items }) {
   const loop = [...items, ...items];
   useEffect(() => {
     const track = trackRef.current;
-    if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    let half = track.scrollWidth / 2,
+      visible = false;
     const step = (now) => {
-      const half = track.scrollWidth / 2;
+      if (!visible) {
+        frameRef.current = 0;
+        return;
+      }
+      frameRef.current = requestAnimationFrame(step);
       const elapsed = lastRef.current ? Math.min((now - lastRef.current) / 1000, 0.1) : 0;
       lastRef.current = now;
       speedRef.current += (targetRef.current - speedRef.current) * Math.min(1, elapsed * EASE);
       if (!dragRef.current) offsetRef.current -= SPEED * speedRef.current * elapsed;
       offsetRef.current = -wrap(-offsetRef.current, half);
       track.style.transform = `translate3d(${offsetRef.current}px, 0, 0)`;
-      frameRef.current = requestAnimationFrame(step);
     };
-    frameRef.current = requestAnimationFrame(step);
+    const sizer = new ResizeObserver(() => {
+      half = track.scrollWidth / 2;
+    });
+    const watcher = new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      if (visible && !frameRef.current) {
+        lastRef.current = 0;
+        frameRef.current = requestAnimationFrame(step);
+      }
+    });
+    sizer.observe(track);
+    watcher.observe(track);
     return () => {
+      sizer.disconnect();
+      watcher.disconnect();
       cancelAnimationFrame(frameRef.current);
       frameRef.current = 0;
       lastRef.current = 0;

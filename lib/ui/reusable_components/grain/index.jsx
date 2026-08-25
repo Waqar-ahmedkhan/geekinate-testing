@@ -47,6 +47,7 @@ export default function GrainWake() {
       lastY = 0,
       lastScroll = -1,
       scrolledAt = -Infinity,
+      probedAt = -Infinity,
       presence = 0,
       ground = null,
       light = false;
@@ -76,7 +77,8 @@ export default function GrainWake() {
       presence += (target - presence) * (1 - Math.exp(-rate * delta));
       const ringing = presence > GRAIN.gone;
       if (!moved && !ringing && pool.alive === 0) return;
-      if (moved || ringing) {
+      if ((moved || ringing) && now - probedAt >= GRAIN.probeMs) {
+        probedAt = now;
         const under = document.elementFromPoint(pointer.px, pointer.py);
         if (under !== ground) {
           ground = under;

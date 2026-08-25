@@ -17,6 +17,7 @@ export const GRAIN = {
   alpha: 0.72,
   voltShare: 0.22,
   spriteSize: 16,
+  probeMs: 120,
   maxDpr: 2,
   gone: 0.004,
   ringRadius: 34,

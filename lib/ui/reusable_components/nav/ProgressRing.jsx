@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useImperativeHandle, useRef } from 'react';
 
 const buildOutline = (width, height) => {
   const radius = height / 2;
@@ -17,17 +17,28 @@ const buildOutline = (width, height) => {
   ].join(' ');
 };
 
-export default function ProgressRing({ width, height, progress, visible, onPaper }) {
+export default function ProgressRing({ ref, width, height, visible, onPaper }) {
   const pathRef = useRef(null);
-  const [head, setHead] = useState(null);
+  const headRef = useRef(null);
+  const lengthRef = useRef(0);
+  const progressRef = useRef(0);
   const outline = buildOutline(width, height);
   const stroke = onPaper ? 'var(--ink)' : 'var(--white)';
+  const draw = useCallback((progress) => {
+    const path = pathRef.current,
+      head = headRef.current;
+    if (!path || !head) return;
+    progressRef.current = progress;
+    path.setAttribute('stroke-dashoffset', 1 - progress);
+    const point = path.getPointAtLength(progress * lengthRef.current);
+    head.setAttribute('cx', point.x);
+    head.setAttribute('cy', point.y);
+  }, []);
+  useImperativeHandle(ref, () => draw, [draw]);
   useEffect(() => {
-    const path = pathRef.current;
-    if (!path) return;
-    const point = path.getPointAtLength(progress * path.getTotalLength());
-    setHead({ x: point.x, y: point.y });
-  }, [outline, progress]);
+    lengthRef.current = pathRef.current ? pathRef.current.getTotalLength() : 0;
+    draw(progressRef.current);
+  }, [outline, draw]);
   return (
     <svg
       width={width}
@@ -47,9 +58,9 @@ export default function ProgressRing({ width, height, progress, visible, onPaper
         strokeLinecap='round'
         pathLength='1'
         strokeDasharray='1'
-        strokeDashoffset={1 - progress}
+        strokeDashoffset='1'
       />
-      {head ? <circle cx={head.x} cy={head.y} r='2.5' fill={stroke} /> : null}
+      <circle ref={headRef} cx='0' cy='0' r='2.5' fill={stroke} />
     </svg>
   );
 }

@@ -197,6 +197,15 @@ while `performance.now()` keeps counting. The number looks like a plausible bug 
 Sample inside a `requestAnimationFrame` loop and derive the rate from **its** timestamps, which only advance while the loop runs;
 then take a `computer` action to activate the tab and read the buffer back.
 
+**Count the animation loops before blaming the particles.** The home page felt slow and the 30,000-point canvas was the obvious
+suspect; it was not the cost. Instrumenting `requestAnimationFrame`, `getBoundingClientRect`, `scrollHeight`, `scrollWidth` and
+`elementFromPoint` from the console read back **9.6 rAF callbacks scheduled per frame** across about ten independent loops, with
+**2.1 `scrollHeight` reads, 1.1 `scrollWidth` reads and 2.6 rect reads per frame** interleaved between those loops' transform
+writes — a forced layout several times a frame. Two of the loops (both marquees) ran off-screen forever, and `useScrollProgress`
+called `setState` every frame, which re-rendered the whole nav twice per frame because `ProgressRing` answered with a `setState` of
+its own. Continuous scroll values belong in a ref written straight to the DOM; React state is for the booleans that actually change
+the tree. Instrument the counters before optimising the shader.
+
 **`max-width: 0` does not collapse a box that has padding.** Everything here is `box-sizing: border-box`, and a border-box element
 cannot shrink below its own padding — so a `max-width: 0` element with `pl-2` still occupies 8px. This silently knocked the nav mark
 4px off centre. Animate the padding alongside the width, or put the spacing on a parent that also collapses.

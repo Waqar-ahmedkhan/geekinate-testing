@@ -2,6 +2,8 @@ export * from './cosmos';
 export * from './globe';
 export * from './grain';
 export * from './lab';
+export * from './marquee';
+export * from './preloader';
 export * from './snake';
 export * from './substrate';
 

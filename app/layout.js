@@ -1,7 +1,7 @@
 import { IBM_Plex_Mono, Instrument_Serif, Red_Hat_Display } from 'next/font/google';
 import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
-import { CosmosCanvas, GrainWake, Nav, SmoothScroll, SubstrateField } from '@/lib/ui/reusable_components';
+import { CosmosCanvas, GrainWake, Nav, Preloader, SmoothScroll, SubstrateField } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { SITE } from '@/constants';
 import './globals.css';
@@ -37,6 +37,7 @@ export default function RootLayout({ children }) {
     <html lang='en' className={`${fontVariables} antialiased`}>
       <body className='flex min-h-svh flex-col'>
         <JsonLd id='json-ld-site' nodes={[organizationJsonLd, websiteJsonLd]} />
+        <Preloader />
         <SmoothScroll />
         <SubstrateField />
         <CosmosCanvas />

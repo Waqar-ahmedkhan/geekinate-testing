@@ -26,13 +26,16 @@ archive of the two older sites and holds nothing from this build.
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `nav/`, `snake/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `preloader/`, `snake/` |
+| `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/curve/` | The letterform as geometry | `g-points.json` (generated, gitignored from Prettier), `gCurve.js` |
 | `lib/content.js` | Every user-facing string | Sections read their copy from here |
 | `lib/seo.js` | Metadata + JSON-LD builders | Single definition of metadata shape |
 | `lib/utils.js` | `cn` | shadcn's class merger |
 | `constants/index.js` | `SITE`, `NAV_LINKS`, `SOCIALS` | Site identity and static data; re-exports `snake.js` |
 | `constants/snake.js` | Every tunable the 3D mark reads | One place for the magic numbers, per the brief |
+| `constants/preloader.js` | Every tunable the preload gate reads | Ring geometry, milestone weights, the timing floor and the failsafe |
+| `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
 | `scripts/` | One-off build scripts | `sample-g-path.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
 
@@ -51,7 +54,8 @@ Shape inherited from `../Eleve/development/frontend`:
 - `lib/content.js` — every user-facing string. Sections destructure their content object on the first line of the component.
 - `app/` pages compose sections and do nothing else.
 
-Built so far, in page order: `features/hero` (01), `features/work` (02), `features/services` (03), `features/testimonials` (04).
+Built so far, in page order: `features/hero` (01), `features/clients`, `features/work` (02), `features/services` (03),
+`features/testimonials` (04), `features/contact`.
 Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes. The hero carries no copy yet,
 so it has no entry there.
 
@@ -59,12 +63,12 @@ so it has no entry there.
 
 | Route | File | Rendering |
 |---|---|---|
-| `/` | `app/page.js` | Static. Composes hero, work, services, testimonials |
+| `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, contact |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. **Routes are listed by hand** — nothing is discovered |
 | `/robots.txt` | `app/robots.js` | Static |
 
-`app/layout.js` owns fonts, metadata, the site JSON-LD graph, `Nav`, `Footer`, and the toaster.
+`app/layout.js` owns fonts, metadata, the site JSON-LD graph, `Preloader`, `Nav`, `Footer`, and the toaster.
 
 ## Layout
 
@@ -227,6 +231,56 @@ Two sections use it, so the behaviour lives in one place:
 
 The pending panel is black even on light sections, because tiles overlay light text on their media and a pale placeholder would make
 that text unreadable.
+
+## The preload gate
+
+`lib/ui/reusable_components/preloader` is the first child of the body and the last thing to leave. It is a black overlay at
+`z-[100]` — above the nav's `z-50` and the grain wake's `z-20` — carrying the volt `BrandMark` at viewport centre, a grain ring
+orbiting it, and a percentage in the bottom-right corner.
+
+**It reuses the cursor wake's particle pool rather than growing a second one.** `grain/pool.js` used to read `GRAIN.ringRadius`,
+`ringOrbit`, `ringPerSecond` and `ringLife` straight out of the constants, which pinned the ring to one size. `shedRing` and
+`stepGrain` now take a ring descriptor — `{ x, y, presence, radius, orbit, rate, life }` — so the cursor passes its 34px ring and
+the preloader passes its 100px one into the same maths. Both callers build that object once and mutate it per frame; nothing
+allocates inside the loop.
+
+The gate is driven by three milestones, weighted in `constants/preloader.js`: fonts ready, document complete, and the globe's first
+painted frame. The third arrives through `lib/boot/ready.js` — `CosmosCanvas` already had an `onFirstFrame` callback for dropping its
+CSS stand-in, and it now calls `markGlobeReady()` from the same place. The displayed number eases toward whichever is larger, the
+weighted milestone total or a slow drift, and is capped below 100 until every milestone lands.
+
+Two limits keep it honest in both directions. `minMs` stops a warm cache flashing the overlay for three frames. `maxMs` is a
+failsafe: if WebGL never initialises, or the tab is throttled so `requestAnimationFrame` never runs, the loader completes on time
+anyway rather than trapping the page behind a black screen. The overlay holds `overflow: hidden` on `html` while it is up and
+restores the previous value the moment it starts fading, so the page is scrollable through the fade.
+
+Under `prefers-reduced-motion` the canvas work is skipped entirely — mark, counter and gate stay, the orbit does not.
+
+## The client marquee
+
+`features/clients` sits directly under the hero and is the site's first opaque section, which is what closes the globe off. It is
+`variant='paper'` — light ground, as on the reference — and being opaque is the point: on `clear` the fixed 3D canvas shows straight
+through the strip and the logos fight the globe's particles. It carries no eyebrow; the strip is the whole section.
+
+The ticker itself is `lib/ui/reusable_components/marquee` — a generic component that takes any children and loops them. Values in
+`constants/marquee.js` are **transcribed from `wearestokt.com`, not invented**: they were read off the live Framer `Ticker`
+component's props and its computed styles, and the running speed was measured back at 40.00 px/s in this build. Changing any of
+them is a design decision, not a tidy-up.
+
+| Value | What it is |
+|---|---|
+| `speed: 40` | Pixels per second, leftward |
+| `gap: 150` | Between items, and between the repeated groups |
+| `fadeWidth: 46` | Total percentage of the strip spent fading, split across the two edges — `mask-image` stops land at 23% and 77% |
+| `padding: 10` | The frame's own padding |
+
+The track is measured rather than guessed: a `ResizeObserver` reads the first group's width, and the component renders exactly
+enough copies to cover the frame plus one. The wrap span is a group's width plus the gap, so the loop is seamless at any viewport.
+Hover does nothing — Stokt's `hoverFactor` is 1, and this matches it.
+
+`ClientLogo` is a **placeholder**. There are no client logo files in this repo yet, so it draws a geometric lucide mark and a mono
+wordmark reading `Client Logo 01`…`08`, sourced from `clients` in `lib/content.js`. No real brand is implied and none should be
+invented; when the actual files arrive they land in `public/media/clients/` and `ClientLogo` becomes a `next/image`.
 
 ## The featured work section
 

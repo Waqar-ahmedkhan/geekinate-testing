@@ -92,6 +92,20 @@ dot material.** `lib/globe` owns the land *pose*, the fit, and the shells and ne
 The camera is the other load-bearing pair: 7.1 degrees at a distance of 60. It is a long lens on purpose, and changing either number
 without the other rescales the entire scene. See the note at the top of `constants/cosmos.js`.
 
+**The client marquee's numbers are transcribed, not chosen.** `constants/marquee.js` holds values read off `wearestokt.com` on
+2026-08-25 — the live Framer `Ticker`'s own props plus its computed styles, not an eyeballed reconstruction: `speed: 40` px/s
+leftward, `gap: 150`, `padding: 10`, `fadeWidth: 46` (so the `mask-image` stops land at 23% and 77%), and no hover slowdown
+(`hoverFactor` is 1 there). The running speed was measured back at 40.00 px/s in this build. Retuning any of them is a design
+decision to raise, not a tidy-up. The logos themselves are **placeholders** — there are no client logo files in this repo. Do not
+invent brands to fill the strip; `ClientLogo` draws a geometric mark and `Client Logo 01`…`08` until real files land in
+`public/media/clients/`.
+
+**The preload gate must never be able to trap the page.** `lib/ui/reusable_components/preloader` holds a black overlay over
+everything until the globe paints its first frame, which reaches it through `lib/boot/ready.js`. That signal can legitimately never
+arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` completes the gate regardless. Removing that failsafe, or
+gating on a signal without one, ships a black screen to whoever the globe fails for. `minMs` is the other half: it stops a warm
+cache flashing the overlay for three frames.
+
 **Nothing below the hero is 3D.** Work, Services and Testimonials stay on the flat system — white ground, ink borders, hard offset
 shadows, no blur-based depth — and they are opaque, which is what hides the scattered field behind them. Reaching for a soft shadow,
 a glow or a gradient down there because "the hero does it" is the misreading to avoid.
@@ -175,6 +189,13 @@ turns, and nothing may drop below a radius of curvature of the tube radius or th
 **A tube's silhouette is its spine plus its radius, on every side.** Fitting the 3D mark to the viewport off its centreline bounds
 under-reads the width by 17% and clips it off both edges of a phone. The camera's field of view is vertical, so width is the axis
 that fails first and it fails only at narrow aspect ratios — a desktop check will not catch it.
+
+**Wall-clock timing measures nothing about a scroll- or rAF-driven animation under browser automation.** Sampling a marquee's
+transform, sleeping four seconds through a tool call, and sampling again read the ticker back at **1.62 px/s against an actual
+40.00** — because the tab is backgrounded between calls and `requestAnimationFrame` is paused for almost all of that wall time,
+while `performance.now()` keeps counting. The number looks like a plausible bug in the animation, which is what makes it dangerous.
+Sample inside a `requestAnimationFrame` loop and derive the rate from **its** timestamps, which only advance while the loop runs;
+then take a `computer` action to activate the tab and read the buffer back.
 
 **`max-width: 0` does not collapse a box that has padding.** Everything here is `box-sizing: border-box`, and a border-box element
 cannot shrink below its own padding — so a `max-width: 0` element with `pl-2` still occupies 8px. This silently knocked the nav mark

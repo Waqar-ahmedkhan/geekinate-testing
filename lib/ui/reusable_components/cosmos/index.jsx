@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
+import { markGlobeReady } from '@/lib/boot/ready';
 import { trackGlobe } from '@/lib/input/globe';
 import { trackPointer } from '@/lib/input/pointer';
 
@@ -12,7 +13,10 @@ const GLOBE_STANDIN =
 
 export default function CosmosCanvas() {
   const [painted, setPainted] = useState(false);
-  const onFirstFrame = useCallback(() => setPainted(true), []);
+  const onFirstFrame = useCallback(() => {
+    setPainted(true);
+    markGlobeReady();
+  }, []);
   useEffect(() => trackPointer(), []);
   useEffect(() => trackGlobe(), []);
 

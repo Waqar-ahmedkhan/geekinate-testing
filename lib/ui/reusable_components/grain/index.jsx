@@ -29,6 +29,15 @@ export default function GrainWake() {
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return undefined;
     const ctx = canvas.getContext('2d');
     const pool = createGrain(GRAIN.count);
+    const ring = {
+      x: 0,
+      y: 0,
+      presence: 0,
+      radius: GRAIN.ringRadius,
+      orbit: GRAIN.ringOrbit,
+      rate: GRAIN.ringPerSecond,
+      life: GRAIN.ringLife,
+    };
     let sprites = [],
       width = 0,
       height = 0;
@@ -74,13 +83,16 @@ export default function GrainWake() {
           light = under ? groundIsLight(under) : false;
         }
       }
+      ring.x = pointer.px;
+      ring.y = pointer.py;
+      ring.presence = presence;
       if (pointer.active > 0) {
         if (moved) shedGrain(pool, pointer.px, pointer.py, dx / delta, dy / delta, Math.hypot(dx, dy), light);
-        if (ringing) shedRing(pool, pointer.px, pointer.py, presence, delta, light);
+        if (ringing) shedRing(pool, ring, delta, light);
       }
       lastX = pointer.px;
       lastY = pointer.py;
-      stepGrain(pool, delta, ringing ? { x: pointer.px, y: pointer.py, presence } : null);
+      stepGrain(pool, delta, ringing ? ring : null);
       ctx.clearRect(0, 0, width, height);
       if (pool.alive === 0) return;
       for (let i = 0; i < pool.count; i += 1) {

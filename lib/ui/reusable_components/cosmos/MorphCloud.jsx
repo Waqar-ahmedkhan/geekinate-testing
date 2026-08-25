@@ -77,7 +77,7 @@ export default function MorphCloud({ onFirstFrame }) {
     ground.current += (1 - stage.light - ground.current) * Math.min(1, delta * 6);
     values.uHighlight.value.lerpColors(cloud.ink, cloud.paper, ground.current);
 
-    const arriving = clamp01(stage.footerIn);
+    const arriving = clamp01(stage.footerIn) ** COSMOS.formEase;
     const orbiting = 1 - clamp01(stage.heroOut);
     const adopting =
       wasArriving.current < 0 ||

@@ -48,7 +48,7 @@ export default function Footer() {
   const copyright = `© ${new Date().getFullYear()} ${SITE.name}.`;
   return (
     <footer className='relative z-50 p-4'>
-      <div className='border-brutal relative flex min-h-[calc(100svh-2rem)] flex-col justify-between overflow-hidden rounded-[12px] bg-void/30 p-6 pb-24 lg:pb-6'>
+      <div className='border-brutal relative flex min-h-[calc(100svh-2rem)] flex-col justify-between overflow-hidden rounded-[12px] bg-void/20 p-6 pb-24 lg:pb-6'>
         <div className='relative flex flex-1 flex-col gap-8 lg:w-1/2'>
           <div className='flex flex-col items-start gap-2.5'>
             <Link

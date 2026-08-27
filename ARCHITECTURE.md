@@ -284,19 +284,39 @@ invented; when the actual files arrive they land in `public/media/clients/` and 
 
 ## The featured work section
 
-`features/work` — section 02, on `default` (white). It started on `wash`, but the volt tint read as greenish cream against the dark
-tiles and was rejected; white against the ink services block gives the alternation without the colour cast. Modelled on
-wearestokt.com's portfolio grid, measured live.
+`features/work` — section 02: the existing tile grid, now presented inside riseatseven.com's work-section treatment, measured live
+at 1905×911 on 2026-08-27 — a light frame with a pinned dark panel that the grid scrolls through. The reference's *inner* design
+(project-name list, side images) was explicitly not copied; only the frame and the scroll mechanics were.
 
-Three columns, 16px gaps, 10px radius, with an asymmetric span rhythm: **2+1 / 3 / 1+1+1**. Aspect follows the span — 1-col square,
-2-col 2:1, 3-col 16:9. Below `lg` it degrades to two columns and then one, with spans collapsing to squares.
+The measured anatomy, and ours next to it:
 
-**The rhythm needs exactly six projects.** Removing one leaves a hole in a row, so `span` values in `lib/content.js` have to change
-with the count.
+| Piece | Reference | Ours |
+|---|---|---|
+| Light gutter | `px-4 md:px-7` on #efeeec | Same paddings, `bg-paper` |
+| Runway | 6473px tall block, plain flow | Height set from the grid: content height + 2 × 28px, floored at one viewport |
+| Pinned wrapper | `sticky top-0`, viewport-high, `py-7` | Same, from `lg` only |
+| Dark panel | #111212, `rounded-3xl`, `overflow-hidden`, fills wrapper | Same but `bg-black`, per the dark-fill rule |
+| Content motion | Columns scrubbed `y`, `ease: none`, `top top → bottom bottom` | The whole grid, same mapping — 1:1 with page scroll |
 
-Tiles are `object-fit: cover` so media fills the frame, with the title and discipline chips overlaid bottom-left directly on the
-media — no scrim, matching the reference. A project with no `href` renders as a `div` rather than a dead link, which is what all six
-placeholders currently do.
+Mechanics worth knowing before editing:
+
+- **The runway height is written by a `ResizeObserver` on the grid**, so tile media loading or viewport changes re-fit it, and each
+  write calls `ScrollTrigger.refresh()`. The scrub's ends are `top top → bottom bottom` with function-based values, so the mapping
+  stays 1:1 whatever the runway becomes.
+- **The section is `variant='clear'` with `bg-paper`, deliberately not `paper`.** Everything visible inside it is the black panel,
+  so the content wants the root dark-side tokens, and the nav's surface detection (below) must not read the section as a light
+  band. The paper class here would be wrong twice.
+- **Pinning is `lg`-and-`prefers-reduced-motion`-gated through `gsap.matchMedia`.** Below `lg`, or reduced, the runway height is
+  cleared and the panel is just a dark rounded box the page scrolls past — the reference disables its pin on touch the same way.
+- The grid itself is unchanged: three columns, 16px gaps, 10px tile radius, span rhythm **2+1 / 3 / 1+1+1**, aspect following span,
+  degrading to two columns then one below `lg`. **The rhythm needs exactly six projects** — `span` values in `lib/content.js`
+  change with the count. Tiles overlay title and discipline chips on the media with no scrim; a project with no `href` renders a
+  `div` rather than a dead link.
+
+**The nav reads page surfaces from live layout, and this section is why.** `Nav` classifies the pill's ground by `.on-paper` bands
+measured from the DOM; those offsets go stale the moment a runway height is written after mount — every section below shifts by
+~1.7 viewports and the ring paints ink over black (found on the CTA, 2026-08-27). The bands are re-measured by a `ResizeObserver`
+on `document.body`, so any layout-height change — this runway, media loading, a future pinned section — refreshes them.
 
 ## The services section
 
@@ -382,8 +402,9 @@ whole figure collapses into an ordinary marquee; that misread shipped once (2026
 
 **The section pins, and that is ours, not the reference's.** Rise at Seven gives the line one viewport of passage, and at our line
 lengths the tail was gone before it could be read — rejected on sight (2026-08-27), with the instruction to hold the section until
-the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`150svh`, `280svh`
-from `lg`) with a sticky stage (`35svh` / `100svh`) pinned to its top; the stage owns the `overflow-hidden`. Both tweens end at
+the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`135svh`, `240svh`
+from `lg` — tuned twice on 2026-08-27: `280svh` was too much scrolling, `200svh` too fast, both by the user's hand on the live
+page) with a sticky stage (`35svh` / `100svh`) pinned to its top; the stage owns the `overflow-hidden`. Both tweens end at
 `bottom bottom+=hold` before the frame unpins, so the sweep's length adapts to any viewport from the frame's own height. Retuning
 the passage length means changing the frame heights *and* knowing the sweep stretches with them.
 

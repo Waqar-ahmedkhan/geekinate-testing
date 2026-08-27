@@ -7,6 +7,7 @@ export * from './marquee';
 export * from './preloader';
 export * from './snake';
 export * from './substrate';
+export * from './work';
 
 export const SITE = {
   name: 'Geekinate',

@@ -77,8 +77,13 @@ export default function Nav() {
       setPaperBands([...document.querySelectorAll('.on-paper')].map((node) => [node.offsetTop, node.offsetTop + node.offsetHeight]));
     };
     measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.body);
     window.addEventListener('resize', measure);
-    return () => window.removeEventListener('resize', measure);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('resize', measure);
+    };
   }, []);
   useEffect(() => {
     const rail = railRef.current;

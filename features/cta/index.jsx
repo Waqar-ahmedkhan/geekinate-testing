@@ -66,7 +66,7 @@ export default function Cta() {
   ));
   return (
     <Section variant='ink' className='px-0 py-0 md:px-0 md:py-0'>
-      <div ref={frame} className='h-[150svh] lg:h-[280svh]'>
+      <div ref={frame} className='h-[135svh] lg:h-[240svh]'>
         <div ref={stage} className='sticky top-0 flex h-[35svh] items-start overflow-hidden lg:h-svh'>
           <h2
             ref={line}

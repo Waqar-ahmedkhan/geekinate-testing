@@ -3,6 +3,7 @@ import Clients from '@/features/clients';
 import Work from '@/features/work';
 import Services from '@/features/services';
 import Testimonials from '@/features/testimonials';
+import Cta from '@/features/cta';
 import Contact from '@/features/contact';
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
       <Work />
       <Services />
       <Testimonials />
+      <Cta />
       <Contact />
     </main>
   );

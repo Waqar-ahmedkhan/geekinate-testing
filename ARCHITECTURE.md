@@ -55,7 +55,7 @@ Shape inherited from `../Eleve/development/frontend`:
 - `app/` pages compose sections and do nothing else.
 
 Built so far, in page order: `features/hero` (01), `features/clients`, `features/work` (02), `features/services` (03),
-`features/testimonials` (04), `features/contact`.
+`features/testimonials` (04), `features/cta`, `features/contact`.
 Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes. The hero carries no copy yet,
 so it has no entry there.
 
@@ -63,7 +63,7 @@ so it has no entry there.
 
 | Route | File | Rendering |
 |---|---|---|
-| `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, contact |
+| `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, cta, contact |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. **Routes are listed by hand** — nothing is discovered |
 | `/robots.txt` | `app/robots.js` | Static |
@@ -356,6 +356,58 @@ flat strip. Quote lengths are deliberately uneven in `lib/content.js` for the sa
 
 Twelve testimonials, because a wide viewport needs the list to fill twice over and `ANCHORS` is written for twelve. Changing the
 count means changing that sequence.
+
+## The pre-contact CTA
+
+`features/cta` — the giant scroll-scrubbed line between Testimonials and Contact, on `ink` (black, paper type). A measured
+reconstruction of riseatseven.com's "Ready to Rise at Seven?" section, taken live at 1905×911 on 2026-08-27, recoloured for our
+dark surface. Set in `font-sans` at `font-medium` — Red Hat Display is the brand face nearest the reference's grotesque, and the
+serif was rejected on sight as a different section.
+
+The reference values were read out of the page's own GSAP runtime and confirmed against an rAF recorder sampling `(scrollY, x, y)`
+through real wheel scroll — the tween-vars alone mislead here, because the sweep's from-value only shows up empirically. They live
+in `constants/cta.js`:
+
+| Measured | Value |
+|---|---|
+| Type | One line, `16vw` desktop / `30vw` mobile, weight 500, `tracking -0.035em`, `leading-tight`, letters split into individual spans |
+| Sweep | `x` from `+1.07 × viewport width` — the whole line starts off-screen right — to `tail at 50vw`, `ease: none`, from `top 70%` |
+| Drift | `y` from 0 to 0.44 × stage height across the same range, with the line anchored to the stage's **top**, not its centre |
+| Letters | `yPercent -60, rotate 10` settling to 0 with `back.inOut(4)`, duration 2.5, stagger 0.35, from `top 77%` |
+
+The three of those together are what make the motion read as the reference's: the line enters the frame at the bottom-right corner
+already mid-wave, crosses the section diagonally — leftward from the sweep, upward because the page scrolls faster than the drift —
+and leaves its tail high in the frame as the next block arrives. Start the line on-screen, or centre it in the trigger, and the
+whole figure collapses into an ordinary marquee; that misread shipped once (2026-08-27) and was rejected the same day.
+
+**The section pins, and that is ours, not the reference's.** Rise at Seven gives the line one viewport of passage, and at our line
+lengths the tail was gone before it could be read — rejected on sight (2026-08-27), with the instruction to hold the section until
+the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`150svh`, `280svh`
+from `lg`) with a sticky stage (`35svh` / `100svh`) pinned to its top; the stage owns the `overflow-hidden`. Both tweens end at
+`bottom bottom+=hold` before the frame unpins, so the sweep's length adapts to any viewport from the frame's own height. Retuning
+the passage length means changing the frame heights *and* knowing the sweep stretches with them.
+
+**The sweep's `hold` is 0, and that is the second user correction on this section.** The first cut held the settled tail for a
+0.35-viewport beat before unpinning, which reads fine downward and is a dead zone upward: re-entering from Contact took three wheel
+ticks of frozen frame before anything moved, and it was rejected for exactly that (2026-08-27) — the line must answer the first
+tick of reverse scroll. The letters keep a small `hold` (0.15) so the wave finishes just inside the sweep; the sweep itself ends at
+the unpin boundary, where scrub means motion in both directions immediately.
+
+Mechanics worth knowing before editing:
+
+- **The sweep endpoints are measured from the line's own width**, so the copy can change length without retuning: the start pose
+  indents the line's head `headVw` from the left edge, the end pose parks its tail at `tailVw`. Both recompute on refresh through
+  GSAP's function-based values plus `invalidateOnRefresh`.
+- **The drift is a fraction of the trigger's height, not the viewport's.** The reference tuned `y: 400` against a `100vh` desktop
+  trigger and hides the section below `lg`; ours renders at every width, and 0.44 × a `35svh` mobile trigger is what keeps the line
+  inside the section there.
+- The reference splits words into per-letter `div`s with no accessible text. Ours keeps the split spans `aria-hidden` behind an
+  `aria-label` on the `h2`.
+- ScrollTrigger is already registered and driven by Lenis in `smooth-scroll/index.jsx`; the section registers it again only because
+  the registration is idempotent and the component should not depend on mount order.
+- Under `prefers-reduced-motion` no tween is created: the line rests at the head pose with its tail clipped, letters settled.
+- The section is deliberately hidden from no one — the reference shows this block only from `lg` up, which was judged a bug for us
+  rather than a behaviour to transcribe.
 
 ## The footer
 

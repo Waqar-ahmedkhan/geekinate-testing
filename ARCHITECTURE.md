@@ -392,10 +392,12 @@ count means changing that sequence.
 
 ## The pre-contact CTA
 
-`features/cta` — the giant scroll-scrubbed line between Testimonials and Contact, on `ink` (black, paper type). A measured
-reconstruction of riseatseven.com's "Ready to Rise at Seven?" section, taken live at 1905×911 on 2026-08-27, recoloured for our
-dark surface. Set in `font-sans` at `font-medium` — Red Hat Display is the brand face nearest the reference's grotesque, and the
-serif was rejected on sight as a different section.
+`features/cta` — the giant scroll-scrubbed line between Testimonials and Contact, on `ink` (black, paper type — built dark,
+flipped light on 2026-08-27, flipped back to dark on 2026-08-28; both calls were the user's, so treat the surface as taste
+still settling, not a derivable rule). A
+measured reconstruction of riseatseven.com's "Ready to Rise at Seven?" section, taken live at 1905×911 on 2026-08-27. Set in
+`font-sans` at `font-semibold` — Red Hat Display is the brand face nearest the reference's grotesque, and the serif was rejected on
+sight as a different section.
 
 The reference values were read out of the page's own GSAP runtime and confirmed against an rAF recorder sampling `(scrollY, x, y)`
 through real wheel scroll — the tween-vars alone mislead here, because the sweep's from-value only shows up empirically. They live
@@ -403,10 +405,10 @@ in `constants/cta.js`:
 
 | Measured | Value |
 |---|---|
-| Type | One line, `16vw` desktop / `30vw` mobile, weight 500, `tracking -0.035em`, `leading-tight`, letters split into individual spans |
-| Sweep | `x` from `+1.07 × viewport width` — the whole line starts off-screen right — to `tail at 50vw`, `ease: none`, from `top 70%` |
-| Drift | `y` from 0 to 0.44 × stage height across the same range, with the line anchored to the stage's **top**, not its centre |
-| Letters | `yPercent -60, rotate 10` settling to 0 with `back.inOut(4)`, duration 2.5, stagger 0.35, from `top 77%` |
+| Type | One line, `16vw` desktop / `30vw` mobile, weight 600 (the reference's 500 read thin at our sizes), `tracking -0.035em`, `leading-tight`, letters split into individual spans |
+| Sweep | `x` from `+1.07 × viewport width` — the whole line starts off-screen right — to the **last word centred in the viewport** (measured off the word's own span, so the copy can change), `ease: none`, from `top 70%` |
+| Drift | `y` from `dip` 0.16 to `drop` 0.44 × stage height across the same range — the reference starts at 0, ours starts one dip low so the line rises as it crosses — with the line anchored to the stage's **top**, not its centre |
+| Letters | `yPercent -60, rotate 10` settling to 0 with `back.inOut(4)` — the reference ran duration 2.5 / stagger 0.35 from `top 77%`, ours runs 1 / 0.5 from `top 70%` to the unpin, because the centred rest pose lengthened the sweep and the reference timing finished every wave before its letter scrolled into view (2026-08-27) |
 
 The three of those together are what make the motion read as the reference's: the line enters the frame at the bottom-right corner
 already mid-wave, crosses the section diagonally — leftward from the sweep, upward because the page scrolls faster than the drift —
@@ -415,23 +417,25 @@ whole figure collapses into an ordinary marquee; that misread shipped once (2026
 
 **The section pins, and that is ours, not the reference's.** Rise at Seven gives the line one viewport of passage, and at our line
 lengths the tail was gone before it could be read — rejected on sight (2026-08-27), with the instruction to hold the section until
-the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`135svh`, `240svh`
-from `lg` — tuned twice on 2026-08-27: `280svh` was too much scrolling, `200svh` too fast, both by the user's hand on the live
-page) with a sticky stage (`35svh` / `100svh`) pinned to its top; the stage owns the `overflow-hidden`. Both tweens end at
+the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`105svh`, `160svh`
+from `lg` — tuned three times on 2026-08-27 against the live page: `280svh` too slow, `200svh` too fast, `240svh` still too slow
+once the rest pose changed) with a sticky stage (`35svh` / `100svh`) pinned to its top; the stage owns the `overflow-hidden`.
+The rest pose centres the line's **last word** — the brand name — not the line's tail; the earlier tail-at-50vw pose parked the
+question mark at centre and was rejected for exactly that. Both tweens end at
 `bottom bottom+=hold` before the frame unpins, so the sweep's length adapts to any viewport from the frame's own height. Retuning
 the passage length means changing the frame heights *and* knowing the sweep stretches with them.
 
 **The sweep's `hold` is 0, and that is the second user correction on this section.** The first cut held the settled tail for a
 0.35-viewport beat before unpinning, which reads fine downward and is a dead zone upward: re-entering from Contact took three wheel
 ticks of frozen frame before anything moved, and it was rejected for exactly that (2026-08-27) — the line must answer the first
-tick of reverse scroll. The letters keep a small `hold` (0.15) so the wave finishes just inside the sweep; the sweep itself ends at
-the unpin boundary, where scrub means motion in both directions immediately.
+tick of reverse scroll. Both tweens carry `hold: 0` now — the letter wave ends on the same unpin boundary as the sweep, where
+scrub means motion in both directions immediately.
 
 Mechanics worth knowing before editing:
 
-- **The sweep endpoints are measured from the line's own width**, so the copy can change length without retuning: the start pose
-  indents the line's head `headVw` from the left edge, the end pose parks its tail at `tailVw`. Both recompute on refresh through
-  GSAP's function-based values plus `invalidateOnRefresh`.
+- **The sweep endpoints are measured off the line itself**, so the copy can change length without retuning: the start pose puts the
+  line's head `headVw` of a viewport past the right edge, and the rest pose reads the last word's own box and centres that. Both
+  recompute on refresh through GSAP's function-based values plus `invalidateOnRefresh`.
 - **The drift is a fraction of the trigger's height, not the viewport's.** The reference tuned `y: 400` against a `100vh` desktop
   trigger and hides the section below `lg`; ours renders at every width, and 0.44 × a `35svh` mobile trigger is what keeps the line
   inside the section there.

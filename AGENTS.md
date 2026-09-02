@@ -94,11 +94,15 @@ without the other rescales the entire scene. See the note at the top of `constan
 
 **The client marquee's numbers are transcribed, not chosen.** `constants/marquee.js` holds values read off `wearestokt.com` on
 2026-08-25 — the live Framer `Ticker`'s own props plus its computed styles, not an eyeballed reconstruction: `speed: 40` px/s
-leftward, `gap: 150`, `padding: 10`, `fadeWidth: 46` (so the `mask-image` stops land at 23% and 77%), and no hover slowdown
-(`hoverFactor` is 1 there). The running speed was measured back at 40.00 px/s in this build. Retuning any of them is a design
-decision to raise, not a tidy-up. The logos themselves are **placeholders** — there are no client logo files in this repo. Do not
-invent brands to fill the strip; `ClientLogo` draws a geometric mark and `Client Logo 01`…`08` until real files land in
-`public/media/clients/`.
+leftward, `gap: 150`, `padding: 10`, `fadeWidth: 46` (so the `mask-image` stops land at 23% and 77%). Stokt has no hover slowdown
+(`hoverFactor` is 1 there); ours eases to quarter speed on hover (`hoverFactor: 0.25`, lerped by `hoverEase` — a full stop was
+rejected as "ruk jata hai") with a crossfade to the colour logo set, both instructed by the user on 2026-08-28 and a deliberate
+deviation from the transcription. The running speed was measured back at 40.00 px/s in this build. Retuning any of them is a
+design decision to raise, not a tidy-up. The logos are **real client marks** as of 2026-08-27, exported twice from
+the supplied originals that stay beside them in `public/media/clients/`: ink-on-transparent (`*.webp`) and original-colour
+(`*-color.webp`, LinkTax refilled in its brand navy because its white type cannot sit on the light strip). The strip runs the
+**ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
+flipping `src` values in `lib/content.js` is the whole change either way.
 
 **The preload gate must never be able to trap the page.** `lib/ui/reusable_components/preloader` holds a black overlay over
 everything until the globe paints its first frame, which reaches it through `lib/boot/ready.js`. That signal can legitimately never

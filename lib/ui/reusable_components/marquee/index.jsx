@@ -10,6 +10,8 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
   const trackRef = useRef(null);
   const groupRef = useRef(null);
   const spanRef = useRef(0);
+  const paceRef = useRef(1);
+  const restRef = useRef(1);
   const [copies, setCopies] = useState(MARQUEE.minCopies);
 
   useEffect(() => {
@@ -44,7 +46,8 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
       running = requestAnimationFrame(step);
       const delta = last ? Math.min((now - last) / 1000, 0.1) : 0;
       last = now;
-      offset = -wrap(speed * delta - offset, spanRef.current);
+      paceRef.current += (restRef.current - paceRef.current) * MARQUEE.hoverEase;
+      offset = -wrap(speed * paceRef.current * delta - offset, spanRef.current);
       track.style.transform = `translate3d(${offset}px, 0, 0)`;
     };
     const watcher = new IntersectionObserver(([entry]) => {
@@ -54,9 +57,19 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
         running = requestAnimationFrame(step);
       }
     });
+    const slow = () => {
+      restRef.current = MARQUEE.hoverFactor;
+    };
+    const resume = () => {
+      restRef.current = 1;
+    };
+    frame.addEventListener('pointerenter', slow);
+    frame.addEventListener('pointerleave', resume);
     watcher.observe(frame);
     return () => {
       watcher.disconnect();
+      frame.removeEventListener('pointerenter', slow);
+      frame.removeEventListener('pointerleave', resume);
       cancelAnimationFrame(running);
       running = 0;
     };

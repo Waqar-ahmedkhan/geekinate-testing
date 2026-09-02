@@ -273,14 +273,27 @@ them is a design decision, not a tidy-up.
 | `gap: 150` | Between items, and between the repeated groups |
 | `fadeWidth: 46` | Total percentage of the strip spent fading, split across the two edges — `mask-image` stops land at 23% and 77% |
 | `padding: 10` | The frame's own padding |
+| `hoverFactor: 0.25` | **Ours, not Stokt's** — the pace the track eases to while the pointer is inside the frame |
+| `hoverEase: 0.08` | **Ours** — the per-frame lerp toward that pace, so hover reads as a slow-down, not a switch |
 
 The track is measured rather than guessed: a `ResizeObserver` reads the first group's width, and the component renders exactly
 enough copies to cover the frame plus one. The wrap span is a group's width plus the gap, so the loop is seamless at any viewport.
-Hover does nothing — Stokt's `hoverFactor` is 1, and this matches it.
+Hover is ours, not Stokt's. Pointer entry eases the track to `hoverFactor` of its speed through a per-frame lerp of
+`hoverEase`, and every `ClientLogo` crossfades to its colour export over the same beat. A full stop was rejected — the strip has
+to keep moving.
 
-`ClientLogo` is a **placeholder**. There are no client logo files in this repo yet, so it draws a geometric lucide mark and a mono
-wordmark reading `Client Logo 01`…`08`, sourced from `clients` in `lib/content.js`. No real brand is implied and none should be
-invented; when the actual files arrive they land in `public/media/clients/` and `ClientLogo` becomes a `next/image`.
+`ClientLogo` is a `next/image` over the real marks. The source files the client supplied on 2026-08-27 sit untouched in
+`public/media/clients/`; each was flattened to a single-colour glyph in `--ink`, trimmed, and exported as a 160px-tall
+transparent WebP under a kebab-case name — twice over, as the ink glyph and an original-colour `*-color.webp` that the component
+stacks behind it and crossfades up on hover. `clients` in `lib/content.js` carries `{ name, src, width, size }` — width is the file's own,
+`size` is the display height in pixels. **Heights are deliberately not uniform**: a uniform height makes the compact lockups
+(Elevé, LVL AZN) read tiny beside wide wordmarks — flagged by the user on sight — so each mark's `size` approximates equal
+visual area (height ∝ 1/√aspect, clamped to 28–58) and `md` scales all of them by 1.15 through the `--logo-h` custom property.
+Two conversion recipes were needed: darkness-as-alpha for marks on white or transparent ground (this is also what discards LVL
+AZN's white sticker outline and every white backing), and
+colour-distance-from-background for LinkTax, whose source is light type on a solid blue JPG — its floor threshold exists
+because boosted JPG noise otherwise survives as a grey wash. The originals stay in the folder as the source of truth for
+re-exports; only the `.webp` files are referenced.
 
 ## The featured work section
 

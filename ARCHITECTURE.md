@@ -348,9 +348,14 @@ Two deliberate deviations from the reference:
 - Cards carry a **1px gradient ring** (`linear-gradient(126deg, …)` behind an inset fill) rather than a flat border. Stokt does the
   same trick; it is what stops a large dark card reading as a plain rectangle. On our black section the ring is paper at low alpha.
 
+The clips are cut on black, so the media box **bleeds to the card's edges** — `-mx-5` cancels the card's own padding, the card
+clips it, and the video carries `mix-blend-screen` so its ground drops out into the card fill instead of reading as a rectangle
+sitting inside it. A clip on any other ground will not survive that blend.
+
 `HoverVideoCard` renders a marked *Media pending* panel when `media.sources` is empty, so no `<video>` ever points at a missing file.
 Adding real clips is a content edit — drop files into `public/media/services/` and list them in `lib/content.js` as
-`{ src, type }`, webm first with an mp4 fallback second, since Safari's webm support is unreliable.
+`{ src, type }`. The shipped clips are mp4; a webm has to be listed first and always paired with an mp4 fallback, since Safari's
+webm support is unreliable.
 
 Playback is skipped entirely under `prefers-reduced-motion`.
 

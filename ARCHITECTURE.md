@@ -26,7 +26,7 @@ archive of the two older sites and holds nothing from this build.
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `node-graph/`, `preloader/`, `snake/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `preloader/`, `snake/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/curve/` | The letterform as geometry | `g-points.json` (generated, gitignored from Prettier), `gCurve.js` |
 | `lib/content.js` | Every user-facing string | Sections read their copy from here |
@@ -351,41 +351,15 @@ Two deliberate deviations from the reference:
 The clips are cut on black, so the media box **bleeds to the card's edges** — `-mx-5` cancels the card's own padding, the card
 clips it, and the video carries `mix-blend-screen` so its ground drops out into the card fill instead of reading as a rectangle
 sitting inside it. A clip on any other ground will not survive that blend. The box is `aspect-square`; it was `9/10` until the
-cards read too tall (2026-09-02).
+cards read too tall (2026-09-02). A clip listed with `loop: false` (the Games clip) plays once per hover and holds its last frame
+instead of rewinding.
 
-### The Development & AI card runs a drawn board, not a clip
+The Development & AI card runs `ai.mp4`. A drawn canvas workflow board — nine modules wired by PCB traces, a run walking down to
+the output — was built to replace it and rejected on 2026-09-03; the clip stays. The board is recoverable from commit `31ae7fb`
+if the idea comes back, and should not be rebuilt from scratch.
 
-`lib/ui/reusable_components/node-graph` replaces that card's video with a canvas workflow graph — nine modules wired by
-right-angled PCB traces, a run entering at a source and walking down to the output. `constants/nodeGraph.js` holds the layout,
-the timings and the palette; `board.js` owns the state (geometry sampled off throwaway SVG paths, pulses, heat, cooldowns),
-`glyphs.js` draws one icon per module and `paint.js` composes the frame.
-
-**Every module carries a role, and the roles tell the story**: `lead` and `mail` feed an `agent` module — bigger, double-ringed,
-lit brighter than the rest — which feeds `score`, `enrich` and `reply`, then `approve` and `crm`, then `booked`. The icons carry
-that on their own; a text label under the agent was tried on 2026-09-02 and cut, because 12px mono collided with the fan-out
-trace and read as noise at card size.
-
-Five things about it are decisions, not defaults:
-
-- **The canvas is transparent and paints no ground.** It first shipped opaque black and was rejected on sight (2026-09-02) — a
-  black rectangle inside a `glass` card reads as a hole. The top and bottom edges are softened by a `mask-image` on the wrapper
-  instead of by painted fades, because a painted fade needs a ground to fade to.
-- **Pulses only run while the card is hovered.** Idle, the board assembles once and then holds still; the loop stops itself the
-  frame nothing is left moving, and `pointerenter` on the card (`data-hover`) wakes it. Continuous running was rejected the same
-  day. On touch, where there is no hover, the board runs while it is on screen — the same rule `useHoverVideo` uses.
-- **A run picks a path, it does not flood the graph.** Each fired module sends one downstream trace, or two at `branchChance`,
-  so the light walks a route. Firing every outgoing edge at once was the prototype's behaviour and was rejected (2026-09-02) —
-  every line lighting together does not read as automation. `runEvery` is paced so one run has mostly cleared before the next
-  enters: measured at 43% of frames with a single pulse in flight, 34% with two, 13% with three.
-- **The canvas backing store is a whole number of device pixels and the CSS size is derived back from it.** Sizing the bitmap
-  from a fractional `getBoundingClientRect` width leaves the browser resampling by a fraction, and the whole board reads soft —
-  reported as "low quality" on 2026-09-02. `maxDpr` is 3.
-- **The accent is `--volt`.** The prototype came in on `#8CE563`, a second green this site does not have. There is one accent.
-
-The graph is scaled to **fit**, not cover, so the whole workflow is visible at any card size.
-
-A card with neither `media` nor `visual` renders **no media box at all** — the Marketing card has run that way since its stock
-clip was cut on 2026-09-02 — so no `<video>` ever points at a missing file. Adding a clip is a content edit: drop the file into
+A card with no `media` renders **no media box at all** — the Marketing card has run that way since its stock clip was cut on
+2026-09-02 — so no `<video>` ever points at a missing file. Adding a clip is a content edit: drop the file into
 `public/media/services/` and list it in `lib/content.js` as `{ src, type }`. The shipped clips are mp4; a webm has to be listed
 first and always paired with an mp4 fallback, since Safari's webm support is unreliable.
 

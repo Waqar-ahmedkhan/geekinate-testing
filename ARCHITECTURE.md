@@ -351,7 +351,7 @@ Two deliberate deviations from the reference:
 The clips are cut on black, so the media box **bleeds to the card's edges** — `-mx-5` cancels the card's own padding, the card
 clips it, and the video carries `mix-blend-screen` so its ground drops out into the card fill instead of reading as a rectangle
 sitting inside it. A clip on any other ground will not survive that blend. The box is `aspect-square`; it was `9/10` until the
-cards read too tall (2026-09-02). A clip listed with `loop: false` (the Games clip) plays once per hover and holds its last frame
+cards read too tall (2026-09-02). Both clips are listed with `loop: false`: each plays once per hover and holds its last frame
 instead of rewinding.
 
 The Development & AI card runs `ai.mp4`. A drawn canvas workflow board — nine modules wired by PCB traces, a run walking down to

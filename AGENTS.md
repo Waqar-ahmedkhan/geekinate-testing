@@ -28,7 +28,7 @@ Run everything from the repo root:
 
 | Command | Notes |
 |---|---|
-| `npm run dev` | Turbopack dev server. **Port 3007**, pinned in the script so it never collides with a sibling project (Eleve holds 3006) |
+| `npm run dev` | Turbopack dev server. **Port 3008**, pinned in the script so it never collides with a sibling project (Eleve holds 3006) |
 | `npm run build` | A failure here is usually a prerender error, not a compile error |
 | `npm run lint` | Warnings ship as errors. Clear them, do not suppress |
 | `npm run format` | Prettier across the repo |

@@ -4,6 +4,7 @@ export * from './globe';
 export * from './grain';
 export * from './lab';
 export * from './marquee';
+export * from './nodeGraph';
 export * from './preloader';
 export * from './snake';
 export * from './substrate';

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import gsap from 'gsap';
 import TestimonialCard from './TestimonialCard';
 
 const ANCHORS = ['end', 'start', 'end', 'center', 'end', 'center', 'start', 'end', 'start', 'center', 'start', 'end'];
@@ -13,25 +14,21 @@ const wrap = (offset, half) => (half > 0 ? ((offset % half) + half) % half : 0);
 
 export default function TestimonialMarquee({ items }) {
   const trackRef = useRef(null);
+  const badgeRef = useRef(null);
   const offsetRef = useRef(0);
-  const frameRef = useRef(0);
   const lastRef = useRef(0);
   const speedRef = useRef(1);
   const targetRef = useRef(1);
   const dragRef = useRef(null);
-  const [badge, setBadge] = useState(null);
+  const [hovering, setHovering] = useState(false);
   const loop = [...items, ...items];
   useEffect(() => {
     const track = trackRef.current;
     if (!track || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     let half = track.scrollWidth / 2,
-      visible = false;
-    const step = (now) => {
-      if (!visible) {
-        frameRef.current = 0;
-        return;
-      }
-      frameRef.current = requestAnimationFrame(step);
+      running = false;
+    const step = (time) => {
+      const now = time * 1000;
       const elapsed = lastRef.current ? Math.min((now - lastRef.current) / 1000, 0.1) : 0;
       lastRef.current = now;
       speedRef.current += (targetRef.current - speedRef.current) * Math.min(1, elapsed * EASE);
@@ -43,19 +40,19 @@ export default function TestimonialMarquee({ items }) {
       half = track.scrollWidth / 2;
     });
     const watcher = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible && !frameRef.current) {
-        lastRef.current = 0;
-        frameRef.current = requestAnimationFrame(step);
-      }
+      if (entry.isIntersecting === running) return;
+      running = entry.isIntersecting;
+      lastRef.current = 0;
+      if (running) gsap.ticker.add(step);
+      else gsap.ticker.remove(step);
     });
     sizer.observe(track);
     watcher.observe(track);
     return () => {
       sizer.disconnect();
       watcher.disconnect();
-      cancelAnimationFrame(frameRef.current);
-      frameRef.current = 0;
+      gsap.ticker.remove(step);
+      running = false;
       lastRef.current = 0;
     };
   }, []);
@@ -64,8 +61,11 @@ export default function TestimonialMarquee({ items }) {
     event.currentTarget.setPointerCapture(event.pointerId);
   };
   const moveDrag = (event) => {
-    const bounds = event.currentTarget.getBoundingClientRect();
-    setBadge({ x: event.clientX - bounds.left, y: event.clientY - bounds.top });
+    const badge = badgeRef.current;
+    if (badge) {
+      const bounds = event.currentTarget.getBoundingClientRect();
+      badge.style.transform = `translate3d(${event.clientX - bounds.left}px, ${event.clientY - bounds.top}px, 0) translate(-50%, -50%)`;
+    }
     if (!dragRef.current) return;
     offsetRef.current = dragRef.current.origin + (event.clientX - dragRef.current.pointer);
   };
@@ -74,13 +74,15 @@ export default function TestimonialMarquee({ items }) {
     dragRef.current = null;
     event.currentTarget.releasePointerCapture(event.pointerId);
   };
-  const enter = () => (targetRef.current = SLOW);
+  const enter = () => {
+    targetRef.current = SLOW;
+    setHovering(true);
+  };
   const leave = () => {
     targetRef.current = 1;
     dragRef.current = null;
-    setBadge(null);
+    setHovering(false);
   };
-  const badgeStyle = badge ? { left: `${badge.x}px`, top: `${badge.y}px` } : null;
   return (
     <div
       className='relative cursor-none overflow-hidden select-none'
@@ -102,11 +104,11 @@ export default function TestimonialMarquee({ items }) {
           </div>
         ))}
       </div>
-      {badgeStyle ? (
+      {hovering ? (
         <span
+          ref={badgeRef}
           aria-hidden='true'
-          className='pointer-events-none absolute z-10 flex size-[76px] -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-paper font-mono text-[10px] uppercase tracking-[0.1em] text-ink'
-          style={badgeStyle}
+          className='pointer-events-none absolute left-0 top-0 z-10 flex size-[76px] items-center justify-center rounded-full bg-paper font-mono text-[10px] uppercase tracking-[0.1em] text-ink'
         >
           &#8592; Drag &#8594;
         </span>

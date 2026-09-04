@@ -1,9 +1,10 @@
 import { Eyebrow, Section, StepIndex } from '@/components';
 import { ContactForm } from '@/lib/ui/reusable_components';
+import { cn } from '@/lib/utils';
 import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
-export default function Contact() {
+export default function Contact({ className }) {
   const { eyebrow, heading, intro, availability, steps, direct } = contactContent;
   const stepEls = steps.map(({ title, detail }, index) => (
     <li key={title} className='flex gap-4'>
@@ -16,7 +17,7 @@ export default function Contact() {
   ));
   return (
     <Section id='contact' variant='paper'>
-      <div className='mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-2 lg:items-start lg:gap-16'>
+      <div className={cn('mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-2 lg:items-start lg:gap-16', className)}>
         <div className='flex flex-col gap-8 lg:sticky lg:top-[calc(var(--nav-rail)+2.5rem)]'>
           <header className='flex flex-col gap-4'>
             <Eyebrow>{eyebrow}</Eyebrow>

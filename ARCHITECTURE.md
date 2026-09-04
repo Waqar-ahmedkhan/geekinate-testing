@@ -59,7 +59,8 @@ Shape inherited from `../Eleve/development/frontend`:
 - `app/` pages compose sections and do nothing else.
 
 Built so far, in page order: `features/hero` (01), `features/clients`, `features/work` (02), `features/services` (03),
-`features/testimonials` (04), `features/cta`, `features/contact`.
+`features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-masthead` and
+`features/service-dossier` (which owns `Block.jsx` and `Timeline.jsx`), and reuses `features/contact`.
 Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes. The hero carries no copy yet,
 so it has no entry there.
 
@@ -68,10 +69,11 @@ so it has no entry there.
 | Route | File | Rendering |
 |---|---|---|
 | `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, cta, contact |
+| `/services/[slug]` | `app/services/[slug]/page.js` | SSG. One route serves all three disciplines; `generateStaticParams` reads `services` in `lib/content.js`, `dynamicParams` is `false` so anything else 404s |
 | `/partner` | `app/partner/page.js` | Static. Referral Partner Program — 13 sections from `features/partner`, plus `FAQPage` JSON-LD |
 | `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
 | 404 | `app/not-found.js` | Static |
-| `/sitemap.xml` | `app/sitemap.js` | Static. **Routes are listed by hand** — nothing is discovered |
+| `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service routes are derived from `services` |
 | `/robots.txt` | `app/robots.js` | Static |
 
 `app/layout.js` owns fonts, metadata, the site JSON-LD graph, `Preloader`, `Nav`, `Footer`, and the toaster.

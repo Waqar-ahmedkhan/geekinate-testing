@@ -9,7 +9,7 @@ export default function Services() {
       <SectionHead eyebrow={eyebrow} heading={heading} body={body} />
       <div className='grid gap-4 md:grid-cols-3'>
         {services.map(({ slug, title, summary, media }) => (
-          <HoverVideoCard key={slug} title={title} summary={summary} media={media} />
+          <HoverVideoCard key={slug} title={title} summary={summary} href={`/services/${slug}`} media={media} />
         ))}
       </div>
     </Section>

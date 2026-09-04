@@ -1,10 +1,11 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { createGrain, grainFade, shedGrain, shedRing, stepGrain } from './pool';
 import { bakeGrain } from './sprite';
 import { pointer } from '@/lib/input/pointer';
-import { scrollProgress } from '@/lib/scroll/progress';
+import { pageOffset, scrollProgress } from '@/lib/scroll/progress';
 import { GRAIN } from '@/constants';
 
 const LIGHT_GROUND = 140;
@@ -41,8 +42,7 @@ export default function GrainWake() {
     let sprites = [],
       width = 0,
       height = 0;
-    let frame = 0,
-      stamp = 0,
+    let stamp = 0,
       lastX = 0,
       lastY = 0,
       lastScroll = -1,
@@ -62,14 +62,14 @@ export default function GrainWake() {
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
       sprites = bakeGrain(dpr);
     };
-    const draw = (now) => {
-      frame = requestAnimationFrame(draw);
+    const draw = (time) => {
+      const now = time * 1000;
       const delta = Math.min((now - stamp) / 1000, 0.05);
       stamp = now;
       const dx = pointer.px - lastX,
         dy = pointer.py - lastY;
       const moved = dx !== 0 || dy !== 0;
-      const scroll = window.scrollY;
+      const scroll = pageOffset();
       if (scroll !== lastScroll && lastScroll >= 0) scrolledAt = now;
       lastScroll = scroll;
       const target = pointer.active > 0 && now - scrolledAt < GRAIN.ringHoldMs ? 1 : 0;
@@ -108,10 +108,9 @@ export default function GrainWake() {
     };
     resize();
     window.addEventListener('resize', resize);
-    frame = requestAnimationFrame(draw);
+    gsap.ticker.add(draw);
     return () => {
-      cancelAnimationFrame(frame);
-      frame = 0;
+      gsap.ticker.remove(draw);
       window.removeEventListener('resize', resize);
     };
   }, []);

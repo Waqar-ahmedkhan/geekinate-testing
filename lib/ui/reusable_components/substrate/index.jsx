@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
 import { createLife } from '../cosmos/automata';
 import { getCloud } from '../cosmos/cloud';
 import { scrollProgress } from '@/lib/scroll/progress';
@@ -73,16 +74,15 @@ export default function SubstrateField() {
     const life = createLife();
     const size = { width: 0, height: 0 };
     const grid = { width: 0, height: 0 };
-    let frame = 0,
+    let running = false,
       last = 0,
-      clock = 0,
-      visible = false;
+      clock = 0;
     const watcher = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting;
-      if (visible && !frame) {
-        last = 0;
-        frame = requestAnimationFrame(tick);
-      }
+      if (entry.isIntersecting === running) return;
+      running = entry.isIntersecting;
+      last = 0;
+      if (running) gsap.ticker.add(tick);
+      else gsap.ticker.remove(tick);
     });
     const measure = (box) => {
       const width = document.documentElement.clientWidth,
@@ -100,12 +100,8 @@ export default function SubstrateField() {
         rows = Math.max(8, Math.round(box.height / SUBSTRATE.cell));
       if (life.resize(cols, rows)) life.scatter(SUBSTRATE.seedDensity);
     };
-    function tick(now) {
-      if (!visible) {
-        frame = 0;
-        return;
-      }
-      frame = requestAnimationFrame(tick);
+    function tick(time) {
+      const now = time * 1000;
       const box = readBox(panel, window.innerHeight);
       if (!box) return;
       measure(box);
@@ -125,8 +121,8 @@ export default function SubstrateField() {
     watcher.observe(panel);
     return () => {
       watcher.disconnect();
-      cancelAnimationFrame(frame);
-      frame = 0;
+      gsap.ticker.remove(tick);
+      running = false;
     };
   }, []);
 

@@ -2,12 +2,14 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import BrandMark from '../BrandMark';
 import GlassPill from './GlassPill';
 import MobileMenu from './MobileMenu';
 import NavLinks from './NavLinks';
 import ProgressRing from './ProgressRing';
 import useScrollProgress from './useScrollProgress';
+import { scrollToTop as glideToTop } from '@/lib/scroll/controller';
 import { cn } from '@/lib/utils';
 import { LAYOUT, NAV_CTA, NAV_LINKS, SITE } from '@/constants';
 
@@ -43,6 +45,7 @@ const MenuPill = () => (
 );
 
 export default function Nav() {
+  const pathname = usePathname();
   const pillRef = useRef(null);
   const railRef = useRef(null);
   const ringRef = useRef(null);
@@ -120,6 +123,11 @@ export default function Nav() {
       window.removeEventListener('resize', watch);
     };
   }, []);
+  const scrollToTop = (event) => {
+    if (pathname !== '/') return;
+    event.preventDefault();
+    glideToTop();
+  };
   const pillStyle = { width: `${collapsed ? PILL_COLLAPSED : PILL_EXPANDED}px`, height: `${PILL_HEIGHT}px`, transition: WIDTH_TRANSITION };
   const brandTone = collapsed ? 'border-0 bg-volt text-ink shadow-none backdrop-blur-none' : '';
   const wordmarkStyle = { maxWidth: collapsed ? 0 : '12rem', paddingLeft: collapsed ? 0 : '0.5rem', transition: WORDMARK_TRANSITION };
@@ -135,6 +143,7 @@ export default function Nav() {
               <Link
                 href='/'
                 aria-label={`${SITE.name} home`}
+                onClick={scrollToTop}
                 className='flex items-center font-logo text-base leading-none whitespace-nowrap'
               >
                 <BrandMark size={24} bare={collapsed} className='shrink-0' />

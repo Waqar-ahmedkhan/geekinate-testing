@@ -110,6 +110,22 @@ arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` co
 gating on a signal without one, ships a black screen to whoever the globe fails for. `minMs` is the other half: it stops a warm
 cache flashing the overlay for three frames.
 
+**The service page is a different layout system from the home page, on purpose.** `/services/[slug]` was first built as the home
+page's own language — a `clear` hero over the globe, alternating bands, the reused `Cta` letter sweep — and was rejected on
+2026-09-04 as "a replica of home page". It now runs a Swiss-grid dossier instead: an opaque `ink` masthead at `min-h-svh` (service
+title as the `h1`, the positioning line, a three-cell spec strip pinned to the bottom), then one `paper` section holding Scope,
+Process and Deliverables against a sticky right-hand index rail, then the reused `Contact`. **No canvas shows through anywhere
+above the footer** — every section is opaque, which is the point. The tokens, geometry and type are unchanged; only the layout
+system differs, and that difference is what makes a detail page read as one. The masthead is a split: title, positioning line
+and lead in columns 1-6, the service's own clip in a bordered panel in columns 7-12, spec strip pinned across the foot. It was
+a single left-aligned column first and read as a mostly empty screen at `min-h-svh`; the panel is what earns the height.
+
+**Every heading on the service page shares one left edge — the section gutter.** Three edges shipped by accident first (masthead at
+the gutter, dossier content offset by a left rail, `Contact` centred inside its own `max-w-6xl`) and the stagger was the first thing
+the user called out. The rail therefore sits in columns 10-12, not 1-3, and `Contact` takes an optional `className` so the service
+page can pass `max-w-none`. Home passes nothing and keeps its centred column. Do not reintroduce a left rail or a second container
+width here without re-checking all four headings measure the same `left`.
+
 **Nothing below the hero is 3D.** Work, Services and Testimonials stay on the flat system — white ground, ink borders, hard offset
 shadows, no blur-based depth — and they are opaque, which is what hides the scattered field behind them. Reaching for a soft shadow,
 a glow or a gradient down there because "the hero does it" is the misreading to avoid.
@@ -141,6 +157,12 @@ Without it, `import { Section } from '@/components'` resolves to the **`componen
 tries `components.json` before `components/index.js`. The failure is silent — every named import returns `undefined` and the build
 dies at prerender with `Element type is invalid ... got: undefined`, naming no file. Do not remove that mapping. Directory barrels
 without a colliding sibling file (`@/constants`) resolve normally.
+
+**A page with no `#hero` used to park the particle cloud in its globe pose forever.** `stage.heroOut` only advanced while `#hero`
+was on the page, so on `/services/[slug]` it stayed at `0`, `orbiting` stayed at `1`, and the globe never sank or dispersed. Every
+section above the footer is opaque there, so it presented as "the globe appears in the footer" rather than as a stuck stage value.
+`measureStage` now falls back to `heroOut = 1` when the page carries no hero, which is the honest reading: no hero, nothing to
+disperse from. Any future route without a `#hero` depends on that fallback.
 
 **rAF frame ids in refs survive StrictMode's dev remount.** Cleanup must reset the id to `0` after `cancelAnimationFrame`, or the
 second mount sees a stale non-zero id, never schedules another frame, and the animation silently freezes. This already cost real

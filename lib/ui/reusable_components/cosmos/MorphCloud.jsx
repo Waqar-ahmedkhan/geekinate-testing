@@ -21,7 +21,7 @@ const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const fitScale = (aspect) => Math.min(1, (VISIBLE_HEIGHT * aspect * 0.4) / COSMOS.glyphRadius);
 
 const PANEL_RAIL = 40;
-const rightHalfCentre = (width, viewHalf) => (0.5 - PANEL_RAIL / width) * viewHalf;
+const rightHalfCentre = (width, viewHalf) => (width < COSMOS.footerSplit ? 0 : (0.5 - PANEL_RAIL / width) * viewHalf);
 
 const nearestAnchor = (anchors, spin, lean, radius, centreY, target) => {
   const cosSpin = Math.cos(spin),

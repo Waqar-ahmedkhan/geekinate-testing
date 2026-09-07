@@ -23,7 +23,7 @@ const RETREAT_LEAD = 24;
 const RETREAT_TRANSITION = `transform ${RETREAT_MS}ms ${EASE}`;
 const SPREAD_MS = 720;
 const SPREAD_TRANSITION = `max-width ${SPREAD_MS}ms ${EASE}`;
-const CTA = { label: 'Start a project', href: '#contact' };
+const CTA = { label: 'Start a project', href: '/#contact' };
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 

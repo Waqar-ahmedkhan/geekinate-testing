@@ -1,0 +1,37 @@
+export const PARTNER = {
+  path: '/partner',
+  formId: 'referral-form',
+  standardRate: 10,
+  establishedRate: 15,
+  windowMonths: 12,
+  modes: { partner: 'partner', lead: 'lead' },
+  hashes: { partner: 'become-a-partner', lead: 'refer-a-lead' },
+  limits: {
+    name: 80,
+    email: 200,
+    company: 120,
+    website: 200,
+    partnerType: 40,
+    prospectName: 80,
+    prospectCompany: 120,
+    network: 600,
+    opportunity: 1000,
+  },
+  minName: 2,
+  minOpportunity: 20,
+  trackedSections: ['what-to-refer', 'commission', 'trust', 'referral-form'],
+};
+
+export const PARTNER_EVENTS = {
+  pageView: 'partner_page_view',
+  ctaClick: 'partner_cta_click',
+  sectionView: 'partner_section_view',
+  faqToggle: 'partner_faq_toggle',
+  modeSelected: 'partner_form_mode_selected',
+  formStart: 'partner_form_start',
+  validationError: 'partner_form_validation_error',
+  formSubmit: 'partner_form_submit',
+  formSuccess: 'partner_form_success',
+  formFailure: 'partner_form_failure',
+  directEmail: 'partner_direct_email_click',
+};

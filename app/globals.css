@@ -66,6 +66,23 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --animate-rail-run: rail-run 5s linear infinite;
+  @keyframes rail-run {
+    0% {
+      transform: translateY(0);
+      opacity: 0;
+    }
+    10% {
+      opacity: 1;
+    }
+    90% {
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
 }
 
 :root {
@@ -141,6 +158,23 @@
   --brutal-sm: 2px 2px 0 var(--ink);
   --edge-hi: rgba(16, 22, 19, 0.22);
   --edge-lo: rgba(16, 22, 19, 0.06);
+}
+
+.on-ink {
+  --line: rgba(253, 253, 251, 0.13);
+  --line-volt: rgba(184, 224, 27, 0.38);
+  --paper-mut: rgba(253, 253, 251, 0.62);
+  --foreground: var(--white);
+  --glass: rgba(5, 7, 4, 0.5);
+  --glass-blur: blur(14px) saturate(125%);
+  --glass-lift: rgba(253, 253, 251, 0.045);
+  --edge-hi: rgba(253, 253, 251, 0.18);
+  --edge-lo: rgba(253, 253, 251, 0.04);
+}
+
+.on-ink.ring-edge {
+  background-color: #000;
+  background-image: linear-gradient(126deg, var(--edge-hi) 0%, var(--edge-lo) 100%);
 }
 
 .dark {

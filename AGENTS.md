@@ -194,6 +194,33 @@ turns, and nothing may drop below a radius of curvature of the tube radius or th
 under-reads the width by 17% and clips it off both edges of a phone. The camera's field of view is vertical, so width is the axis
 that fails first and it fails only at narrow aspect ratios — a desktop check will not catch it.
 
+**A shadcn default that references `--border` or `--muted-foreground` does not adapt to `.on-paper`.** Both are declared on
+`:root` as `var(--line)` / `var(--paper-mut)`, and custom-property substitution happens where the declaration lives — so they lock
+to the root's dark values and `.on-paper`'s override never reaches them. `Separator` rendered white-on-white and the accordion
+chevron was invisible on every paper section. Use `border-line` and `text-mut`, which resolve per element. This has now bitten
+three generated components; check any new shadcn output for these two tokens before trusting it.
+
+**Radix emits `data-state="checked"`, not `data-checked`.** The `radix-nova` shadcn style writes `data-checked:` variants
+throughout `checkbox.jsx` and `radio-group.jsx`, so every checked-state style in them is dead on arrival — a selected radio simply
+renders as unselected. Retarget to `data-[state=checked]:`. Safer still for anything load-bearing: derive the class from React
+state, the way `contact-form` styles its chips.
+
+**`npx shadcn add` installs a junk npm package called `cn`.** It writes `import { cn } from "cn"` instead of the configured
+`@/lib/utils` alias and then installs a real, unrelated package of that name to satisfy it. Both times it has run here it did this.
+After every `add`: fix the imports and `npm remove cn`, then confirm `package.json` and the lockfile show no diff.
+
+**A grid item will not shrink below its content.** Grid and flex children default to `min-width: auto`, so a two-column editorial
+grid that stacks on mobile can still force its track wider than the container — `/partner`'s contact grid overflowed 320px by 12px
+this way, and the offenders all measured as the *column*, not the thing inside it that was actually too wide. `[&>*]:min-w-0` on
+the grid is the fix; chasing the widest descendant is a dead end.
+
+**`IntersectionObserver`'s ratio is relative to the target, not the viewport.** A threshold of `0.5` on a section taller than the
+screen can never fire, silently. Compare `intersectionRect.height` against `Math.min(sectionHeight, innerHeight) * 0.5` instead.
+
+**An in-page hash link does not fire `hashchange` here.** With Lenis anchors and the Next router in play, a CTA pointing at
+`#refer-a-lead` scrolls but never notifies a `hashchange` listener, so anything keyed on it works on a cold load and silently fails
+on a click. Publish the intent through a module singleton instead — `lib/partner/intent.js`, the same shape as `lib/boot/ready.js`.
+
 **Wall-clock timing measures nothing about a scroll- or rAF-driven animation under browser automation.** Sampling a marquee's
 transform, sleeping four seconds through a tool call, and sampling again read the ticker back at **1.62 px/s against an actual
 40.00** — because the tab is backgrounded between calls and `requestAnimationFrame` is paused for almost all of that wall time,

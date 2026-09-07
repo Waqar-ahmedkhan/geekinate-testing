@@ -89,6 +89,7 @@ export default function MorphCloud({ onFirstFrame }) {
     stage.globe = adopting ? orbiting : stage.globe + (orbiting - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
     values.uForm.value = stage.form;
     values.uGlobeMix.value = stage.globe;
+    values.uOpacity.value = stage.hero ? 1 : clamp01(stage.footerIn * COSMOS.herolessFade);
     values.uScale.value = scale;
     const anchor = rightHalfCentre(state.size.width, viewHalf);
     values.uOffsetX.value = anchor * stage.form;

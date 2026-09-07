@@ -4,6 +4,7 @@ export * from './globe';
 export * from './grain';
 export * from './lab';
 export * from './marquee';
+export * from './partner';
 export * from './preloader';
 export * from './snake';
 export * from './substrate';
@@ -21,10 +22,10 @@ export const SITE = {
 export const LAYOUT = { container: 1440 };
 
 export const NAV_LINKS = [
-  { label: 'Services', href: '#services' },
-  { label: 'Work', href: '#work' },
-  { label: 'Process', href: '#process' },
-  { label: 'Contact', href: '#contact' },
+  { label: 'Services', href: '/#services' },
+  { label: 'Work', href: '/#work' },
+  { label: 'Process', href: '/#process' },
+  { label: 'Contact', href: '/#contact' },
 ];
 
 export const SOCIALS = [

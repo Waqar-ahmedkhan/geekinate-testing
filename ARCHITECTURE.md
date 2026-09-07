@@ -29,13 +29,17 @@ archive of the two older sites and holds nothing from this build.
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `preloader/`, `snake/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/curve/` | The letterform as geometry | `g-points.json` (generated, gitignored from Prettier), `gCurve.js` |
-| `lib/content.js` | Every user-facing string | Sections read their copy from here |
+| `lib/content/index.js` | Every user-facing string for `/` | Sections read their copy from here |
+| `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
+| `lib/analytics.js` | Vendor-neutral event shim | `track()` pushes to `window.dataLayer`; no provider is installed |
+| `lib/partner/intent.js` | Which form mode a CTA asked for | `chooseIntent()` from a CTA, `watchIntent()` from the form — same shape as `lib/boot/ready.js` |
 | `lib/seo.js` | Metadata + JSON-LD builders | Single definition of metadata shape |
 | `lib/utils.js` | `cn` | shadcn's class merger |
 | `constants/index.js` | `SITE`, `NAV_LINKS`, `SOCIALS` | Site identity and static data; re-exports `snake.js` |
 | `constants/snake.js` | Every tunable the 3D mark reads | One place for the magic numbers, per the brief |
 | `constants/preloader.js` | Every tunable the preload gate reads | Ring geometry, milestone weights, the timing floor and the failsafe |
 | `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
+| `constants/partner.js` | Commercial terms and form limits | `PARTNER` rates/window/limits, `PARTNER_EVENTS` names. Rates are fixed product requirements, not design values |
 | `scripts/` | One-off build scripts | `sample-g-path.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
 
@@ -64,6 +68,8 @@ so it has no entry there.
 | Route | File | Rendering |
 |---|---|---|
 | `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, cta, contact |
+| `/partner` | `app/partner/page.js` | Static. Referral Partner Program — 13 sections from `features/partner`, plus `FAQPage` JSON-LD |
+| `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. **Routes are listed by hand** — nothing is discovered |
 | `/robots.txt` | `app/robots.js` | Static |
@@ -541,7 +547,13 @@ Zustand, which the brief explicitly allows and which costs one file.
 - **All twelve testimonials are invented**, names and roles included. They must be replaced with real, cleared quotes before this
   is public — fabricated client praise is the one placeholder on the page that is not merely unfinished. No headshots exist
   either, so the avatar renders the speaker's initials rather than stock faces standing in for clients.
-- The footer's Legal column links nowhere — no privacy or terms page exists.
+- The footer's Legal column links nowhere — no privacy or terms page exists. `/partner`'s consent checkboxes therefore state the
+  Privacy Policy as plain text with no link, and section 10 omits the `Read referral terms →` link entirely rather than pointing at
+  a placeholder. Both need wiring when those pages exist, along with the `partner_terms_click` event.
+- **`/partner` cannot actually deliver a submission yet.** `app/api/partner/route.js` returns `503 not-configured` unless
+  `PARTNER_WEBHOOK_URL`/`CONTACT_WEBHOOK_URL`, or `RESEND_API_KEY` + `PARTNER_TO`/`CONTACT_TO` + `CONTACT_FROM`, are set. Until then
+  every real submit shows the failure panel with the mailto fallback.
+- No analytics provider is installed. `lib/analytics.js` queues events on `window.dataLayer` for whichever provider lands.
 - `NAV_LINKS` points at anchors no section defines yet.
 - **The hero has no copy.** No H1, no CTA, no eyebrow — the mark alone. The brief requires those to be real DOM above the canvas,
   and they wait on wording rather than being invented. Nothing in `lib/content.js` covers section 01 yet.

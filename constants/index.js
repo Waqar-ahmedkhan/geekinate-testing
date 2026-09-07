@@ -28,6 +28,8 @@ export const NAV_LINKS = [
   { label: 'Contact', href: '/#contact' },
 ];
 
+export const NAV_CTA = { label: 'Start a project', href: '/#contact' };
+
 export const SOCIALS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/geekinate' },
   { label: 'GitHub', href: 'https://github.com/geekinate' },

@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { watchScrollLock } from '@/lib/scroll/lock';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { SNAKE } from '@/constants';
 
@@ -18,11 +19,14 @@ export default function SmoothScroll() {
       scrollProgress.raw = Number.isFinite(progress) ? progress : 0;
     };
     const advance = (time) => lenis.raf(time * 1000);
+    const hold = (held) => (held ? lenis.stop() : lenis.start());
     lenis.on('scroll', track);
     lenis.on('scroll', ScrollTrigger.update);
     gsap.ticker.add(advance);
     gsap.ticker.lagSmoothing(0);
+    const release = watchScrollLock(hold);
     return () => {
+      release();
       gsap.ticker.remove(advance);
       gsap.ticker.lagSmoothing(500, 33);
       lenis.off('scroll', track);

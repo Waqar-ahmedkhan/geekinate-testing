@@ -25,7 +25,7 @@ export default function Conversion() {
     </li>
   ));
   return (
-    <Section id={PARTNER.formId} variant='paper' className='pb-[calc(var(--nav-rail)+3rem+env(safe-area-inset-bottom))] md:pb-28'>
+    <Section id={PARTNER.formId} variant='paper'>
       <span id={PARTNER.hashes.partner} aria-hidden='true' className='block scroll-mt-[var(--nav-rail)]' />
       <span id={PARTNER.hashes.lead} aria-hidden='true' className='block scroll-mt-[var(--nav-rail)]' />
       <div className='mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-2 lg:items-start lg:gap-16 [&>*]:min-w-0'>

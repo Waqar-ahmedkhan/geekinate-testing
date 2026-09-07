@@ -4,11 +4,12 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import BrandMark from '../BrandMark';
 import GlassPill from './GlassPill';
+import MobileMenu from './MobileMenu';
 import NavLinks from './NavLinks';
 import ProgressRing from './ProgressRing';
 import useScrollProgress from './useScrollProgress';
 import { cn } from '@/lib/utils';
-import { LAYOUT, NAV_LINKS, SITE } from '@/constants';
+import { LAYOUT, NAV_CTA, NAV_LINKS, SITE } from '@/constants';
 
 const PILL_HEIGHT = 40;
 const PILL_COLLAPSED = 56;
@@ -23,21 +24,20 @@ const RETREAT_LEAD = 24;
 const RETREAT_TRANSITION = `transform ${RETREAT_MS}ms ${EASE}`;
 const SPREAD_MS = 720;
 const SPREAD_TRANSITION = `max-width ${SPREAD_MS}ms ${EASE}`;
-const CTA = { label: 'Start a project', href: '/#contact' };
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 
-const MenuPill = ({ className }) => (
-  <GlassPill className={cn('h-[45px] gap-1.5 px-1.5 sm:gap-2', className)}>
+const MenuPill = () => (
+  <GlassPill className='h-[45px] gap-1.5 px-1.5 sm:gap-2'>
     <NavLinks
       items={NAV_LINKS}
       className='min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
     />
     <Link
-      href={CTA.href}
+      href={NAV_CTA.href}
       className='border-brutal shrink-0 rounded-full bg-volt px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-ink shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85 sm:px-5 sm:text-sm'
     >
-      {CTA.label}
+      {NAV_CTA.label}
     </Link>
   </GlassPill>
 );
@@ -126,39 +126,31 @@ export default function Nav() {
   const railStyle = { transform: overFooter ? 'translateY(-100%)' : 'translateY(0)', transition: RETREAT_TRANSITION };
   const contained = !collapsed;
   const spreadStyle = { maxWidth: `${contained ? LAYOUT.container : railWidth || LAYOUT.container}px`, transition: SPREAD_TRANSITION };
-  const mobileRailStyle = {
-    transform: overFooter ? 'translateY(calc(100% + 1rem))' : 'translateY(0)',
-    transition: RETREAT_TRANSITION,
-  };
   return (
-    <>
-      <nav ref={railRef} className='sticky top-0 z-50 px-4 pt-4 md:px-[30px] md:pt-[30px]' style={railStyle}>
-        <div className='mx-auto' style={spreadStyle}>
-          <div className='relative h-[46px]'>
-            <div className='absolute left-1/2 top-0 -translate-x-1/2'>
-              <GlassPill ref={pillRef} className={cn('justify-center px-3', brandTone)} style={pillStyle}>
-                <Link
-                  href='/'
-                  aria-label={`${SITE.name} home`}
-                  className='flex items-center font-logo text-base leading-none whitespace-nowrap'
-                >
-                  <BrandMark size={24} bare={collapsed} className='shrink-0' />
-                  <span className='overflow-hidden' style={wordmarkStyle}>
-                    {SITE.name}
-                  </span>
-                </Link>
-                <ProgressRing ref={ringRef} width={ringWidth} height={PILL_HEIGHT} visible={collapsed} onPaper={onPaper} />
-              </GlassPill>
-            </div>
-            <div className='absolute right-0 top-0 hidden lg:block'>
-              <MenuPill />
-            </div>
+    <nav ref={railRef} className='sticky top-0 z-50 px-4 pt-4 md:px-[30px] md:pt-[30px]' style={railStyle}>
+      <div className='mx-auto' style={spreadStyle}>
+        <div className='relative h-[46px]'>
+          <div className='absolute left-0 top-0 min-[360px]:left-1/2 min-[360px]:-translate-x-1/2'>
+            <GlassPill ref={pillRef} className={cn('justify-center px-3', brandTone)} style={pillStyle}>
+              <Link
+                href='/'
+                aria-label={`${SITE.name} home`}
+                className='flex items-center font-logo text-base leading-none whitespace-nowrap'
+              >
+                <BrandMark size={24} bare={collapsed} className='shrink-0' />
+                <span className='overflow-hidden' style={wordmarkStyle}>
+                  {SITE.name}
+                </span>
+              </Link>
+              <ProgressRing ref={ringRef} width={ringWidth} height={PILL_HEIGHT} visible={collapsed} onPaper={onPaper} />
+            </GlassPill>
           </div>
+          <div className='absolute right-0 top-0 hidden lg:block'>
+            <MenuPill />
+          </div>
+          <MobileMenu className='absolute right-0 top-0 lg:hidden' />
         </div>
-      </nav>
-      <div className='fixed right-4 bottom-4 left-4 z-50 md:right-[30px] md:bottom-[30px] md:left-[30px] lg:hidden' style={mobileRailStyle}>
-        <MenuPill className='w-full justify-between' />
       </div>
-    </>
+    </nav>
   );
 }

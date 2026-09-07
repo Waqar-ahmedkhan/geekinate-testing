@@ -3,18 +3,19 @@ import { BrandMark, SocialIcon } from '@/lib/ui/reusable_components';
 import { footerColumns, footerContent } from '@/lib/content';
 import { SITE, SOCIALS } from '@/constants';
 
-const MUTED = 'text-[1.225rem] leading-[1.1] tracking-[-0.02em] text-footer-mut transition-colors duration-200 hover:text-paper';
+const MUTED = 'text-[1.225rem] leading-[1.1] tracking-[-0.02em] text-footer-mut';
+const LINK = `${MUTED} transition-colors duration-200 hover:text-paper`;
 
 const FooterLink = ({ label, href, external }) => {
   if (!href) return <span className={MUTED}>{label}</span>;
   if (external)
     return (
-      <a href={href} target='_blank' rel='noreferrer' className={MUTED}>
+      <a href={href} target='_blank' rel='noreferrer' className={LINK}>
         {label} <span aria-hidden='true'>↗</span>
       </a>
     );
   return (
-    <Link href={href} className={MUTED}>
+    <Link href={href} className={LINK}>
       {label}
     </Link>
   );

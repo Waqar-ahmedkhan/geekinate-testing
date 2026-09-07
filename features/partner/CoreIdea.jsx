@@ -1,16 +1,12 @@
-import { Section } from '@/components';
+import { Section, StepIndex } from '@/components';
 import { partnerIdea } from '@/lib/content';
-
-const CASE_INDEX = 'mt-1 shrink-0 font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 
 export default function CoreIdea() {
   const { heading, intro, cases, closing } = partnerIdea;
   const [lead, punch] = closing;
   const caseEls = cases.map((line, index) => (
     <li key={line} className='flex gap-5 border-t-[1.5px] border-line py-4'>
-      <span aria-hidden='true' className={CASE_INDEX}>
-        {String(index + 1).padStart(2, '0')}
-      </span>
+      <StepIndex value={index + 1} />
       <span className='text-base leading-[1.5] text-ink-soft'>{line}</span>
     </li>
   ));

@@ -1,16 +1,11 @@
-import { Eyebrow, Section } from '@/components';
+import { Eyebrow, Section, StepIndex } from '@/components';
 import { partnerSteps } from '@/lib/content';
-
-const STEP_INDEX =
-  'flex size-9 shrink-0 items-center justify-center rounded-full border-brutal bg-paper font-mono text-xs text-ink shadow-brutal-sm';
 
 export default function Steps() {
   const { eyebrow, heading, intro, steps } = partnerSteps;
   const stepEls = steps.map(({ title, detail }, index) => (
     <li key={title} className='flex gap-5 border-t-[1.5px] border-line pt-6'>
-      <span aria-hidden='true' className={STEP_INDEX}>
-        {String(index + 1).padStart(2, '0')}
-      </span>
+      <StepIndex value={index + 1} />
       <div className='flex flex-col gap-2'>
         <h3 className='text-xl leading-tight tracking-[-0.01em] text-ink'>{title}</h3>
         {detail.map((line) => (

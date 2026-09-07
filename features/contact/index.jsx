@@ -1,17 +1,13 @@
-import { Eyebrow, Section } from '@/components';
+import { Eyebrow, Section, StepIndex } from '@/components';
 import { ContactForm } from '@/lib/ui/reusable_components';
 import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
-
-const STEP_INDEX = 'flex size-7 shrink-0 items-center justify-center rounded-full border-[1.5px] border-line font-mono text-[11px]';
 
 export default function Contact() {
   const { eyebrow, heading, intro, availability, steps, direct } = contactContent;
   const stepEls = steps.map(({ title, detail }, index) => (
     <li key={title} className='flex gap-4'>
-      <span aria-hidden='true' className={STEP_INDEX}>
-        {index + 1}
-      </span>
+      <StepIndex value={index + 1} />
       <span className='flex flex-col gap-1'>
         <span className='text-base leading-tight text-foreground'>{title}</span>
         <span className='text-sm leading-[1.5] text-mut'>{detail}</span>

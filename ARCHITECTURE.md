@@ -59,8 +59,16 @@ Shape inherited from `../Eleve/development/frontend`:
 - `app/` pages compose sections and do nothing else.
 
 Built so far, in page order: `features/hero` (01), `features/clients`, `features/work` (02), `features/services` (03),
-`features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-masthead` and
-`features/service-dossier` (which owns `Block.jsx` and `Timeline.jsx`), and reuses `features/contact`.
+`features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
+`features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
+
+**Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
+`clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
+`Separator` over a mono proof strip), `Actions` (the pill pair), `Card` (the glass panel with `ring-edge` and `shadow-brutal`) and
+`CtaBand` (the centred italic closing band). `PageHero` renders the split grid when an `aside` is passed and a single centred
+column when it is not — `/partner` passes `FlowRail`, the service pages pass nothing. `Actions` takes a `link` component and a
+`meta` mapper so `/partner` can route every pill through its analytics `TrackedLink` while the service pages use a plain
+`next/link` with no props leaking onto the anchor. Build a new marketing page out of these rather than a fifth variant.
 Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes. The hero carries no copy yet,
 so it has no entry there.
 

@@ -110,21 +110,27 @@ arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` co
 gating on a signal without one, ships a black screen to whoever the globe fails for. `minMs` is the other half: it stops a warm
 cache flashing the overlay for three frames.
 
-**The service page is a different layout system from the home page, on purpose.** `/services/[slug]` was first built as the home
-page's own language — a `clear` hero over the globe, alternating bands, the reused `Cta` letter sweep — and was rejected on
-2026-09-04 as "a replica of home page". It now runs a Swiss-grid dossier instead: an opaque `ink` masthead at `min-h-svh` (service
-title as the `h1`, the positioning line, a three-cell spec strip pinned to the bottom), then one `paper` section holding Scope,
-Process and Deliverables against a sticky right-hand index rail, then the reused `Contact`. **No canvas shows through anywhere
-above the footer** — every section is opaque, which is the point. The tokens, geometry and type are unchanged; only the layout
-system differs, and that difference is what makes a detail page read as one. The masthead is a split: title, positioning line
-and lead in columns 1-6, the service's own clip in a bordered panel in columns 7-12, spec strip pinned across the foot. It was
-a single left-aligned column first and read as a mostly empty screen at `min-h-svh`; the panel is what earns the height.
+**The service page speaks the partner page's language, and the two share their primitives.** `/services/[slug]` has been through
+three shapes. It was first built as the home page's own language and rejected on 2026-09-04 as "a replica of home page"; it then ran
+a bespoke Swiss-grid dossier — opaque `ink` masthead, full-bleed 12-column ledger rows, a gsap-scrubbed process spine, a sticky
+right-hand index rail — and that was rejected on 2026-09-08 for the opposite reason: `/partner` had shipped in the meantime and been
+approved, so the site now carried two unrelated marketing layouts. The instruction was to make the service pages consistent with
+`/partner` **and to share the code rather than build a second design**.
 
-**Every heading on the service page shares one left edge — the section gutter.** Three edges shipped by accident first (masthead at
-the gutter, dossier content offset by a left rail, `Contact` centred inside its own `max-w-6xl`) and the stagger was the first thing
-the user called out. The rail therefore sits in columns 10-12, not 1-3, and `Contact` takes an optional `className` so the service
-page can pass `max-w-none`. Home passes nothing and keeps its centred column. Do not reintroduce a left rail or a second container
-width here without re-checking all four headings measure the same `left`.
+It now runs: `PageHero` (`clear`, `min-h-svh`), then Scope as a `paper` band of `Card`s, Process as an `ink` band of `StepIndex`
+steps against a sticky header, Deliverables as a `paper` band, then `CtaBand`, then the reused `Contact` — every section
+`mx-auto max-w-6xl`, alternating paper and ink, exactly as `/partner` does. The dossier's own devices are gone: no index rail, no
+ledger grid, no gsap timeline, no full-bleed. `Contact` no longer takes a `className` because nothing needs to override its width
+any more.
+
+**The service page names itself in the eyebrow, not the `h1`** — the same mapping `/partner` uses. Eyebrow is the page's name
+("Development & AI" / "Referral Partner Program"); the `h1` is the promise, in italic display with one volt phrase. The service name
+still reaches search through the metadata title and the `Service` JSON-LD, so do not "fix" this by promoting the title back to `h1`.
+
+**The service hero carries no aside, for now.** It was built as a split with the service's clip in a bordered panel on the right,
+matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this temporarily") and the content centred. `PageHero`
+switches to a single centred column whenever no `aside` is passed, so restoring it is a matter of passing the panel back — the clip
+is still in `lib/content.js`.
 
 **Nothing below the hero is 3D.** Work, Services and Testimonials stay on the flat system — white ground, ink borders, hard offset
 shadows, no blur-based depth — and they are opaque, which is what hides the scattered field behind them. Reaching for a soft shadow,
@@ -235,6 +241,20 @@ After every `add`: fix the imports and `npm remove cn`, then confirm `package.js
 grid that stacks on mobile can still force its track wider than the container — `/partner`'s contact grid overflowed 320px by 12px
 this way, and the offenders all measured as the *column*, not the thing inside it that was actually too wide. `[&>*]:min-w-0` on
 the grid is the fix; chasing the widest descendant is a dead end.
+
+**A fixed full-viewport canvas that stops drawing keeps its last frame forever.** `SubstrateField` paints the footer's automata
+grid onto a `fixed inset-0` canvas and parks its ticker when an `IntersectionObserver` says the footer left the screen — but it
+never cleared. On a client navigation the footer goes off-screen, the ticker stops, and the frame that was on the canvas stays
+painted over the next page's hero. It presents as "the hero shows the footer's dots until I refresh", which reads like a 3D bug and
+is not one: the WebGL canvas was innocent both times it was blamed. Anything that stops an rAF loop over a persistent canvas has to
+wipe it in the same breath — on the stop, on an empty measurement, and in cleanup.
+
+**Lenis's scroll position goes stale across a client navigation.** `pageOffset()` prefers `scrollProgress.offset`, which is fed by
+Lenis's `scroll` event. Next scrolls the window to the top on a route change, but Lenis is mounted in the app shell and is never
+told, so it keeps reporting the previous page's offset until the user scrolls. `measureStage` then computed `footerIn ≈ 1` on a page
+scrolled to `0`, and the particle cloud stayed in its footer letterform. The tell is that `window.scrollY` and the stage disagree —
+check that before touching the shader. `resetStage()` in `lib/scroll/stage.js` runs one frame after each pathname change and resyncs
+the engine (`syncScrollEngine`), the cached offset, and the layout. Any future scroll-derived state needs the same reset.
 
 **`IntersectionObserver`'s ratio is relative to the target, not the viewport.** A threshold of `0.5` on a section taller than the
 screen can never fire, silently. Compare `intersectionRect.height` against `Math.min(sectionHeight, innerHeight) * 0.5` instead.

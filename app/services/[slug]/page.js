@@ -1,10 +1,10 @@
 import { notFound } from 'next/navigation';
-import { JsonLd } from '@/components';
-import ServiceMasthead from '@/features/service-masthead';
+import { CtaBand, JsonLd } from '@/components';
+import ServiceHero from '@/features/service-hero';
 import ServiceDossier from '@/features/service-dossier';
 import Contact from '@/features/contact';
 import { buildMetadata, buildServiceJsonLd } from '@/lib/seo';
-import { services } from '@/lib/content';
+import { servicePageContent, services } from '@/lib/content';
 
 export const dynamicParams = false;
 
@@ -25,12 +25,14 @@ export default async function ServicePage({ params }) {
   const { slug } = await params;
   const service = findService(slug);
   if (!service) notFound();
+  const { handoff } = servicePageContent;
   return (
     <main className='flex-1'>
       <JsonLd id={`json-ld-service-${slug}`} nodes={[buildServiceJsonLd(service)]} />
-      <ServiceMasthead service={service} />
+      <ServiceHero service={service} />
       <ServiceDossier service={service} />
-      <Contact className='max-w-none' />
+      <CtaBand headline={handoff.headline} actions={handoff.actions} />
+      <Contact />
     </main>
   );
 }

@@ -1,5 +1,4 @@
-import Card from './Card';
-import { Eyebrow, Section, SectionHead } from '@/components';
+import { Card, Eyebrow, Section, SectionHead } from '@/components';
 import { partnerEarnings } from '@/lib/content';
 
 export default function Earnings() {

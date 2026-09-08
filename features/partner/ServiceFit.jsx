@@ -1,7 +1,6 @@
 import { ArrowRight } from 'lucide-react';
 import TrackedLink from './Track';
-import Card from './Card';
-import { Section, SectionHead } from '@/components';
+import { Card, Section, SectionHead } from '@/components';
 import { partnerServices } from '@/lib/content';
 
 export default function ServiceFit() {

@@ -1,5 +1,4 @@
-import Card from './Card';
-import { Eyebrow, Section } from '@/components';
+import { Card, Eyebrow, Section } from '@/components';
 import { partnerTrust } from '@/lib/content';
 
 export default function Trust() {

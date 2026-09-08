@@ -1,6 +1,5 @@
 import { Check, Minus } from 'lucide-react';
-import Card from './Card';
-import { Eyebrow, Section } from '@/components';
+import { Card, Eyebrow, Section } from '@/components';
 import { cn } from '@/lib/utils';
 import { partnerQualification } from '@/lib/content';
 

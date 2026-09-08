@@ -1,6 +1,10 @@
+export { default as Actions } from './layout/Actions';
+export { default as Card } from './layout/Card';
+export { default as CtaBand } from './layout/CtaBand';
 export { default as Eyebrow } from './layout/Eyebrow';
 export { default as Footer } from './layout/Footer';
 export { default as JsonLd } from './layout/JsonLd';
+export { default as PageHero } from './layout/PageHero';
 export { default as Section } from './layout/Section';
 export { default as SectionHead } from './layout/SectionHead';
 export { default as StepIndex } from './layout/StepIndex';

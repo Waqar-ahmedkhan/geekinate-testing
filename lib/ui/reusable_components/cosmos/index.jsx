@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { markGlobeReady } from '@/lib/boot/ready';
 import { trackGlobe } from '@/lib/input/globe';
 import { trackPointer } from '@/lib/input/pointer';
-import { measureLayout, watchStage } from '@/lib/scroll/stage';
+import { resetStage, watchStage } from '@/lib/scroll/stage';
 import { COSMOS } from '@/constants';
 
 const Scene = dynamic(() => import('./Scene'), { ssr: false });
@@ -25,7 +25,10 @@ export default function CosmosCanvas() {
   useEffect(() => trackPointer(), []);
   useEffect(() => trackGlobe(), []);
   useEffect(() => watchStage(), []);
-  useEffect(() => measureLayout(), [pathname]);
+  useEffect(() => {
+    const frame = requestAnimationFrame(resetStage);
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
 
   return (
     <div aria-hidden='true' className='pointer-events-none fixed inset-0 z-[1]'>

@@ -77,12 +77,17 @@ export default function SubstrateField() {
     let running = false,
       last = 0,
       clock = 0;
+    const wipe = () => context.clearRect(0, 0, element.width, element.height);
     const watcher = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting === running) return;
       running = entry.isIntersecting;
       last = 0;
-      if (running) gsap.ticker.add(tick);
-      else gsap.ticker.remove(tick);
+      if (running) {
+        gsap.ticker.add(tick);
+        return;
+      }
+      gsap.ticker.remove(tick);
+      wipe();
     });
     const measure = (box) => {
       const width = document.documentElement.clientWidth,
@@ -103,7 +108,10 @@ export default function SubstrateField() {
     function tick(time) {
       const now = time * 1000;
       const box = readBox(panel, window.innerHeight);
-      if (!box) return;
+      if (!box) {
+        wipe();
+        return;
+      }
       measure(box);
       const delta = last ? Math.min((now - last) / 1000, 0.1) : 0;
       last = now;
@@ -123,6 +131,7 @@ export default function SubstrateField() {
       watcher.disconnect();
       gsap.ticker.remove(tick);
       running = false;
+      wipe();
     };
   }, []);
 

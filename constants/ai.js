@@ -34,6 +34,27 @@ export const BLUEPRINT = {
   maxOutputTokens: 1200,
 };
 
+export const GUIDE = {
+  model: 'gpt-5.4-nano',
+  maxOutputTokens: 400,
+  turns: 8,
+  limits: { message: 500 },
+  window: { ms: 86400000, max: 20 },
+  cache: { ms: 86400000, max: 100 },
+  panelWidth: 380,
+};
+
+export const GUIDE_EVENTS = {
+  open: 'guide_open',
+  close: 'guide_close',
+  starterClick: 'guide_starter_click',
+  ask: 'guide_ask',
+  answered: 'guide_answered',
+  action: 'guide_page_action',
+  failure: 'guide_failure',
+  capped: 'guide_capped',
+};
+
 export const BLUEPRINT_TRANSFORM = { stepMs: 620 };
 
 export const BLUEPRINT_REVEAL = {

@@ -2,7 +2,8 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Bot, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import AgentMark from './AgentMark';
 import Chat from './Chat';
 import { actionsOf, readGuide, textOf } from './stream';
 import BrandMark from '../BrandMark';
@@ -20,9 +21,11 @@ const STATUS = 'font-mono text-[11px] uppercase tracking-[0.14em] text-mut';
 const FLOAT = 'fixed right-5 bottom-5 z-[60] flex flex-col items-end gap-3 lg:right-8 lg:bottom-8';
 const SHEET =
   'flex h-[min(38rem,78svh)] w-[min(30rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
+const NUDGE =
+  'max-w-60 rounded-lg rounded-br-sm border-[1.5px] border-line bg-void px-3.5 py-2.5 text-sm leading-[1.45] text-paper shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:ease-out';
 const ICON = 'absolute transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none';
 const LAUNCH =
-  'relative size-15 origin-bottom-right cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-6 motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none';
+  'relative size-15 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-reduce:transition-none motion-reduce:animate-none';
 
 const idFor = () => Math.random().toString(36).slice(2, 10);
 const asked = (list) => list.filter((entry) => entry.role === 'user').length;
@@ -35,6 +38,9 @@ export default function Guide() {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState(null);
+  const [nudge, setNudge] = useState('');
+  const [leaving, setLeaving] = useState(false);
+  const exitRef = useRef(0);
   const [greeted, setGreeted] = useState(false);
   const ran = useRef(new Set());
   const dockRef = useRef(null);
@@ -76,10 +82,51 @@ export default function Guide() {
   useEffect(() => {
     const dock = dockRef.current;
     if (!dock) return undefined;
-    const watcher = new IntersectionObserver(([entry]) => setFloating(!entry.isIntersecting), { threshold: 0 });
+    const watcher = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) {
+          window.clearTimeout(exitRef.current);
+          exitRef.current = 0;
+          setLeaving(false);
+          setFloating(true);
+          return;
+        }
+        setLeaving(true);
+        exitRef.current = window.setTimeout(() => {
+          setFloating(false);
+          setLeaving(false);
+          exitRef.current = 0;
+        }, GUIDE.dockExitMs);
+      },
+      { threshold: 0 }
+    );
     watcher.observe(dock);
-    return () => watcher.disconnect();
+    return () => {
+      watcher.disconnect();
+      window.clearTimeout(exitRef.current);
+      exitRef.current = 0;
+    };
   }, []);
+
+  useEffect(() => {
+    if (!floating || open || messages.length > 1) return undefined;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    const lines = guideContent.nudges;
+    let at = 0;
+    let hide = 0;
+    const show = () => {
+      setNudge(lines[at % lines.length]);
+      at += 1;
+      hide = window.setTimeout(() => setNudge(''), GUIDE.nudgeHoldMs);
+    };
+    const first = window.setTimeout(show, GUIDE.nudgeFirstMs);
+    const loop = window.setInterval(show, GUIDE.nudgeEveryMs);
+    return () => {
+      window.clearTimeout(first);
+      window.clearTimeout(hide);
+      window.clearInterval(loop);
+    };
+  }, [floating, open, messages.length]);
 
   const perform = useCallback((message) => {
     const fresh = actionsOf(message).filter(({ id }) => !ran.current.has(id));
@@ -165,6 +212,11 @@ export default function Guide() {
       {floating
         ? createPortal(
             <div className={FLOAT}>
+              {!open && nudge && !leaving ? (
+                <p className={NUDGE} role='status'>
+                  {nudge}
+                </p>
+              ) : null}
               {open ? (
                 <div className={SHEET} role='dialog' aria-label={guideContent.title}>
                   {header}
@@ -176,12 +228,9 @@ export default function Guide() {
                 onClick={() => setOpen(!open)}
                 aria-expanded={open}
                 aria-label={open ? guideContent.close : guideContent.open}
-                className={LAUNCH}
+                className={cn(LAUNCH, leaving ? 'motion-safe:animate-dock-out' : 'motion-safe:animate-dock-in')}
               >
-                <Bot
-                  aria-hidden='true'
-                  className={cn(ICON, 'size-8', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')}
-                />
+                <AgentMark className={cn(ICON, 'size-8', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')} />
                 <X
                   aria-hidden='true'
                   className={cn(ICON, 'size-7', open ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0')}

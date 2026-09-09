@@ -15,7 +15,7 @@ const FROM_GUIDE = 'mr-auto rounded-bl-sm border-line bg-lift text-paper';
 const FROM_YOU = 'ml-auto rounded-br-sm border-ink bg-volt text-ink shadow-brutal-sm';
 const WHO = 'font-mono text-[11px] uppercase tracking-[0.14em] text-mut';
 const FIELD =
-  'h-12 min-w-0 flex-1 rounded-full border-[1.5px] border-line bg-void px-4 text-base text-paper shadow-none placeholder:text-mut md:text-base';
+  'h-12 min-w-0 flex-1 rounded-full border-[1.5px] border-line bg-void px-4 text-base text-paper shadow-none transition-colors placeholder:text-mut focus-visible:border-volt focus-visible:ring-0 md:text-base';
 const STARTER =
   'min-h-11 cursor-pointer rounded-full border-[1.5px] border-line bg-transparent px-4 py-2 text-left text-sm leading-[1.45] text-paper transition-colors duration-200 ease-brutal hover:bg-lift disabled:cursor-default';
 const DOT = 'size-1.5 rounded-full bg-mut motion-safe:animate-pulse';

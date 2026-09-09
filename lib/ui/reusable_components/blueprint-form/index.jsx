@@ -14,7 +14,7 @@ import { blueprintForm } from '@/lib/content';
 import { BLUEPRINT, PAGE_ACTIONS, SERVICE_SECTIONS } from '@/constants';
 
 const FIELD =
-  'min-h-28 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base';
+  'min-h-28 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
 const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const PANEL = 'flex flex-col items-start gap-2 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';

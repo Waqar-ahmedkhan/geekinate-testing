@@ -10,7 +10,7 @@ import { blueprintForm } from '@/lib/content';
 import { BLUEPRINT } from '@/constants';
 
 const FIELD =
-  'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base';
+  'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
 const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const SHELL = 'flex flex-col gap-4 rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';

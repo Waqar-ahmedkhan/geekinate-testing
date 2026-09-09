@@ -252,7 +252,7 @@ export default function Guide() {
                 <AgentMark className={cn(ICON, 'size-9', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')} />
                 {unread && !open ? (
                   <span aria-hidden='true' className={DOT}>
-                    <span className='absolute inline-flex size-full rounded-full bg-ink opacity-60 motion-safe:animate-ping motion-reduce:hidden' />
+                    <span className='absolute inline-flex size-full rounded-full bg-volt motion-safe:animate-halo motion-reduce:hidden' />
                     <span className='relative inline-flex size-3.5 rounded-full border-[1.5px] border-ink bg-volt motion-safe:animate-beacon' />
                   </span>
                 ) : null}

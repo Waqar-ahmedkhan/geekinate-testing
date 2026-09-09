@@ -69,7 +69,8 @@
   --animate-rail-run: rail-run 5s linear infinite;
   --animate-blink: blink 4.4s ease-in-out infinite;
   --animate-caret: caret 1.05s steps(1) infinite;
-  --animate-beacon: beacon 1.5s ease-in-out infinite;
+  --animate-beacon: beacon 2.6s ease-in-out infinite;
+  --animate-halo: halo 2.6s cubic-bezier(0, 0, 0.2, 1) infinite;
   @keyframes beacon {
     0%,
     100% {
@@ -77,8 +78,19 @@
       transform: scale(1);
     }
     50% {
-      opacity: 0.35;
-      transform: scale(0.82);
+      opacity: 0.45;
+      transform: scale(0.86);
+    }
+  }
+  @keyframes halo {
+    0% {
+      opacity: 0.65;
+      transform: scale(1);
+    }
+    70%,
+    100% {
+      opacity: 0;
+      transform: scale(2.2);
     }
   }
   @keyframes caret {

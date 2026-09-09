@@ -16,9 +16,9 @@ import { referralForm } from '@/lib/content';
 import { PARTNER, PARTNER_EVENTS, SITE } from '@/constants';
 
 const FIELD =
-  'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base';
+  'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const AREA =
-  'min-h-32 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base';
+  'min-h-32 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
 const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
@@ -233,7 +233,7 @@ export default function ReferralForm() {
   const labelFor = (field, text, optional) => (
     <Label htmlFor={field} className={LABEL}>
       {text}
-      {optional ? <span className='text-grey/70'> ({optional})</span> : <span className='text-destructive'>*</span>}
+      {optional ? <span className='text-grey'> ({optional})</span> : <span className='text-destructive'>*</span>}
     </Label>
   );
   const modeEls = mode.options.map(({ value, label }) => (
@@ -439,7 +439,7 @@ export default function ReferralForm() {
           <div className='flex flex-col gap-3'>
             <span className={LABEL}>
               {lead.fit.label}
-              <span className='text-grey/70'> ({lead.fit.optional})</span>
+              <span className='text-grey'> ({lead.fit.optional})</span>
             </span>
             <div role='group' aria-label={lead.fit.label} className='flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:gap-x-6'>
               {fitEls}

@@ -12,7 +12,7 @@ import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
 const FIELD =
-  'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base';
+  'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
 const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
@@ -146,7 +146,7 @@ export default function ContactForm() {
       <div className='flex flex-col gap-3'>
         <span className={LABEL}>
           {topics.label}
-          <span className='text-grey/70'> ({topics.optional})</span>
+          <span className='text-grey'> ({topics.optional})</span>
         </span>
         <div role='group' aria-label={topics.label} className='flex flex-wrap gap-2'>
           {topicEls}
@@ -186,7 +186,7 @@ export default function ContactForm() {
       <div className='flex flex-col gap-2'>
         <Label htmlFor='company' className={LABEL}>
           {fields.company.label}
-          <span className='text-grey/70'>({fields.company.optional})</span>
+          <span className='text-grey'>({fields.company.optional})</span>
         </Label>
         <Input
           {...fieldProps('company')}
@@ -206,7 +206,7 @@ export default function ContactForm() {
           rows={6}
           placeholder={fields.message.placeholder}
           className={cn(
-            'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey/70 md:text-base',
+            'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base',
             errors.message && FIELD_BAD
           )}
         />

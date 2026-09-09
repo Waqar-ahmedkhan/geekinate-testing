@@ -58,7 +58,7 @@ export default function Chat({ messages, draft, onDraft, onSend, onStarter, pend
 
   return (
     <div className='flex min-h-0 flex-1 flex-col gap-4'>
-      <div ref={logRef} className={LOG} role='log' aria-live='polite' aria-label={guideContent.title}>
+      <div ref={logRef} data-lenis-prevent className={LOG} role='log' aria-live='polite' aria-label={guideContent.title}>
         {saidEls}
         {pending ? (
           <span className={cn(SAID, FROM_GUIDE, 'flex w-fit items-center gap-1.5')} aria-label={guideContent.thinking}>

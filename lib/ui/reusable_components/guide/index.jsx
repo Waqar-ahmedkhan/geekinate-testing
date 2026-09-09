@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { X } from 'lucide-react';
+import { Bot, X } from 'lucide-react';
 import Chat from './Chat';
 import { actionsOf, readGuide, textOf } from './stream';
 import BrandMark from '../BrandMark';
@@ -19,9 +19,10 @@ const NAME = 'text-base leading-tight tracking-[-0.01em] text-paper';
 const STATUS = 'font-mono text-[11px] uppercase tracking-[0.14em] text-mut';
 const FLOAT = 'fixed right-5 bottom-5 z-[60] flex flex-col items-end gap-3 lg:right-8 lg:bottom-8';
 const SHEET =
-  'flex h-[min(32rem,70svh)] w-[min(23rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
+  'flex h-[min(38rem,78svh)] w-[min(30rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
+const ICON = 'absolute transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none';
 const LAUNCH =
-  'size-15 origin-bottom-right cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-6 motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none';
+  'relative size-15 origin-bottom-right cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-6 motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none';
 
 const idFor = () => Math.random().toString(36).slice(2, 10);
 const asked = (list) => list.filter((entry) => entry.role === 'user').length;
@@ -177,7 +178,14 @@ export default function Guide() {
                 aria-label={open ? guideContent.close : guideContent.open}
                 className={LAUNCH}
               >
-                {open ? <X aria-hidden='true' className='size-7' /> : <BrandMark tight size={34} className='size-8 text-ink' />}
+                <Bot
+                  aria-hidden='true'
+                  className={cn(ICON, 'size-8', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')}
+                />
+                <X
+                  aria-hidden='true'
+                  className={cn(ICON, 'size-7', open ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0')}
+                />
               </Button>
             </div>,
             document.body

@@ -184,7 +184,7 @@ export default function BlueprintForm() {
           <Button
             type='submit'
             disabled={pending}
-            className='h-12 w-fit rounded-full border-[1.5px] border-ink bg-volt px-7 text-ink shadow-brutal-sm hover:bg-volt'
+            className='h-12 w-fit cursor-pointer rounded-full border-[1.5px] border-ink bg-volt px-7 text-ink shadow-brutal-sm hover:bg-volt'
           >
             {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
             {pending ? submit.pending : submit.idle}
@@ -192,7 +192,7 @@ export default function BlueprintForm() {
         </form>
         {panel ? (
           <div className={PANEL}>
-            <h3 className='font-display text-2xl leading-none tracking-[-0.01em] text-ink'>{panel.title}</h3>
+            <h3 className='font-display text-[clamp(1.5rem,2.6vw,2.25rem)] leading-[1.1] tracking-[-0.01em] text-ink'>{panel.title}</h3>
             <p className='text-base leading-[1.6] text-mut'>{panel.body}</p>
           </div>
         ) : null}

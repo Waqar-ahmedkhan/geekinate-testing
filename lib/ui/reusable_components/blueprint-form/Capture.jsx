@@ -66,7 +66,7 @@ export default function Capture({ blueprint }) {
         <span className='flex size-11 items-center justify-center rounded-full border-[1.5px] border-ink bg-volt'>
           <Check aria-hidden='true' className='size-5 text-ink' />
         </span>
-        <h4 className='font-display text-2xl leading-none tracking-[-0.01em] text-ink'>{capture.success.title}</h4>
+        <h4 className='text-xl leading-tight tracking-[-0.01em] text-ink'>{capture.success.title}</h4>
         <p className='text-base leading-[1.6] text-mut'>{capture.success.body}</p>
       </div>
     );
@@ -74,7 +74,7 @@ export default function Capture({ blueprint }) {
   return (
     <form onSubmit={send} noValidate className={SHELL} aria-busy={pending}>
       <div className='flex flex-col gap-1'>
-        <h4 className='font-display text-2xl leading-none tracking-[-0.01em] text-ink'>{capture.heading}</h4>
+        <h4 className='text-xl leading-tight tracking-[-0.01em] text-ink'>{capture.heading}</h4>
         <p className='max-w-[52ch] text-base leading-[1.6] text-mut'>{capture.body}</p>
       </div>
       <div className='flex flex-col gap-2'>
@@ -101,7 +101,7 @@ export default function Capture({ blueprint }) {
           <Button
             type='submit'
             disabled={pending}
-            className='h-12 rounded-full border-[1.5px] border-ink bg-volt px-7 text-ink shadow-brutal-sm hover:bg-volt'
+            className='h-12 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt px-7 text-ink shadow-brutal-sm hover:bg-volt'
           >
             {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
             {pending ? capture.submit.pending : capture.submit.idle}

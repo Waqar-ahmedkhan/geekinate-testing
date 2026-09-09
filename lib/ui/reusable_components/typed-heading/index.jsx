@@ -4,11 +4,12 @@ import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { TYPED } from '@/constants';
 
-const CARET = 'ml-1 inline-block w-[0.06em] self-stretch bg-current align-[-0.08em] motion-safe:animate-caret motion-reduce:hidden';
+const CARET =
+  'ml-[0.06em] inline-block h-[0.72em] w-[0.05em] min-w-[2px] translate-y-[0.02em] bg-current motion-safe:animate-caret motion-reduce:hidden';
 
 export default function TypedHeading({ text, as: Heading = 'h2', className }) {
   const [shown, setShown] = useState(text);
-  const [running, setRunning] = useState(false);
+  const [typing, setTyping] = useState(false);
 
   useEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
@@ -24,7 +25,7 @@ export default function TypedHeading({ text, as: Heading = 'h2', className }) {
       timer = window.setTimeout(tick, pause);
     };
     const start = window.setTimeout(() => {
-      setRunning(true);
+      setTyping(true);
       tick();
     }, TYPED.startMs);
     return () => {
@@ -34,9 +35,14 @@ export default function TypedHeading({ text, as: Heading = 'h2', className }) {
   }, [text]);
 
   return (
-    <Heading className={cn('inline-flex flex-wrap items-baseline', className)}>
-      <span>{shown}</span>
-      {running ? <span aria-hidden='true' className={CARET} /> : null}
+    <Heading className={cn('relative', className)}>
+      <span aria-hidden='true' className='invisible'>
+        {text}
+      </span>
+      <span className='absolute inset-0'>
+        {shown}
+        {typing ? <span aria-hidden='true' className={CARET} /> : null}
+      </span>
     </Heading>
   );
 }

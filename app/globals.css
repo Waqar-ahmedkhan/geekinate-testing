@@ -69,6 +69,18 @@
   --animate-rail-run: rail-run 5s linear infinite;
   --animate-blink: blink 4.4s ease-in-out infinite;
   --animate-caret: caret 1.05s steps(1) infinite;
+  --animate-beacon: beacon 1.5s ease-in-out infinite;
+  @keyframes beacon {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.35;
+      transform: scale(0.82);
+    }
+  }
   @keyframes caret {
     0%,
     45% {

@@ -23,7 +23,7 @@ const SHEET =
   'flex h-[min(38rem,78svh)] w-[min(30rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
 const NUDGE =
   'max-w-60 rounded-lg rounded-br-sm border-[1.5px] border-line bg-void px-3.5 py-2.5 text-sm leading-[1.45] text-paper shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:ease-out';
-const DOT = 'absolute -top-0.5 -right-0.5 flex size-3 items-center justify-center';
+const DOT = 'absolute -top-1 -right-1 flex size-4 items-center justify-center';
 const ICON = 'absolute transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none';
 const LAUNCH =
   'relative size-16 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-reduce:transition-none motion-reduce:animate-none';
@@ -252,8 +252,8 @@ export default function Guide() {
                 <AgentMark className={cn(ICON, 'size-9', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')} />
                 {unread && !open ? (
                   <span aria-hidden='true' className={DOT}>
-                    <span className='absolute inline-flex size-full animate-ping rounded-full bg-volt opacity-70 motion-reduce:hidden' />
-                    <span className='relative inline-flex size-3 rounded-full border-[1.5px] border-ink bg-volt' />
+                    <span className='absolute inline-flex size-full rounded-full bg-ink opacity-60 motion-safe:animate-ping motion-reduce:hidden' />
+                    <span className='relative inline-flex size-3.5 rounded-full border-[1.5px] border-ink bg-volt motion-safe:animate-beacon' />
                   </span>
                 ) : null}
                 <X

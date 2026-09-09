@@ -130,61 +130,67 @@ export default function BlueprintForm() {
   const announced = pending ? spoken.pending : status === 'ready' ? spoken.ready : panel ? panel.title : '';
 
   return (
-    <div className='flex flex-col gap-8'>
-      <p role='status' aria-live='polite' className='sr-only'>
-        {announced}
-      </p>
-      <form ref={formRef} onSubmit={send} noValidate className={FORM} aria-busy={pending}>
-        <div className='flex flex-col gap-2'>
-          <Label htmlFor='brief' className={LABEL}>
-            {field.label}
-          </Label>
-          <Textarea
-            id='brief'
-            name='brief'
-            rows={3}
-            value={values.brief}
-            onChange={change}
-            onBlur={blur}
+    <>
+      <div className='flex flex-col gap-8'>
+        <p role='status' aria-live='polite' className='sr-only'>
+          {announced}
+        </p>
+        <form ref={formRef} onSubmit={send} noValidate className={FORM} aria-busy={pending}>
+          <div className='flex flex-col gap-2'>
+            <Label htmlFor='brief' className={LABEL}>
+              {field.label}
+            </Label>
+            <Textarea
+              id='brief'
+              name='brief'
+              rows={3}
+              value={values.brief}
+              onChange={change}
+              onBlur={blur}
+              disabled={pending}
+              maxLength={BLUEPRINT.limits.brief}
+              placeholder={field.placeholder}
+              aria-invalid={Boolean(errors.brief)}
+              aria-describedby={errors.brief ? 'brief-error' : 'brief-helper'}
+              className={cn(FIELD, errors.brief && FIELD_BAD)}
+            />
+            {errors.brief ? (
+              <p id='brief-error' role='alert' className='flex items-start gap-1.5 text-sm leading-[1.4] text-ink'>
+                <CircleAlert aria-hidden='true' className='mt-0.5 size-4 shrink-0 text-destructive' />
+                {errors.brief}
+              </p>
+            ) : (
+              <p id='brief-helper' className='text-sm leading-[1.4] text-mut'>
+                {field.helper}
+              </p>
+            )}
+          </div>
+          <div className='flex flex-col gap-3'>
+            <span className={LABEL}>{examples.label}</span>
+            <div className='flex flex-wrap gap-2'>{exampleEls}</div>
+          </div>
+          <input ref={trapRef} type='text' name='trap' tabIndex={-1} autoComplete='off' aria-hidden='true' className='hidden' />
+          <Button
+            type='submit'
             disabled={pending}
-            maxLength={BLUEPRINT.limits.brief}
-            placeholder={field.placeholder}
-            aria-invalid={Boolean(errors.brief)}
-            aria-describedby={errors.brief ? 'brief-error' : 'brief-helper'}
-            className={cn(FIELD, errors.brief && FIELD_BAD)}
-          />
-          {errors.brief ? (
-            <p id='brief-error' role='alert' className='flex items-start gap-1.5 text-sm leading-[1.4] text-ink'>
-              <CircleAlert aria-hidden='true' className='mt-0.5 size-4 shrink-0 text-destructive' />
-              {errors.brief}
-            </p>
-          ) : (
-            <p id='brief-helper' className='text-sm leading-[1.4] text-mut'>
-              {field.helper}
-            </p>
-          )}
-        </div>
-        <div className='flex flex-col gap-3'>
-          <span className={LABEL}>{examples.label}</span>
-          <div className='flex flex-wrap gap-2'>{exampleEls}</div>
-        </div>
-        <input ref={trapRef} type='text' name='trap' tabIndex={-1} autoComplete='off' aria-hidden='true' className='hidden' />
-        <Button
-          type='submit'
-          disabled={pending}
-          className='h-12 w-fit rounded-full border-[1.5px] border-ink bg-volt px-7 text-ink shadow-brutal-sm hover:bg-volt'
-        >
-          {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
-          {pending ? submit.pending : submit.idle}
-        </Button>
-      </form>
-      {panel ? (
-        <div className={PANEL}>
-          <h3 className='font-display text-2xl leading-none tracking-[-0.01em] text-ink'>{panel.title}</h3>
-          <p className='text-base leading-[1.6] text-mut'>{panel.body}</p>
+            className='h-12 w-fit rounded-full border-[1.5px] border-ink bg-volt px-7 text-ink shadow-brutal-sm hover:bg-volt'
+          >
+            {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
+            {pending ? submit.pending : submit.idle}
+          </Button>
+        </form>
+        {panel ? (
+          <div className={PANEL}>
+            <h3 className='font-display text-2xl leading-none tracking-[-0.01em] text-ink'>{panel.title}</h3>
+            <p className='text-base leading-[1.6] text-mut'>{panel.body}</p>
+          </div>
+        ) : null}
+      </div>
+      {status === 'ready' && blueprint ? (
+        <div className='lg:col-span-2'>
+          <Result ref={resultRef} blueprint={blueprint} onAgain={again} />
         </div>
       ) : null}
-      {status === 'ready' && blueprint ? <Result ref={resultRef} blueprint={blueprint} onAgain={again} /> : null}
-    </div>
+    </>
   );
 }

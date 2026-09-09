@@ -45,13 +45,13 @@ export default function Result({ blueprint, onAgain, ref }) {
       aria-labelledby='blueprint-result'
       className='flex scroll-mt-[var(--nav-rail)] flex-col gap-8 rounded-lg focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ink'
     >
-      <div className='flex flex-col gap-2'>
+      <div className='flex flex-col gap-2' data-reveal='head'>
         <h3 id='blueprint-result' className='font-display text-3xl leading-none tracking-[-0.01em] text-ink'>
           {result.title}
         </h3>
         <p className='max-w-[62ch] text-base leading-[1.6] text-mut'>{blueprint.businessSummary}</p>
       </div>
-      <div className='grid gap-4 lg:grid-cols-2 [&>*]:min-w-0' data-reveal='panel'>
+      <div className='grid gap-4 lg:grid-cols-2 [&>*]:min-w-0'>
         <section className={COLUMN} data-reveal='column'>
           <header className='flex flex-col gap-1'>
             <h4 className={HEADING}>{result.today.heading}</h4>
@@ -71,7 +71,9 @@ export default function Result({ blueprint, onAgain, ref }) {
         <h4 className={HEADING}>{result.opportunities.heading}</h4>
         <div className='grid gap-4 md:grid-cols-3 [&>*]:min-w-0'>{opportunityEls}</div>
       </div>
-      <Capture blueprint={blueprint} />
+      <div data-reveal='capture'>
+        <Capture blueprint={blueprint} />
+      </div>
       <div className='flex flex-wrap items-center justify-between gap-4 border-t-[1.5px] border-line pt-6'>
         {pillar ? <Eyebrow>{`${result.pillarLabel} — ${pillar.title}`}</Eyebrow> : null}
         <Button

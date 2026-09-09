@@ -34,6 +34,19 @@ export const BLUEPRINT = {
   maxOutputTokens: 1200,
 };
 
+export const BLUEPRINT_REVEAL = {
+  rise: 12,
+  ease: 'power2.out',
+  head: 0.3,
+  columns: 0.4,
+  columnsAt: 0.1,
+  builds: 0.3,
+  buildsAt: 0.3,
+  stagger: 0.06,
+  capture: 0.3,
+  captureAt: 0.46,
+};
+
 export const BLUEPRINT_EVENTS = {
   sectionView: 'blueprint_section_view',
   exampleClick: 'blueprint_example_click',

@@ -1,12 +1,14 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { CircleAlert, LoaderCircle } from 'lucide-react';
 import Result from './Result';
+import { revealResult } from './reveal';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { registerSection } from '@/lib/ai/sections';
+import { scrollToElement } from '@/lib/scroll/controller';
 import { cn } from '@/lib/utils';
 import { blueprintForm } from '@/lib/content';
 import { BLUEPRINT, PAGE_ACTIONS, SERVICE_SECTIONS } from '@/constants';
@@ -66,8 +68,17 @@ export default function BlueprintForm() {
     return registerSection(SERVICE_SECTIONS.blueprint, api);
   }, []);
 
+  useLayoutEffect(() => {
+    if (!blueprint) return undefined;
+    const context = revealResult(resultRef.current);
+    return () => context?.revert();
+  }, [blueprint]);
+
   useEffect(() => {
-    if (status === 'ready') resultRef.current?.focus({ preventScroll: true });
+    if (status !== 'ready') return;
+    const node = resultRef.current;
+    node?.focus({ preventScroll: true });
+    if (node && node.getBoundingClientRect().top > window.innerHeight * 0.6) scrollToElement(node);
   }, [status]);
 
   const change = (event) => {

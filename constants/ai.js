@@ -19,7 +19,7 @@ export const PAGE_ACTIONS = Object.freeze({
 
 export const NAVIGATION_ACTIONS = Object.freeze([PAGE_ACTIONS.goTo]);
 
-export const PAGE_BUS = { scrollMs: 700 };
+export const PAGE_BUS = { scrollMs: 700, markMs: 2400 };
 
 export const BLUEPRINT = {
   efforts: Object.freeze(['weeks', 'a month', 'a quarter']),
@@ -41,7 +41,7 @@ export const GUIDE = {
   limits: { message: 500 },
   window: { ms: 86400000, max: 20 },
   cache: { ms: 86400000, max: 100 },
-  panelWidth: 380,
+  greetingWordMs: 55,
 };
 
 export const GUIDE_EVENTS = {

@@ -61,7 +61,8 @@ export default function BlueprintForm() {
         setValues({ brief: given });
         setTouched({});
         setErrors({});
-        formRef.current?.elements.brief?.focus();
+        scrollToElement(document.getElementById(SERVICE_SECTIONS.blueprint));
+        formRef.current?.elements.brief?.focus({ preventScroll: true });
         return true;
       },
     };

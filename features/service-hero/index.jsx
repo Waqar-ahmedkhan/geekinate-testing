@@ -1,8 +1,9 @@
 import { Actions, PageHero } from '@/components';
-import { servicePageContent } from '@/lib/content';
+import { Guide } from '@/lib/ui/reusable_components';
+import { servicePageContent, serviceBlueprints } from '@/lib/content';
 
 export default function ServiceHero({ service }) {
-  const { title, headline, lead, facts } = service;
+  const { slug, title, headline, lead, facts } = service;
   const { actions } = servicePageContent;
   const headlineEl = (
     <>
@@ -10,6 +11,7 @@ export default function ServiceHero({ service }) {
     </>
   );
   const proof = facts.map(({ label, value }) => `${label} — ${value}`);
+  const aside = serviceBlueprints[slug] ? <Guide /> : null;
   return (
     <PageHero
       id='hero-service'
@@ -17,7 +19,8 @@ export default function ServiceHero({ service }) {
       headline={headlineEl}
       measure='max-w-[22ch]'
       support={[lead]}
-      actions={<Actions items={actions} className='mt-2 justify-center' />}
+      actions={<Actions items={actions} className='mt-2' />}
+      aside={aside}
       proof={proof}
     />
   );

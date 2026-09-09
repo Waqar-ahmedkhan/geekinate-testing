@@ -1,3 +1,4 @@
+import Capture from './Capture';
 import { Card, Eyebrow, StepIndex } from '@/components';
 import { Button } from '@/components/ui/button';
 import { blueprintForm, services } from '@/lib/content';
@@ -70,6 +71,7 @@ export default function Result({ blueprint, onAgain, ref }) {
         <h4 className={HEADING}>{result.opportunities.heading}</h4>
         <div className='grid gap-4 md:grid-cols-3 [&>*]:min-w-0'>{opportunityEls}</div>
       </div>
+      <Capture blueprint={blueprint} />
       <div className='flex flex-wrap items-center justify-between gap-4 border-t-[1.5px] border-line pt-6'>
         {pillar ? <Eyebrow>{`${result.pillarLabel} — ${pillar.title}`}</Eyebrow> : null}
         <Button

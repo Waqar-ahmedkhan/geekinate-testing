@@ -20,9 +20,9 @@ const STARTER =
   'min-h-11 cursor-pointer rounded-full border-[1.5px] border-line bg-transparent px-4 py-2 text-left text-sm leading-[1.45] text-paper transition-colors duration-200 ease-brutal hover:bg-lift disabled:cursor-default';
 const DOT = 'size-1.5 rounded-full bg-mut motion-safe:animate-pulse';
 
-export default function Chat({ messages, draft, onDraft, onSend, onStarter, pending, spent, notice, autoFocus, fieldId }) {
+export default function Chat({ messages, draft, onDraft, onSend, onStarter, pending, spent, notice, autoFocus, fieldId, greeted }) {
   const { starters, capped } = guideContent;
-  const quiet = messages.length < 2 && !pending && !spent;
+  const quiet = greeted && messages.length < 2 && !pending && !spent;
   const logRef = useRef(null);
   const fieldRef = useRef(null);
 
@@ -40,8 +40,18 @@ export default function Chat({ messages, draft, onDraft, onSend, onStarter, pend
       <p className={cn(SAID, role === 'user' ? FROM_YOU : FROM_GUIDE)}>{text}</p>
     </div>
   ));
-  const starterEls = starters.map((sentence) => (
-    <button key={sentence} type='button' onClick={() => onStarter(sentence)} disabled={pending || spent} className={STARTER}>
+  const starterEls = starters.map((sentence, index) => (
+    <button
+      key={sentence}
+      type='button'
+      onClick={() => onStarter(sentence)}
+      disabled={pending || spent}
+      style={{ animationDelay: `${index * GUIDE.starterStepMs}ms` }}
+      className={cn(
+        STARTER,
+        'motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:fill-mode-backwards'
+      )}
+    >
       {sentence}
     </button>
   ));

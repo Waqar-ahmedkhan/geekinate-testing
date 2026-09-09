@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import BrandMark from '../BrandMark';
 import { createGrain, grainFade, shedGrain, shedRing, stepGrain } from '../grain/pool';
 import { bakeGrain } from '../grain/sprite';
+import { openGate } from '@/lib/boot/gate';
 import { watchGlobeReady } from '@/lib/boot/ready';
 import { pointer } from '@/lib/input/pointer';
 import { cn } from '@/lib/utils';
@@ -122,6 +123,7 @@ export default function Preloader() {
       cancelAnimationFrame(frame);
       frame = 0;
       root.style.overflow = held;
+      openGate();
       setLeaving(true);
     };
     root.style.overflow = 'hidden';

@@ -7,9 +7,10 @@ import { actionsOf, readGuide, textOf } from './stream';
 import BrandMark from '../BrandMark';
 import { Button } from '@/components/ui/button';
 import { runPageActions } from '@/lib/ai/bus';
+import { watchGate } from '@/lib/boot/gate';
 import { cn } from '@/lib/utils';
 import { guideContent } from '@/lib/content';
-import { GUIDE, SERVICE_SECTIONS } from '@/constants';
+import { GUIDE } from '@/constants';
 
 const DOCK = 'flex h-[min(34rem,72svh)] flex-col gap-4 rounded-lg border-[1.5px] border-line bg-glass p-5 shadow-brutal md:p-6';
 const HEAD = 'flex items-center gap-3 border-b-[1.5px] border-line pb-4';
@@ -32,31 +33,49 @@ export default function Guide() {
   const [open, setOpen] = useState(false);
   const [pending, setPending] = useState(false);
   const [notice, setNotice] = useState(null);
+  const [greeted, setGreeted] = useState(false);
   const ran = useRef(new Set());
+  const dockRef = useRef(null);
   const spent = asked(messages) >= GUIDE.turns;
 
   useEffect(() => {
-    const id = idFor();
-    const words = greeting.split(' ');
-    const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const step = reduced ? words.length : 1;
-    let at = 0;
-    const timer = window.setInterval(
-      () => {
-        at = Math.min(at + step, words.length);
-        setMessages([{ id, role: 'assistant', text: words.slice(0, at).join(' ') }]);
-        if (at >= words.length) window.clearInterval(timer);
-      },
-      reduced ? 0 : GUIDE.greetingWordMs
-    );
-    return () => window.clearInterval(timer);
+    let timer = 0;
+    let started = false;
+    const start = () => {
+      if (started) return;
+      started = true;
+      const id = idFor();
+      const words = greeting.split(' ');
+      const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const step = reduced ? words.length : 1;
+      let at = 0;
+      timer = window.setInterval(
+        () => {
+          at = Math.min(at + step, words.length);
+          setMessages([{ id, role: 'assistant', text: words.slice(0, at).join(' ') }]);
+          if (at < words.length) return;
+          window.clearInterval(timer);
+          timer = 0;
+          setGreeted(true);
+        },
+        reduced ? 0 : GUIDE.greetingWordMs
+      );
+    };
+    const release = watchGate(start);
+    const failsafe = window.setTimeout(start, GUIDE.greetLatestMs);
+    return () => {
+      release();
+      window.clearTimeout(failsafe);
+      window.clearInterval(timer);
+      timer = 0;
+    };
   }, [greeting]);
 
   useEffect(() => {
-    const hero = document.getElementById(SERVICE_SECTIONS.hero);
-    if (!hero) return undefined;
+    const dock = dockRef.current;
+    if (!dock) return undefined;
     const watcher = new IntersectionObserver(([entry]) => setFloating(!entry.isIntersecting), { threshold: 0 });
-    watcher.observe(hero);
+    watcher.observe(dock);
     return () => watcher.disconnect();
   }, []);
 
@@ -122,6 +141,7 @@ export default function Guide() {
       notice={notice}
       autoFocus={autoFocus}
       fieldId={fieldId}
+      greeted={greeted}
     />
   );
   const header = (
@@ -136,7 +156,7 @@ export default function Guide() {
 
   return (
     <>
-      <div className={DOCK} aria-hidden={floating}>
+      <div ref={dockRef} className={DOCK} aria-hidden={floating}>
         {header}
         {chat('guide-hero', false)}
       </div>

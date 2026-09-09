@@ -42,6 +42,8 @@ export const GUIDE = {
   window: { ms: 86400000, max: 20 },
   cache: { ms: 86400000, max: 100 },
   greetingWordMs: 55,
+  starterStepMs: 90,
+  greetLatestMs: 4200,
 };
 
 export const GUIDE_EVENTS = {

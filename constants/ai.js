@@ -26,12 +26,12 @@ export const BLUEPRINT = {
   steps: { min: 3, max: 5 },
   opportunities: 3,
   minBrief: 12,
-  limits: { brief: 500, summary: 200, line: 160, email: 200 },
+  limits: { brief: 500, line: 200, email: 200 },
   window: { ms: 3600000, max: 3 },
   emailWindow: { ms: 3600000, max: 5 },
+  cache: { ms: 86400000, max: 200 },
   model: 'anthropic/claude-sonnet-5',
   maxOutputTokens: 1200,
-  cacheControl: 'max-age=86400',
   tags: Object.freeze(['feature:blueprint']),
 };
 

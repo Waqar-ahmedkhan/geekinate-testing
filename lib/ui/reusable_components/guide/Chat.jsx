@@ -22,6 +22,7 @@ const DOT = 'size-1.5 rounded-full bg-mut motion-safe:animate-pulse';
 
 export default function Chat({ messages, draft, onDraft, onSend, onStarter, pending, spent, notice, autoFocus, fieldId }) {
   const { starters, capped } = guideContent;
+  const quiet = messages.length < 2 && !pending && !spent;
   const logRef = useRef(null);
   const fieldRef = useRef(null);
 
@@ -56,13 +57,13 @@ export default function Chat({ messages, draft, onDraft, onSend, onStarter, pend
             <span className={cn(DOT, 'motion-safe:[animation-delay:300ms]')} />
           </span>
         ) : null}
+        {quiet ? (
+          <div className='mt-1 flex flex-col gap-2'>
+            <span className={WHO}>{guideContent.starterLabel}</span>
+            {starterEls}
+          </div>
+        ) : null}
       </div>
-      {messages.length < 2 && !pending ? (
-        <div className='flex flex-col gap-2'>
-          <span className={WHO}>{guideContent.starterLabel}</span>
-          <div className='flex flex-col gap-2'>{starterEls}</div>
-        </div>
-      ) : null}
       {notice ? (
         <p role='status' className='text-sm leading-[1.5] text-mut'>
           <strong className='font-medium text-paper'>{notice.title}</strong> {notice.body}

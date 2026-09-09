@@ -11,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { guideContent } from '@/lib/content';
 import { GUIDE, SERVICE_SECTIONS } from '@/constants';
 
-const DOCK = 'flex h-[min(30rem,70svh)] flex-col gap-4 rounded-lg border-[1.5px] border-line bg-glass p-5 shadow-brutal md:p-6';
+const DOCK = 'flex h-[min(34rem,72svh)] flex-col gap-4 rounded-lg border-[1.5px] border-line bg-glass p-5 shadow-brutal md:p-6';
 const HEAD = 'flex items-center gap-3 border-b-[1.5px] border-line pb-4';
 const NAME = 'text-base leading-tight tracking-[-0.01em] text-paper';
 const STATUS = 'font-mono text-[11px] uppercase tracking-[0.14em] text-mut';

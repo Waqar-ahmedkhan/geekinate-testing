@@ -21,7 +21,7 @@ const FLOAT = 'fixed right-5 bottom-5 z-[60] flex flex-col items-end gap-3 lg:ri
 const SHEET =
   'flex h-[min(32rem,70svh)] w-[min(23rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
 const LAUNCH =
-  'size-14 origin-bottom-right cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-6 motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none';
+  'size-15 origin-bottom-right cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-6 motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none';
 
 const idFor = () => Math.random().toString(36).slice(2, 10);
 const asked = (list) => list.filter((entry) => entry.role === 'user').length;
@@ -177,7 +177,7 @@ export default function Guide() {
                 aria-label={open ? guideContent.close : guideContent.open}
                 className={cn(LAUNCH, open && 'rotate-90')}
               >
-                {open ? <X aria-hidden='true' className='size-6' /> : <BrandMark size={34} bare className='text-ink' />}
+                {open ? <X aria-hidden='true' className='size-7' /> : <BrandMark size={60} bare className='text-ink' />}
               </Button>
             </div>,
             document.body

@@ -175,9 +175,9 @@ export default function Guide() {
                 onClick={() => setOpen(!open)}
                 aria-expanded={open}
                 aria-label={open ? guideContent.close : guideContent.open}
-                className={cn(LAUNCH, open && 'rotate-90')}
+                className={LAUNCH}
               >
-                {open ? <X aria-hidden='true' className='size-7' /> : <BrandMark size={60} bare className='text-ink' />}
+                {open ? <X aria-hidden='true' className='size-7' /> : <BrandMark tight size={34} className='size-8 text-ink' />}
               </Button>
             </div>,
             document.body

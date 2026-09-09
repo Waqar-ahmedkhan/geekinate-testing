@@ -12,7 +12,7 @@ import { runPageActions } from '@/lib/ai/bus';
 import { watchGate } from '@/lib/boot/gate';
 import { cn } from '@/lib/utils';
 import { guideContent } from '@/lib/content';
-import { GUIDE } from '@/constants';
+import { GUIDE, SECTION_IDS } from '@/constants';
 
 const DOCK = 'flex h-[min(34rem,72svh)] flex-col gap-4 rounded-lg border-[1.5px] border-line bg-glass p-5 shadow-brutal md:p-6';
 const HEAD = 'flex items-center gap-3 border-b-[1.5px] border-line pb-4';
@@ -23,6 +23,7 @@ const SHEET =
   'flex h-[min(38rem,78svh)] w-[min(30rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
 const NUDGE =
   'max-w-60 rounded-lg rounded-br-sm border-[1.5px] border-line bg-void px-3.5 py-2.5 text-sm leading-[1.45] text-paper shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:ease-out';
+const DOT = 'absolute -top-0.5 -right-0.5 flex size-3 items-center justify-center';
 const ICON = 'absolute transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none';
 const LAUNCH =
   'relative size-16 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-reduce:transition-none motion-reduce:animate-none';
@@ -40,6 +41,8 @@ export default function Guide() {
   const [notice, setNotice] = useState(null);
   const [nudge, setNudge] = useState('');
   const [leaving, setLeaving] = useState(false);
+  const [unread, setUnread] = useState(false);
+  const hereRef = useRef('');
   const exitRef = useRef(0);
   const [greeted, setGreeted] = useState(false);
   const ran = useRef(new Set());
@@ -109,14 +112,27 @@ export default function Guide() {
   }, []);
 
   useEffect(() => {
+    const seen = SECTION_IDS.map((id) => document.getElementById(id)).filter(Boolean);
+    if (!seen.length) return undefined;
+    const watcher = new IntersectionObserver(
+      (entries) => {
+        const top = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (top) hereRef.current = top.target.id;
+      },
+      { threshold: [0.2, 0.6] }
+    );
+    seen.forEach((node) => watcher.observe(node));
+    return () => watcher.disconnect();
+  }, []);
+
+  useEffect(() => {
     if (!floating || open || messages.length > 1) return undefined;
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const lines = guideContent.nudges;
-    let at = 0;
     let hide = 0;
     const show = () => {
-      setNudge(lines[at % lines.length]);
-      at += 1;
+      setNudge(lines[hereRef.current] || lines.default);
+      setUnread(true);
       hide = window.setTimeout(() => setNudge(''), GUIDE.nudgeHoldMs);
     };
     const first = window.setTimeout(show, GUIDE.nudgeFirstMs);
@@ -225,12 +241,21 @@ export default function Guide() {
               ) : null}
               <Button
                 type='button'
-                onClick={() => setOpen(!open)}
+                onClick={() => {
+                  setUnread(false);
+                  setOpen(!open);
+                }}
                 aria-expanded={open}
                 aria-label={open ? guideContent.close : guideContent.open}
                 className={cn(LAUNCH, leaving ? 'motion-safe:animate-dock-out' : 'motion-safe:animate-dock-in')}
               >
                 <AgentMark className={cn(ICON, 'size-9', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')} />
+                {unread && !open ? (
+                  <span aria-hidden='true' className={DOT}>
+                    <span className='absolute inline-flex size-full animate-ping rounded-full bg-volt opacity-70 motion-reduce:hidden' />
+                    <span className='relative inline-flex size-3 rounded-full border-[1.5px] border-ink bg-volt' />
+                  </span>
+                ) : null}
                 <X
                   aria-hidden='true'
                   className={cn(ICON, 'size-8', open ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0')}

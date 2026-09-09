@@ -36,10 +36,10 @@ const validate = ({ name, email, message }) => {
   return found;
 };
 
-const EMPTY = { name: '', email: '', company: '', message: '', topic: '' };
+const EMPTY = { name: '', email: '', company: '', message: '' };
 
 export default function ContactForm() {
-  const { fields, topics, submit, success, failure } = contactContent;
+  const { fields, submit, success, failure } = contactContent;
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -57,9 +57,6 @@ export default function ContactForm() {
     setTouched((current) => ({ ...current, [field]: true }));
     const found = validate(values);
     setErrors((current) => ({ ...current, [field]: found[field] }));
-  };
-  const pick = (topic) => () => {
-    setValues((current) => ({ ...current, topic: current.topic === topic ? '' : topic }));
   };
   const send = async (event) => {
     event.preventDefault();
@@ -102,18 +99,6 @@ export default function ContactForm() {
     'aria-describedby': errors[field] ? `${field}-error` : undefined,
     disabled: pending,
   });
-  const topicEls = topics.options.map(({ value, label }) => (
-    <button
-      key={value}
-      type='button'
-      onClick={pick(value)}
-      aria-pressed={values.topic === value}
-      disabled={pending}
-      className={cn(CHIP, values.topic === value ? CHIP_ON : CHIP_OFF)}
-    >
-      {label}
-    </button>
-  ));
   const errorFor = (field) =>
     errors[field] ? (
       <p id={`${field}-error`} role='alert' className='flex items-start gap-1.5 text-sm leading-[1.4] text-ink'>
@@ -143,14 +128,21 @@ export default function ContactForm() {
 
   return (
     <form ref={formRef} noValidate onSubmit={send} className={FORM}>
-      <div className='flex flex-col gap-3'>
-        <span className={LABEL}>
-          {topics.label}
-          <span className='text-grey'> ({topics.optional})</span>
-        </span>
-        <div role='group' aria-label={topics.label} className='flex flex-wrap gap-2'>
-          {topicEls}
-        </div>
+      <div className='flex flex-col gap-2'>
+        <Label htmlFor='message' className={LABEL}>
+          {fields.message.label}
+          <span className='text-destructive'>*</span>
+        </Label>
+        <Textarea
+          {...fieldProps('message')}
+          rows={6}
+          placeholder={fields.message.placeholder}
+          className={cn(
+            'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base',
+            errors.message && FIELD_BAD
+          )}
+        />
+        {errorFor('message')}
       </div>
       <div className='grid gap-6 md:grid-cols-2'>
         <div className='flex flex-col gap-2'>
@@ -195,22 +187,6 @@ export default function ContactForm() {
           placeholder={fields.company.placeholder}
           className={FIELD}
         />
-      </div>
-      <div className='flex flex-col gap-2'>
-        <Label htmlFor='message' className={LABEL}>
-          {fields.message.label}
-          <span className='text-destructive'>*</span>
-        </Label>
-        <Textarea
-          {...fieldProps('message')}
-          rows={6}
-          placeholder={fields.message.placeholder}
-          className={cn(
-            'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base',
-            errors.message && FIELD_BAD
-          )}
-        />
-        {errorFor('message')}
       </div>
       <input
         ref={trapRef}

@@ -1,10 +1,10 @@
 import { Eyebrow, Section, StepIndex } from '@/components';
-import { ContactForm } from '@/lib/ui/reusable_components';
+import { ContactForm, TypedHeading } from '@/lib/ui/reusable_components';
 import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
 export default function Contact() {
-  const { eyebrow, heading, intro, availability, steps, direct } = contactContent;
+  const { eyebrow, heading, intro, steps, direct } = contactContent;
   const stepEls = steps.map(({ title, detail }, index) => (
     <li key={title} className='flex gap-4'>
       <StepIndex value={index + 1} />
@@ -20,18 +20,12 @@ export default function Contact() {
         <div className='flex flex-col gap-8 lg:sticky lg:top-[calc(var(--nav-rail)+2.5rem)]'>
           <header className='flex flex-col gap-4'>
             <Eyebrow>{eyebrow}</Eyebrow>
-            <h2 className='max-w-[15ch] font-display text-[clamp(2.5rem,5.4vw,4.25rem)] font-normal leading-[1.02] tracking-[-0.01em]'>
-              {heading}
-            </h2>
+            <TypedHeading
+              text={heading}
+              className='max-w-[15ch] font-display text-[clamp(2.5rem,5.4vw,4.25rem)] font-normal leading-[1.02] tracking-[-0.01em]'
+            />
             <p className='max-w-[46ch] text-base leading-[1.6] text-mut'>{intro}</p>
           </header>
-          <span className='border-brutal flex w-fit items-center gap-2.5 rounded-full px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] shadow-brutal-sm'>
-            <span className='relative flex size-2'>
-              <span className='absolute inline-flex size-full animate-ping rounded-full bg-volt opacity-70 motion-reduce:hidden' />
-              <span className='relative inline-flex size-2 rounded-full bg-volt' />
-            </span>
-            {availability}
-          </span>
           <ol className='flex flex-col gap-5 border-t-[1.5px] border-line pt-8'>{stepEls}</ol>
           <div className='flex flex-col gap-1.5'>
             <span className='font-mono text-[11px] uppercase tracking-[0.14em] text-mut'>{direct.label}</span>

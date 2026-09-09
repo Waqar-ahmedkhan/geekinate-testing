@@ -68,6 +68,20 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --animate-rail-run: rail-run 5s linear infinite;
   --animate-blink: blink 4.4s ease-in-out infinite;
+  --animate-caret: caret 1.05s steps(1) infinite;
+  @keyframes caret {
+    0%,
+    45% {
+      opacity: 1;
+    }
+    50%,
+    95% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
   --animate-dock-in: dock-in 460ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
   --animate-dock-out: dock-out 220ms cubic-bezier(0.4, 0, 1, 1) both;
   @keyframes dock-in {

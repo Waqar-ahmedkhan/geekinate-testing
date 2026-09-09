@@ -22,6 +22,8 @@ export const SITE = {
 
 export const LAYOUT = { container: 1440 };
 
+export const TYPED = { startMs: 2600, typeMs: 55, eraseMs: 28, holdMs: 3400, restMs: 700 };
+
 export const NAV_LINKS = [
   { label: 'Services', href: '/#services' },
   { label: 'Work', href: '/#work' },

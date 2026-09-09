@@ -20,7 +20,7 @@ const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const PANEL = 'flex flex-col items-start gap-2 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
 const FORM = 'flex flex-col gap-6 rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
 const EXAMPLE =
-  'cursor-pointer rounded-full border-[1.5px] border-ink bg-paper px-4 py-2 text-left text-sm leading-[1.4] text-ink transition-colors duration-200 ease-brutal hover:bg-wash disabled:cursor-default';
+  'min-h-11 cursor-pointer rounded-full border-[1.5px] border-ink bg-paper px-4 py-2 text-left text-sm leading-[1.4] text-ink transition-colors duration-200 ease-brutal hover:bg-wash disabled:cursor-default';
 
 const EMPTY = { brief: '' };
 const PANELS = { failed: 'failure', unreadable: 'unreadable', limited: 'rateLimited', unavailable: 'unavailable' };

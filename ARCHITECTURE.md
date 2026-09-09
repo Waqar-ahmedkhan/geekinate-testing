@@ -5,7 +5,13 @@ search.
 
 ## Shape
 
-One Next.js application at the repo root. There is no backend service, no API layer, and no database. Everything renders statically.
+One Next.js application at the repo root. There is no separate backend service and no database. Every page renders statically; the
+only server code is the route handlers under `app/api/`, which exist to deliver form submissions.
+
+It is **not deployed on Vercel.** Production runs as a Node server we control — `next start` behind a reverse proxy. That matters
+in three places: anything reading `x-forwarded-for` depends on the proxy setting it, module-scope state in a route handler is
+shared across requests (one process, not one instance per request), and `NEXT_PUBLIC_APP_URL` has to be set in the environment
+because nothing defaults it.
 
 ```
 geekinate/                   the repo, and the application
@@ -15,33 +21,48 @@ geekinate/                   the repo, and the application
   app/  components/  features/  lib/  constants/  scripts/  public/
 ```
 
-The repo is named `geekinate`; the folder it is checked out into locally is `geekinate-v1`. The repo named `geekinate-v1` is the
-archive of the two older sites and holds nothing from this build.
+The repo is named `geekinate`; the folder it is checked out into locally is `geekinate-v2`. The sibling folder `geekinate-v1` is
+the archive of the two older sites and holds nothing from this build.
 
 ## Module map
 
 | Path | Holds | Notes |
 |---|---|---|
 | `app/` | Routes only | Pages compose components and do nothing else |
-| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `JsonLd`, `Footer` |
+| `app/api/` | Route handlers | `contact/` and `partner/`, both POST-only. The only server code in the project |
+| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `preloader/`, `snake/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
-| `lib/curve/` | The letterform as geometry | `g-points.json` (generated, gitignored from Prettier), `gCurve.js` |
-| `lib/content/index.js` | Every user-facing string for `/` | Sections read their copy from here |
+| `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold) |
+| `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state |
+| `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
+| `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `pillars.js`, `order.js`, `snake.js` |
+| `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
 | `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
 | `lib/analytics.js` | Vendor-neutral event shim | `track()` pushes to `window.dataLayer`; no provider is installed |
 | `lib/partner/intent.js` | Which form mode a CTA asked for | `chooseIntent()` from a CTA, `watchIntent()` from the form — same shape as `lib/boot/ready.js` |
 | `lib/seo.js` | Metadata + JSON-LD builders | Single definition of metadata shape |
-| `lib/utils.js` | `cn` | shadcn's class merger |
-| `constants/index.js` | `SITE`, `NAV_LINKS`, `SOCIALS` | Site identity and static data; re-exports `snake.js` |
-| `constants/snake.js` | Every tunable the 3D mark reads | One place for the magic numbers, per the brief |
+| `lib/utils.js` | `cn`, `orderLabel` | shadcn's class merger, and the shared `01/02/03` label |
+| `constants/index.js` | `SITE`, `LAYOUT`, `NAV_LINKS`, `NAV_CTA`, `SOCIALS` | Site identity and static data; `export *` over every sibling file |
+| `constants/cosmos.js` | Every tunable the particle canvas reads | Camera pair, morph easing, `globeRoutes`. Read the note at the top before changing the camera |
+| `constants/globe.js` | Globe geometry and `GLOBE_PALETTE` | Volt, paper and black. There is no approved blue |
 | `constants/preloader.js` | Every tunable the preload gate reads | Ring geometry, milestone weights, the timing floor and the failsafe |
 | `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
 | `constants/partner.js` | Commercial terms and form limits | `PARTNER` rates/window/limits, `PARTNER_EVENTS` names. Rates are fixed product requirements, not design values |
-| `scripts/` | One-off build scripts | `sample-g-path.mjs`; run by hand, never at runtime |
+| `constants/{cta,grain,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file |
+| `constants/snake.js` | Tunables for the retired 3D mark | **Mostly dead** — see *Dead code* below. `SNAKE.scrollLerp` is still live, read by `smooth-scroll` |
+| `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
+
+### Dead code
+
+`lib/ui/reusable_components/snake/` and `lib/curve/` are **not mounted or imported by anything**. They are the first 3D mark,
+which `cosmos/` replaced on 2026-08-13 when the two scenes became one. They are kept for reference, not because anything runs
+them — do not extend them, and do not reason about the current mark from them. The one live thread out of that build is
+`constants/snake.js`, which still supplies `SNAKE.scrollLerp` to `smooth-scroll`; `lib/curve/` reads the rest of `SNAKE` but
+nothing reads `lib/curve/`.
 
 The split between `components/layout` and `lib/ui/reusable_components` is by **kind**, not convenience: the former is
 presentational and mostly server-rendered, the latter holds client components with their own state and effects.
@@ -55,12 +76,13 @@ Shape inherited from `../Eleve/development/frontend`:
 
 - `features/<name>/index.jsx` — one page section, one folder, default export named for the folder. Imported as `@/features/services`,
   never `@/features/services/Services`. Sections compose `components/layout` primitives and never import each other.
-- `lib/content.js` — every user-facing string. Sections destructure their content object on the first line of the component.
+- `lib/content/index.js` — every user-facing string. Sections destructure their content object on the first line of the component.
 - `app/` pages compose sections and do nothing else.
 
 Built so far, in page order: `features/hero` (01), `features/clients`, `features/work` (02), `features/services` (03),
 `features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
 `features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
+`features/partner` holds `/partner`'s fourteen sections; `features/lab` is the `/lab` prototype and is not part of the site.
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
@@ -69,7 +91,7 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 column when it is not — `/partner` passes `FlowRail`, the service pages pass nothing. `Actions` takes a `link` component and a
 `meta` mapper so `/partner` can route every pill through its analytics `TrackedLink` while the service pages use a plain
 `next/link` with no props leaking onto the anchor. Build a new marketing page out of these rather than a fifth variant.
-Section numbers live in the eyebrow copy in `lib/content.js` — renumber there if the order changes. The hero carries no copy yet,
+Section numbers live in the eyebrow copy in `lib/content/index.js` — renumber there if the order changes. The hero carries no copy yet,
 so it has no entry there.
 
 ## Routes
@@ -77,8 +99,10 @@ so it has no entry there.
 | Route | File | Rendering |
 |---|---|---|
 | `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, cta, contact |
-| `/services/[slug]` | `app/services/[slug]/page.js` | SSG. One route serves all three disciplines; `generateStaticParams` reads `services` in `lib/content.js`, `dynamicParams` is `false` so anything else 404s |
+| `/services/[slug]` | `app/services/[slug]/page.js` | SSG. One route serves all three services; `generateStaticParams` reads `services` in `lib/content/index.js`, `dynamicParams` is `false` so anything else 404s |
 | `/partner` | `app/partner/page.js` | Static. Referral Partner Program — 13 sections from `features/partner`, plus `FAQPage` JSON-LD |
+| `/lab` | `app/lab/page.js` | Static, `noindex`. Background prototype — not part of the site |
+| `/api/contact` | `app/api/contact/route.js` | Dynamic. Contact form endpoint |
 | `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service routes are derived from `services` |
@@ -120,13 +144,25 @@ rule against inventing values.
 - JSON-LD is one `@graph` per page through `components/layout/JsonLd.jsx`. Organization is the anchor; `WebSite` and `Service`
   reference it by `@id`. Preserve that linkage when adding node types.
 - `next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on any `*.vercel.app` host so previews cannot outrank production.
+  **That host pattern predates the move off Vercel** — see Known gaps.
 
-## The 3D mark
+## The 3D mark — the retired `snake` build
 
-`features/hero` (01) plus `lib/ui/reusable_components/snake`, `lib/curve` and `lib/scroll`. Built to the brief in
-`docs/geekinate-hero-3d-prompt.md`, which specifies five phases. **Phases 1 and 2 are built:** the letterform renders, and the
-scroll-driven unravel and reassembly work. The journey's shape, the camera rig, the length gradient, the taper and the
-post-processing chain are all still unbuilt.
+> **This section documents dead code.** `lib/ui/reusable_components/snake/` and `lib/curve/` were the first 3D mark and are
+> **mounted nowhere**; `cosmos/` replaced them on 2026-08-13, when the separate globe and hero scenes became one particle system.
+> Nothing below describes what currently renders. Numbers here — 18000 dots, volt with normal blending, the sliding window over a
+> single spine — are the retired build's, not the live one's.
+>
+> **The live system is `lib/ui/reusable_components/cosmos/` with `lib/globe/`, `lib/shape/` and `constants/cosmos.js`**, and it is
+> described in `AGENTS.md` §Boundaries ("One particle system holds the whole page, and it wears three shapes"). It is not yet
+> written up here — see Known gaps.
+>
+> The section is kept because most of the mechanics below were expensive to learn and several still hold: the SVG-outline trap,
+> the silhouette arithmetic, the curvature measurements, and the reduced-motion and scroll-state rules at the end. Read it as
+> lessons, not as a map.
+
+Built to the brief in `docs/geekinate-hero-3d-prompt.md`, which specifies five phases. Phases 1 and 2 were built: the letterform
+rendered, and the scroll-driven unravel and reassembly worked.
 
 | File | Responsibility |
 |---|---|
@@ -301,7 +337,7 @@ to keep moving.
 `ClientLogo` is a `next/image` over the real marks. The source files the client supplied on 2026-08-27 sit untouched in
 `public/media/clients/`; each was flattened to a single-colour glyph in `--ink`, trimmed, and exported as a 160px-tall
 transparent WebP under a kebab-case name — twice over, as the ink glyph and an original-colour `*-color.webp` that the component
-stacks behind it and crossfades up on hover. `clients` in `lib/content.js` carries `{ name, src, width, size }` — width is the file's own,
+stacks behind it and crossfades up on hover. `clients` in `lib/content/index.js` carries `{ name, src, width, size }` — width is the file's own,
 `size` is the display height in pixels. **Heights are deliberately not uniform**: a uniform height makes the compact lockups
 (Elevé, LVL AZN) read tiny beside wide wordmarks — flagged by the user on sight — so each mark's `size` approximates equal
 visual area (height ∝ 1/√aspect, clamped to 28–58) and `md` scales all of them by 1.15 through the `--logo-h` custom property.
@@ -338,7 +374,7 @@ Mechanics worth knowing before editing:
 - **Pinning is `lg`-and-`prefers-reduced-motion`-gated through `gsap.matchMedia`.** Below `lg`, or reduced, the runway height is
   cleared and the panel is just a dark rounded box the page scrolls past — the reference disables its pin on touch the same way.
 - The grid itself is unchanged: three columns, 16px gaps, 10px tile radius, span rhythm **2+1 / 3 / 1+1+1**, aspect following span,
-  degrading to two columns then one below `lg`. **The rhythm needs exactly six projects** — `span` values in `lib/content.js`
+  degrading to two columns then one below `lg`. **The rhythm needs exactly six projects** — `span` values in `lib/content/index.js`
   change with the count. Tiles overlay title and discipline chips on the media with no scrim; a project with no `href` renders a
   `div` rather than a dead link.
 
@@ -376,7 +412,7 @@ if the idea comes back, and should not be rebuilt from scratch.
 
 A card with no `media` renders **no media box at all** — the Marketing card has run that way since its stock clip was cut on
 2026-09-02 — so no `<video>` ever points at a missing file. Adding a clip is a content edit: drop the file into
-`public/media/services/` and list it in `lib/content.js` as `{ src, type }`. The shipped clips are mp4; a webm has to be listed
+`public/media/services/` and list it in `lib/content/index.js` as `{ src, type }`. The shipped clips are mp4; a webm has to be listed
 first and always paired with an mp4 fallback, since Safari's webm support is unreliable.
 
 Playback is skipped entirely under `prefers-reduced-motion`.
@@ -401,7 +437,7 @@ breakpoints, per the twMerge trap) and the header carries `px-6 md:px-10` itself
 
 **The stagger is the anchor sequence, not the content.** Every card sits in a 520px slot anchored top, middle or bottom; the
 sequence is authored per card on the reference and is transcribed as `ANCHORS` in `TestimonialMarquee`. Without it the row is a
-flat strip. Quote lengths are deliberately uneven in `lib/content.js` for the same reason — equal-length cards flatten it too.
+flat strip. Quote lengths are deliberately uneven in `lib/content/index.js` for the same reason — equal-length cards flatten it too.
 
 `TestimonialMarquee` owns the motion, with no animation library:
 
@@ -500,7 +536,7 @@ The card is **black** with the type sitting directly on the footage, no scrim, w
 was reserved for this surface long before the surface did.
 
 The top row splits 50/50 — lockup, location and email on the left, four columns spread with `justify-between` on the right. Those
-columns are `footerColumns` in `lib/content.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
+columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
 `services` array in the same file** so the pillar list cannot drift from the section that renders it. Legal has no pages yet;
 an empty `href` renders as plain text rather than a dead link, the same rule `WorkTile` follows.
 
@@ -525,6 +561,7 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 | `shadcn` | The CLI, kept as a dependency by its own installer |
 | `three`, `@react-three/fiber`, `@react-three/drei` | The 3D mark. Raised and approved 2026-08-10 against the standing no-new-deps rule |
 | `lenis` | Scroll smoothing, and the clock the 3D mark runs on. Same approval, added with Phase 2 |
+| `gsap` | The frame loop the whole site runs on — `gsap.ticker` drives Lenis, the canvases and the marquees — plus `ScrollTrigger` for the work pin and the CTA reveal. Same approval |
 
 Deliberately absent: no form library, no data layer. Adding either is an architectural decision, not a detail — raise it first. The
 3D stack is the one exception and it was granted for the hero brief specifically; the remainder of that brief's list — `zustand`,
@@ -532,8 +569,21 @@ Deliberately absent: no form library, no data layer. Adding either is an archite
 any of it. Install each with the phase that needs it, not ahead of it. Scroll progress is a plain module singleton rather than
 Zustand, which the brief explicitly allows and which costs one file.
 
+**`zustand` and `zod` both resolve from `node_modules` today without being declared** — `zustand` arrives under
+`@react-three/fiber`, `zod` under the `shadcn` CLI. So `import { create } from 'zustand'` will appear to work and then break the
+day a transitive version moves. Anything this project actually depends on gets its own `package.json` entry.
+
 ## Known gaps
 
+- **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their
+  own; `AGENTS.md` §Boundaries is currently the only prose describing them, and *The 3D mark* below documents the retired build
+  it replaced. Anyone working on the canvas has to read the code. This is the largest gap in this document.
+- **`next.config.mjs`'s `X-Robots-Tag` rule only matches `*.vercel.app` hosts.** Production is not on Vercel, so if staging has
+  moved off a `vercel.app` domain that rule protects nothing and the staging host is indexable. Confirm the real staging hostname
+  and widen the rule, or the preview outranks production.
+- **The in-memory rate limiter in `app/api/partner/route.js` assumes one process and a proxy that sets `x-forwarded-for`.** With
+  no such header every visitor keys to `'local'` and one submitter throttles the whole site; under pm2 cluster mode or multiple
+  containers each worker keeps its own counter and the limit silently multiplies. Neither has been verified on the real host.
 - `SITE.ogImage` points at `/images/openGraph.png`, which does not exist. A 1200×630 image is needed; the square app icon is not a
   substitute because the metadata declares those dimensions.
 - `constants/index.js` carries `// PLACEHOLDER` contact and social values.
@@ -548,7 +598,7 @@ Zustand, which the brief explicitly allows and which costs one file.
   dark surface instead of dumping light overlay text onto the page background.
 - **No poster images exist.** With `preload="metadata"` and no `poster`, a resting card can paint black rather than a first frame —
   reliably so in Safari. Produce a poster per clip alongside the loops.
-- Services copy in `lib/content.js` is placeholder wording pending sign-off. The structure is settled.
+- Services copy in `lib/content/index.js` is placeholder wording pending sign-off. The structure is settled.
 - **The footer clip is `stokt-golf-ball-render.webm` — wearestokt.com's own render, with their wordmark printed on the balls. MUST
   NOT SHIP.** It is also 13MB and WebM-only, so Safari falls through to the black panel and every other browser pays for it on
   first paint. The replacement needs an H.264 MP4 alongside the WebM, a poster, and a far smaller file.
@@ -566,7 +616,7 @@ Zustand, which the brief explicitly allows and which costs one file.
 - No analytics provider is installed. `lib/analytics.js` queues events on `window.dataLayer` for whichever provider lands.
 - `NAV_LINKS` points at anchors no section defines yet.
 - **The hero has no copy.** No H1, no CTA, no eyebrow — the mark alone. The brief requires those to be real DOM above the canvas,
-  and they wait on wording rather than being invented. Nothing in `lib/content.js` covers section 01 yet.
+  and they wait on wording rather than being invented. Nothing in `lib/content/index.js` covers section 01 yet.
 - **The 3D mark stops at Phase 2.** No camera rig, no length gradient, no taper, no post-processing, no mobile downgrade. Phases 3
   to 5 in `docs/geekinate-hero-3d-prompt.md` are unbuilt.
 - **The journey is invisible.** Every section below the hero is opaque and sits above the canvas, so the mark only shows through

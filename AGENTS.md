@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Repository guidance and coding boundaries for Geekinate v1. Start here.
+Repository guidance and coding boundaries for Geekinate v2. Start here.
 
 | Need | File |
 |---|---|
@@ -11,9 +11,15 @@ Repository guidance and coding boundaries for Geekinate v1. Start here.
 ## The project
 
 Geekinate's agency website, rebuilt from scratch. A single Next.js app living at the repo root — no backend, no database, no
-`frontend/` wrapper. The repo is the application.
+`frontend/` wrapper. The repo is the application. It is **not deployed on Vercel**: production is a Node server we control,
+`next start` behind a reverse proxy. See `ARCHITECTURE.md` §Shape for what that changes.
 
-The site will sell four service pillars: **AI & Automation, Games & Interactive, Marketing Systems, Web Products**.
+**The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
+**Games & Interactive** (`games`), **Marketing Systems** (`marketing`). This file previously named four pillars with Web Products
+as its own — that is no longer true at the service level; Web Products is folded into Development & AI, whose summary reads "Web
+products, platforms, and the agents and pipelines that run inside them." The four-pillar vocabulary survives in exactly one
+place, as **tags** on the featured work: `work[].disciplines` still uses `AI & Automation`, `Games & Interactive`,
+`Marketing Systems` and `Web Products`. Derive from `services` rather than transcribing a count anywhere.
 
 Design direction is not open to invention: it is decided in the Asana thread *Revamp Web Design to a modern design*, with
 `wearestokt.com` as the agreed base, `denqid.com` for the hero, and `landing.love/categories/agency` for further reference. It is
@@ -102,7 +108,7 @@ design decision to raise, not a tidy-up. The logos are **real client marks** as 
 the supplied originals that stay beside them in `public/media/clients/`: ink-on-transparent (`*.webp`) and original-colour
 (`*-color.webp`, LinkTax refilled in its brand navy because its white type cannot sit on the light strip). The strip runs the
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
-flipping `src` values in `lib/content.js` is the whole change either way.
+flipping `src` values in `lib/content/index.js` is the whole change either way.
 
 **The preload gate must never be able to trap the page.** `lib/ui/reusable_components/preloader` holds a black overlay over
 everything until the globe paints its first frame, which reaches it through `lib/boot/ready.js`. That signal can legitimately never
@@ -130,7 +136,7 @@ still reaches search through the metadata title and the `Service` JSON-LD, so do
 **The service hero carries no aside, for now.** It was built as a split with the service's clip in a bordered panel on the right,
 matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this temporarily") and the content centred. `PageHero`
 switches to a single centred column whenever no `aside` is passed, so restoring it is a matter of passing the panel back — the clip
-is still in `lib/content.js`.
+is still in `lib/content/index.js`.
 
 **Nothing below the hero is 3D.** Work, Services and Testimonials stay on the flat system — white ground, ink borders, hard offset
 shadows, no blur-based depth — and they are opaque, which is what hides the scattered field behind them. Reaching for a soft shadow,

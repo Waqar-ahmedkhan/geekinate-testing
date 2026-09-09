@@ -29,7 +29,8 @@ the archive of the two older sites and holds nothing from this build.
 | Path | Holds | Notes |
 |---|---|---|
 | `app/` | Routes only | Pages compose components and do nothing else |
-| `app/api/` | Route handlers | `contact/` and `partner/`, both POST-only. The only server code in the project |
+| `app/api/` | Route handlers | `contact/`, `partner/`, `blueprint/` and `blueprint/email/`, all POST-only. The only server code in the project |
+| `lib/ai/` | The Blueprint's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `schema.js` (JSON Schema for the model, yup for validation), `sections.js` (the id registry), `bus.js` (`runPageActions`) |
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
@@ -40,6 +41,7 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
 | `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `pillars.js`, `order.js`, `snake.js` |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
+| `lib/content/blueprint.js` | Every user-facing string for the Blueprint | `serviceBlueprints` is keyed by slug and gates the section: the copy exists, so the section renders |
 | `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
 | `lib/analytics.js` | Vendor-neutral event shim | `track()` pushes to `window.dataLayer`; no provider is installed |
 | `lib/partner/intent.js` | Which form mode a CTA asked for | `chooseIntent()` from a CTA, `watchIntent()` from the form — same shape as `lib/boot/ready.js` |
@@ -83,6 +85,7 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 `features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
 `features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
 `features/partner` holds `/partner`'s fourteen sections; `features/lab` is the `/lab` prototype and is not part of the site.
+`features/blueprint` is the Blueprint, and renders on `/services/development` only — see **The Blueprint**.
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
@@ -104,6 +107,8 @@ so it has no entry there.
 | `/lab` | `app/lab/page.js` | Static, `noindex`. Background prototype — not part of the site |
 | `/api/contact` | `app/api/contact/route.js` | Dynamic. Contact form endpoint |
 | `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
+| `/api/blueprint` | `app/api/blueprint/route.js` | Dynamic. Generates a blueprint — see **The Blueprint** |
+| `/api/blueprint/email` | `app/api/blueprint/email/route.js` | Dynamic. Emails a generated blueprint to the studio |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service routes are derived from `services` |
 | `/robots.txt` | `app/robots.js` | Static |
@@ -549,6 +554,51 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 **The navbar retreats over the footer** — the reference's behaviour, described under the navbar below. `Footer` carries
 `relative z-50` to match `Nav`'s own so nothing shows through during the 420ms retreat.
 
+## The Blueprint
+
+`/services/development` carries an interactive block: the visitor describes their business in one sentence and the page renders
+what their team does by hand today, the same work once it runs itself, and three things Geekinate would build. Built to
+`../docs/geekinate-ai-page-interaction-spec.md`, which also specifies a conversational Guide that is **not built** — phases 1 and
+2 of that spec are here, phases 3 to 5 are not.
+
+| File | Responsibility |
+|---|---|
+| `features/blueprint/index.jsx` | The section. Sticky header left, form right, result full width beneath |
+| `blueprint-form/index.jsx` | The brief, the status machine, and the section registration |
+| `blueprint-form/Result.jsx` | The two columns, the three build cards |
+| `blueprint-form/Capture.jsx` | The email field, with its own status machine |
+| `blueprint-form/reveal.js` | The completion timeline |
+| `app/api/blueprint/route.js` | Generation |
+| `app/api/blueprint/email/route.js` | Delivery |
+| `lib/ai/` | Grounding, prompts, schema, and the page-control bus |
+
+**It is gated by the presence of copy, not by a flag.** `blueprintFor(slug)` returns the `development` entry and `null` for
+everything else, so `/services/games` and `/services/marketing` carry no section and no gap. Those two pages are also the spec's
+"the page is complete with the feature absent" acceptance test, permanently, in production. Adding a second blueprint is a
+`lib/content/blueprint.js` edit and nothing else.
+
+**The schema is declared twice from one source, because yup cannot drive the model.** The AI SDK's `Output.object` takes Zod,
+Valibot or a raw JSON Schema and does not accept yup, so `lib/ai/schema.js` builds `blueprintJsonSchema` to constrain the model
+and `blueprintShape` to validate, wired together through `jsonSchema()`'s `validate` hook. Both read the same frozen arrays in
+`constants/ai.js`, and the `pillar` enum is derived from `services` rather than transcribed.
+
+**Grounding is derived, never transcribed.** `lib/ai/knowledge.js` is built from `services`, `work` and `contactContent` and
+stringified once at module load. `testimonials` is excluded because it is invented. `work` is included with its placeholder
+titles, and the system prompt forbids presenting any of them as a named case study — see Known gaps.
+
+**Cost control, in the order it runs:** cross-origin check, honeypot, 500-character cap and a 12-character floor, the credential
+check, a 24h in-process response cache, then a 3-per-hour throttle keyed on a salted IP hash. The cache sits *before* the
+throttle deliberately — a repeat of a brief already answered costs nothing, so it should not spend anyone's allowance. All of
+that bounds how large and how often requests are; **none of it can stop a bill.** The ceiling is set in the OpenAI dashboard
+under Settings → Limits and nothing in this repo can set it.
+
+**OpenAI returns 429 for two different things** — too many requests, and no credit left. The route reads the body:
+`insufficient_quota` maps to the quiet unavailable panel, which is the spec's silent static mode, and a real rate limit maps to
+the try-again copy. Those are one status code and two completely different messages to a visitor.
+
+At most two model calls per request, never three: one attempt, then one repair pass that shows the model its own rejected
+output. Transport failures rethrow before the repair, so a dead credential costs one round-trip rather than two.
+
 ## Dependencies and why
 
 | Package | Why |
@@ -561,6 +611,7 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 | `shadcn` | The CLI, kept as a dependency by its own installer |
 | `three`, `@react-three/fiber`, `@react-three/drei` | The 3D mark. Raised and approved 2026-08-10 against the standing no-new-deps rule |
 | `lenis` | Scroll smoothing, and the clock the 3D mark runs on. Same approval, added with Phase 2 |
+| `ai` + `@ai-sdk/openai`, `yup` | The Blueprint. Raised and approved 2026-09-09 against the standing no-new-deps rule. `zod` appears in the lockfile as a required peer of `ai`; nothing here imports it |
 | `gsap` | The frame loop the whole site runs on — `gsap.ticker` drives Lenis, the canvases and the marquees — plus `ScrollTrigger` for the work pin and the CTA reveal. Same approval |
 
 Deliberately absent: no form library, no data layer. Adding either is an architectural decision, not a detail — raise it first. The
@@ -575,6 +626,17 @@ day a transitive version moves. Anything this project actually depends on gets i
 
 ## Known gaps
 
+- **There is no spend ceiling on the Blueprint.** The generation route calls OpenAI directly, so the only limits are
+  `maxOutputTokens`, the input caps, the cache and the per-IP throttle — all of which bound size and rate, none of which stop a
+  bill. A hard limit has to be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
+- **The Blueprint's knowledge object carries placeholder project titles.** `work` is `Project one` … `Project six`, and it is fed
+  to the model as instructed rather than filtered out. The prompt forbids presenting any of them as a named case study and the
+  Blueprint's schema has no case-study field, so nothing can currently surface them — but the Guide, when it is built, will be
+  able to quote them. Replace `work` before that lands.
+- **The Blueprint has not been checked below 1024px.** The grids use standard breakpoint classes with `[&>*]:min-w-0` on both,
+  but the automation window would not resize, so 320 and 375 are unmeasured.
+- **Blueprint delivery is unverified end to end.** Every failure path is exercised, but no webhook or Resend credential has been
+  pointed at `/api/blueprint/email`, so no message has actually been sent.
 - **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their
   own; `AGENTS.md` §Boundaries is currently the only prose describing them, and *The 3D mark* below documents the retired build
   it replaced. Anyone working on the canvas has to read the code. This is the largest gap in this document.

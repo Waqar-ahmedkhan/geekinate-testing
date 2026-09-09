@@ -138,6 +138,29 @@ matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove th
 switches to a single centred column whenever no `aside` is passed, so restoring it is a matter of passing the panel back — the clip
 is still in `lib/content/index.js`.
 
+**The Blueprint is gated by copy, and it calls OpenAI with no ceiling above it.** `/services/development` carries the generated
+Today-vs-automated block; `blueprintFor(slug)` returns `null` for the other two services, so they render without it and act as the
+standing proof that the page is complete with the feature absent. Do not convert that to a boolean flag. On cost: the route calls
+OpenAI directly, and `maxOutputTokens`, the 500-character cap, the 24h cache and the 3-per-hour throttle bound how large and how
+often requests are — **none of them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so
+never describe this feature as spend-capped.
+
+**The in-process throttle assumes exactly one Node process.** `app/api/{partner,blueprint}` keep their counters in a module-scope
+`Map`. That is real on a single `next start`, resets on restart, and **silently multiplies by the worker count** under pm2 cluster
+mode or two containers. It also depends on the reverse proxy setting `x-forwarded-for`: without it every visitor keys to `'local'`
+and one submitter throttles the site. Neither has been verified on the real host. In dev, editing a route hot-reloads the module
+and wipes the counter, which reads as the limiter not working — it is.
+
+**Read `node_modules/ai/docs/` before touching the AI SDK, the same way you would for Next.** It is v7 and the surface moves.
+Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Schema and **not yup**, so the model's shape goes
+through `jsonSchema()` and yup rides its `validate` hook; `generateObject`, `maxTokens` and tool `parameters` are all gone; and
+`zod` sits in the lockfile only as a required peer of `ai`, so importing it would be depending on a transitive.
+
+**A sticky grid item is not clamped to its own row.** `Process`, `Deliverables` and `Contact` all put `lg:sticky` directly on a
+`<header>` grid child, which is safe only because those grids have one row. The Blueprint added a second, full-width row and the
+header slid straight over it. If a grid with a sticky header ever gains another row, wrap the header in a stretching grid item so
+the sticky is bounded by the row — and drop `items-start`, which stops the wrapper stretching.
+
 **Nothing below the hero is 3D.** Work, Services and Testimonials stay on the flat system — white ground, ink borders, hard offset
 shadows, no blur-based depth — and they are opaque, which is what hides the scattered field behind them. Reaching for a soft shadow,
 a glow or a gradient down there because "the hero does it" is the misreading to avoid.
@@ -193,6 +216,13 @@ whose base classes are `mb-8 md:mb-10` kills only `mb-8` — the `md:mb-10` surv
 *edge* of the letter, not its stroke. Feeding that to a tube builder wraps geometry around the glyph instead of running through it —
 and it looks plausible enough in a thumbnail to waste an hour. Check for a uniform stroke width before reaching for a tracing
 library; this mark has one, so `scripts/sample-g-path.mjs` derives the centreline arithmetically instead.
+
+**`id="hero"` is load-bearing, and `/services/[slug]` depends on not having one.** `measureStage` falls back to `heroOut = 1` when
+the page carries no `#hero`, which is what stops the particle cloud parking in its globe pose. Any new section on that route takes
+its own id — the Blueprint takes `blueprint` — and never `hero`.
+
+**The shadcn `Button` base has no `cursor-pointer`.** Every button built from it sits on a default arrow until the class is added
+by hand. The site's own chips already do this; new buttons must too.
 
 **A positioned ancestor with a z-index traps a fixed child's z-index.** `Section` carries `relative z-10`, which opens a stacking
 context. The 3D canvas was rendered inside the hero's `Section` with `fixed inset-0 z-40`, and that 40 is scoped to the hero's own

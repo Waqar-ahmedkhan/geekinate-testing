@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import Chat from './Chat';
 import { actionsOf, readGuide, textOf } from './stream';
@@ -16,11 +17,11 @@ const DOCK = 'flex h-[min(34rem,72svh)] flex-col gap-4 rounded-lg border-[1.5px]
 const HEAD = 'flex items-center gap-3 border-b-[1.5px] border-line pb-4';
 const NAME = 'text-base leading-tight tracking-[-0.01em] text-paper';
 const STATUS = 'font-mono text-[11px] uppercase tracking-[0.14em] text-mut';
-const FLOAT = 'fixed right-5 bottom-5 z-50 flex flex-col items-end gap-3 lg:right-8 lg:bottom-8';
+const FLOAT = 'fixed right-5 bottom-5 z-[60] flex flex-col items-end gap-3 lg:right-8 lg:bottom-8';
 const SHEET =
-  'flex h-[min(32rem,70svh)] w-[min(23rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal';
+  'flex h-[min(32rem,70svh)] w-[min(23rem,calc(100vw-2.5rem))] origin-bottom-right flex-col gap-4 rounded-lg border-[1.5px] border-line bg-void p-5 shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-95 motion-safe:slide-in-from-bottom-3 motion-safe:duration-200 motion-safe:ease-out';
 const LAUNCH =
-  'size-14 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:bg-volt motion-reduce:transition-none';
+  'size-14 origin-bottom-right cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-safe:animate-in motion-safe:fade-in motion-safe:zoom-in-50 motion-safe:slide-in-from-bottom-6 motion-safe:duration-300 motion-safe:ease-out motion-reduce:transition-none';
 
 const idFor = () => Math.random().toString(36).slice(2, 10);
 const asked = (list) => list.filter((entry) => entry.role === 'user').length;
@@ -160,25 +161,28 @@ export default function Guide() {
         {header}
         {chat('guide-hero', false)}
       </div>
-      {floating ? (
-        <div className={FLOAT}>
-          {open ? (
-            <div className={SHEET} role='dialog' aria-label={guideContent.title}>
-              {header}
-              {chat('guide-float', true)}
-            </div>
-          ) : null}
-          <Button
-            type='button'
-            onClick={() => setOpen(!open)}
-            aria-expanded={open}
-            aria-label={open ? guideContent.close : guideContent.open}
-            className={cn(LAUNCH, open && 'rotate-90')}
-          >
-            {open ? <X aria-hidden='true' className='size-6' /> : <BrandMark size={34} bare className='text-ink' />}
-          </Button>
-        </div>
-      ) : null}
+      {floating
+        ? createPortal(
+            <div className={FLOAT}>
+              {open ? (
+                <div className={SHEET} role='dialog' aria-label={guideContent.title}>
+                  {header}
+                  {chat('guide-float', true)}
+                </div>
+              ) : null}
+              <Button
+                type='button'
+                onClick={() => setOpen(!open)}
+                aria-expanded={open}
+                aria-label={open ? guideContent.close : guideContent.open}
+                className={cn(LAUNCH, open && 'rotate-90')}
+              >
+                {open ? <X aria-hidden='true' className='size-6' /> : <BrandMark size={34} bare className='text-ink' />}
+              </Button>
+            </div>,
+            document.body
+          )
+        : null}
     </>
   );
 }

@@ -13,7 +13,7 @@ export default function Deliverables({ block, items }) {
     </li>
   ));
   return (
-    <Section id={block.id} variant='paper'>
+    <Section id={block.id} variant='paper' className='scroll-mt-[var(--nav-rail)]'>
       <div className='mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2 lg:items-start lg:gap-16'>
         <header className='flex flex-col gap-4 lg:sticky lg:top-[calc(var(--nav-rail)+2.5rem)]'>
           <Eyebrow>{block.label}</Eyebrow>

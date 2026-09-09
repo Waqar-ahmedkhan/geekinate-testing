@@ -10,7 +10,7 @@ export default function Scope({ block, items }) {
     </Card>
   ));
   return (
-    <Section id={block.id} variant='paper'>
+    <Section id={block.id} variant='paper' className='scroll-mt-[var(--nav-rail)]'>
       <div className='mx-auto flex w-full max-w-6xl flex-col'>
         <SectionHead eyebrow={block.label} heading={block.heading} />
         <div className='grid gap-4 md:grid-cols-2 lg:grid-cols-3'>{cardEls}</div>

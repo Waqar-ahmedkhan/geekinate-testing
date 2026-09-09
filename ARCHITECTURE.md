@@ -557,7 +557,7 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 ## The Blueprint
 
 `/services/development` carries an interactive block: the visitor describes their business in one sentence and the page renders
-what their team does by hand today, the same work once it runs itself, and three things Geekinate would build. Built to
+their process as a rail they can drag from manual to automated, plus three things Geekinate would build. Built to
 `../docs/geekinate-ai-page-interaction-spec.md`, which also specifies a conversational Guide that is **not built** — phases 1 and
 2 of that spec are here, phases 3 to 5 are not.
 
@@ -565,7 +565,8 @@ what their team does by hand today, the same work once it runs itself, and three
 |---|---|
 | `features/blueprint/index.jsx` | The section. Sticky header left, form right, result full width beneath |
 | `blueprint-form/index.jsx` | The brief, the status machine, and the section registration |
-| `blueprint-form/Result.jsx` | The two columns, the three build cards |
+| `blueprint-form/Result.jsx` | The summary, the transform rail, the three build cards |
+| `blueprint-form/Transform.jsx` | The scrubbable process rail — one list, dragged from manual to automated |
 | `blueprint-form/Capture.jsx` | The email field, with its own status machine |
 | `blueprint-form/reveal.js` | The completion timeline |
 | `app/api/blueprint/route.js` | Generation |

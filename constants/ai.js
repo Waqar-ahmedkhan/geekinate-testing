@@ -34,6 +34,8 @@ export const BLUEPRINT = {
   maxOutputTokens: 1200,
 };
 
+export const BLUEPRINT_TRANSFORM = { teaseMs: 900 };
+
 export const BLUEPRINT_REVEAL = {
   rise: 12,
   ease: 'power2.out',

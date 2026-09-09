@@ -25,7 +25,7 @@ const NUDGE =
   'max-w-60 rounded-lg rounded-br-sm border-[1.5px] border-line bg-void px-3.5 py-2.5 text-sm leading-[1.45] text-paper shadow-brutal motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-300 motion-safe:ease-out';
 const ICON = 'absolute transition-[opacity,transform] duration-200 ease-out motion-reduce:transition-none';
 const LAUNCH =
-  'relative size-15 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-reduce:transition-none motion-reduce:animate-none';
+  'relative size-16 cursor-pointer rounded-full border-[1.5px] border-ink bg-volt p-0 text-ink shadow-brutal transition-transform duration-200 ease-out hover:scale-105 hover:bg-volt motion-reduce:transition-none motion-reduce:animate-none';
 
 const idFor = () => Math.random().toString(36).slice(2, 10);
 const asked = (list) => list.filter((entry) => entry.role === 'user').length;
@@ -230,10 +230,10 @@ export default function Guide() {
                 aria-label={open ? guideContent.close : guideContent.open}
                 className={cn(LAUNCH, leaving ? 'motion-safe:animate-dock-out' : 'motion-safe:animate-dock-in')}
               >
-                <AgentMark className={cn(ICON, 'size-8', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')} />
+                <AgentMark className={cn(ICON, 'size-9', open ? 'rotate-90 scale-50 opacity-0' : 'rotate-0 scale-100 opacity-100')} />
                 <X
                   aria-hidden='true'
-                  className={cn(ICON, 'size-7', open ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0')}
+                  className={cn(ICON, 'size-8', open ? 'rotate-0 scale-100 opacity-100' : '-rotate-90 scale-50 opacity-0')}
                 />
               </Button>
             </div>,

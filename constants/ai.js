@@ -45,9 +45,9 @@ export const GUIDE = {
   starterStepMs: 90,
   greetLatestMs: 4200,
   dockExitMs: 240,
-  nudgeFirstMs: 5000,
-  nudgeEveryMs: 16000,
-  nudgeHoldMs: 5200,
+  nudgeFirstMs: 9000,
+  nudgeEveryMs: 38000,
+  nudgeHoldMs: 6200,
 };
 
 export const GUIDE_EVENTS = {

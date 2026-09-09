@@ -30,9 +30,8 @@ export const BLUEPRINT = {
   window: { ms: 3600000, max: 3 },
   emailWindow: { ms: 3600000, max: 5 },
   cache: { ms: 86400000, max: 200 },
-  model: 'anthropic/claude-sonnet-5',
+  model: 'gpt-5.4-mini',
   maxOutputTokens: 1200,
-  tags: Object.freeze(['feature:blueprint']),
 };
 
 export const BLUEPRINT_EVENTS = {

@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { openai } from '@ai-sdk/openai';
 import { APICallError, generateText, LoadAPIKeyError, Output } from 'ai';
 import { blueprintRepair, blueprintSystem, blueprintUser } from '@/lib/ai/prompts';
 import { blueprintOutput, validateBlueprint } from '@/lib/ai/schema';
@@ -50,23 +51,24 @@ const visitor = (request) => {
   return digest(`${process.env.AI_USER_SALT || ''}${address}`).slice(0, 32);
 };
 
+const outOfCredit = (error) => /insufficient_quota|billing_hard_limit|exceeded your current quota/i.test(String(error?.message || ''));
+
 const foreign = (request) => {
   const site = request.headers.get('sec-fetch-site');
   return Boolean(site) && site !== 'same-origin';
 };
 
-const gatewayName = (error) => (typeof error?.name === 'string' && error.name.startsWith('Gateway') ? error.name : '');
-const transportFailed = (error) => APICallError.isInstance(error) || LoadAPIKeyError.isInstance(error) || Boolean(gatewayName(error));
+const transportFailed = (error) => APICallError.isInstance(error) || LoadAPIKeyError.isInstance(error);
 
 const ask = (messages, user) =>
   generateText({
-    model: BLUEPRINT.model,
+    model: openai(BLUEPRINT.model),
     system: blueprintSystem,
     messages,
     output: Output.object({ schema: blueprintOutput }),
     maxOutputTokens: BLUEPRINT.maxOutputTokens,
     temperature: 0,
-    providerOptions: { gateway: { user, quotaEntityId: user, tags: [...BLUEPRINT.tags] } },
+    providerOptions: { openai: { user } },
   });
 
 const build = async (brief, user) => {
@@ -83,16 +85,11 @@ const build = async (brief, user) => {
   }
 };
 
-const UNCONFIGURED = ['GatewayAuthenticationError', 'GatewayForbiddenError'];
-
 const statusFor = (error) => {
-  const name = gatewayName(error);
   const code = typeof error?.statusCode === 'number' ? error.statusCode : 0;
-  if (LoadAPIKeyError.isInstance(error) || UNCONFIGURED.includes(name) || code === 401 || code === 403) {
-    return { error: 'not-configured', status: 503 };
-  }
-  if (name === 'GatewayRateLimitError' || code === 429) return { error: 'throttled', status: 429 };
-  if (code === 402) return { error: 'paused', status: 503 };
+  if (LoadAPIKeyError.isInstance(error) || code === 401 || code === 403) return { error: 'not-configured', status: 503 };
+  if (code === 429 && outOfCredit(error)) return { error: 'paused', status: 503 };
+  if (code === 429) return { error: 'throttled', status: 429 };
   return { error: 'failed', status: 502 };
 };
 
@@ -107,7 +104,7 @@ export async function POST(request) {
   if (clean(payload?.trap, 8)) return Response.json({ error: 'invalid' }, { status: 400 });
   const brief = clean(payload?.brief, BLUEPRINT.limits.brief);
   if (brief.length < BLUEPRINT.minBrief) return Response.json({ error: 'invalid', fields: { brief: 'required' } }, { status: 400 });
-  if (!process.env.AI_GATEWAY_API_KEY) return Response.json({ error: 'not-configured' }, { status: 503 });
+  if (!process.env.OPENAI_API_KEY) return Response.json({ error: 'not-configured' }, { status: 503 });
   const user = visitor(request);
   const key = digest(normalised(brief));
   const held = remembered(key);

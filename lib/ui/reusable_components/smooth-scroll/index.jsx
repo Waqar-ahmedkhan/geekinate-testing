@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useLayoutEffect } from 'react';
+import { usePathname } from 'next/navigation';
 import Lenis from 'lenis';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { setScrollEngine } from '@/lib/scroll/controller';
+import { setScrollEngine, settleScrollEngine } from '@/lib/scroll/controller';
 import { watchScrollLock } from '@/lib/scroll/lock';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { SNAKE } from '@/constants';
@@ -12,6 +13,10 @@ import { SNAKE } from '@/constants';
 gsap.registerPlugin(ScrollTrigger);
 
 export default function SmoothScroll() {
+  const pathname = usePathname();
+  useLayoutEffect(() => {
+    settleScrollEngine();
+  }, [pathname]);
   useEffect(() => {
     scrollProgress.reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (scrollProgress.reduced) return undefined;

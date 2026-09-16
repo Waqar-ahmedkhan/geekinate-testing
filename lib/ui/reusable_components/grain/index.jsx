@@ -2,10 +2,10 @@
 
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { createGrain, grainFade, shedGrain, shedRing, stepGrain } from './pool';
+import { createGrain, grainFade, shedGrain, stepGrain } from './pool';
 import { bakeGrain } from './sprite';
 import { pointer } from '@/lib/input/pointer';
-import { pageOffset, scrollProgress } from '@/lib/scroll/progress';
+import { scrollProgress } from '@/lib/scroll/progress';
 import { GRAIN } from '@/constants';
 
 const LIGHT_GROUND = 140;
@@ -23,32 +23,19 @@ const groundIsLight = (element) => {
 
 export default function GrainWake() {
   const canvasRef = useRef(null);
-
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas || scrollProgress.reduced) return undefined;
     if (!window.matchMedia('(hover: hover) and (pointer: fine)').matches) return undefined;
     const ctx = canvas.getContext('2d');
     const pool = createGrain(GRAIN.count);
-    const ring = {
-      x: 0,
-      y: 0,
-      presence: 0,
-      radius: GRAIN.ringRadius,
-      orbit: GRAIN.ringOrbit,
-      rate: GRAIN.ringPerSecond,
-      life: GRAIN.ringLife,
-    };
     let sprites = [],
       width = 0,
       height = 0;
     let stamp = 0,
       lastX = 0,
       lastY = 0,
-      lastScroll = -1,
-      scrolledAt = -Infinity,
       probedAt = -Infinity,
-      presence = 0,
       ground = null,
       light = false;
     const resize = () => {
@@ -69,15 +56,8 @@ export default function GrainWake() {
       const dx = pointer.px - lastX,
         dy = pointer.py - lastY;
       const moved = dx !== 0 || dy !== 0;
-      const scroll = pageOffset();
-      if (scroll !== lastScroll && lastScroll >= 0) scrolledAt = now;
-      lastScroll = scroll;
-      const target = pointer.active > 0 && now - scrolledAt < GRAIN.ringHoldMs ? 1 : 0;
-      const rate = target > presence ? GRAIN.ringRise : GRAIN.ringFall;
-      presence += (target - presence) * (1 - Math.exp(-rate * delta));
-      const ringing = presence > GRAIN.gone;
-      if (!moved && !ringing && pool.alive === 0) return;
-      if ((moved || ringing) && now - probedAt >= GRAIN.probeMs) {
+      if (!moved && pool.alive === 0) return;
+      if (moved && now - probedAt >= GRAIN.probeMs) {
         probedAt = now;
         const under = document.elementFromPoint(pointer.px, pointer.py);
         if (under !== ground) {
@@ -85,16 +65,10 @@ export default function GrainWake() {
           light = under ? groundIsLight(under) : false;
         }
       }
-      ring.x = pointer.px;
-      ring.y = pointer.py;
-      ring.presence = presence;
-      if (pointer.active > 0) {
-        if (moved) shedGrain(pool, pointer.px, pointer.py, dx / delta, dy / delta, Math.hypot(dx, dy), light);
-        if (ringing) shedRing(pool, ring, delta, light);
-      }
+      if (moved && pointer.active > 0) shedGrain(pool, pointer.px, pointer.py, dx / delta, dy / delta, Math.hypot(dx, dy), light);
       lastX = pointer.px;
       lastY = pointer.py;
-      stepGrain(pool, delta, ringing ? ring : null);
+      stepGrain(pool, delta);
       ctx.clearRect(0, 0, width, height);
       if (pool.alive === 0) return;
       for (let i = 0; i < pool.count; i += 1) {
@@ -114,6 +88,5 @@ export default function GrainWake() {
       window.removeEventListener('resize', resize);
     };
   }, []);
-
   return <canvas ref={canvasRef} aria-hidden='true' className='pointer-events-none fixed inset-0 z-20' />;
 }

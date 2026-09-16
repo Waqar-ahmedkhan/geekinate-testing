@@ -193,7 +193,10 @@ log moves the log instead of the page. The sheet wrapper is a plain, unpositione
 turned down on sight, and a card that simply lifts on a bigger shadow read as the hover every site already has. `DeckCard` tips
 the card a degree and slides a volt card out from under it, which takes over the hard shadow. The cursor stays an arrow and there
 is no arrow icon: these cards link nowhere, and a hover that promised a click was the objection raised against animating them at
-all. Do not bring a scroll reveal back to this grid.
+all. Do not bring a scroll reveal back to this grid. Since 2026-09-16 each card's title is volt at rest (instructed: "heading text
+color to green replacing white"), and the same hover wipes a volt marker across it left to right while the type flips to ink — two
+nested spans in `Scope.jsx`, a growing `background-size` bar under a `bg-clip-text` gradient on the same timing, so the ink edge
+tracks the bar exactly. No padding may sit on the outer span, or the two gradients stop lining up.
 
 ## Conventions
 

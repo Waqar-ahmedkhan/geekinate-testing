@@ -88,7 +88,8 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 `Scope`'s cards are `DeckCard`s: on hover the card tips a degree and rises while a volt card slides out from under it and takes
 the shadow. It is CSS only — Tailwind's `hover` variants already require a hover-capable pointer, so touch screens see still cards
 — and `motion-reduce` drops the movement. `DeckCard` wraps `Card` and reaches its outer shell through `shellClassName`. It was
-picked on 2026-09-15 from a round of hover prototypes, after a scroll-in reveal was turned down; see `AGENTS.md`.
+picked on 2026-09-15 from a round of hover prototypes, after a scroll-in reveal was turned down; see `AGENTS.md`. Card titles are
+volt, and the same hover wipes a volt marker across them while the type turns ink (2026-09-16).
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a

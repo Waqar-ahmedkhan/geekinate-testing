@@ -32,7 +32,7 @@ const BOX =
   'size-5 rounded-[5px] border-[1.5px] border-ink bg-paper data-[state=checked]:border-ink data-[state=checked]:bg-volt data-[state=checked]:text-ink';
 const TICK = 'flex cursor-pointer items-start gap-3 text-sm leading-[1.5] text-ink-soft';
 const SUBMIT =
-  'h-12 w-full rounded-full border-[1.5px] border-ink bg-volt px-8 text-base text-ink shadow-brutal hover:bg-volt/85 sm:w-auto sm:self-center';
+  'h-12 w-full cursor-pointer rounded-full border-[1.5px] border-ink bg-volt px-8 text-base text-ink shadow-brutal hover:bg-volt/85 sm:w-auto sm:self-center';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const ORDER = {
@@ -285,7 +285,7 @@ export default function ReferralForm() {
           type='button'
           onClick={reset}
           variant='outline'
-          className='mt-2 h-11 rounded-full border-[1.5px] border-ink bg-paper px-6 text-ink hover:bg-wash'
+          className='mt-2 h-11 cursor-pointer rounded-full border-[1.5px] border-ink bg-paper px-6 text-ink hover:bg-wash'
         >
           {copy.success.again}
         </Button>

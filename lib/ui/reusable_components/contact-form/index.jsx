@@ -5,7 +5,6 @@ import { Check, CircleAlert, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { contactContent } from '@/lib/content';
@@ -13,14 +12,14 @@ import { SITE } from '@/constants';
 
 const FIELD =
   'h-12 rounded-lg border-[1.5px] border-ink bg-paper px-4 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
+const AREA =
+  'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
-const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
-const FORM = 'flex flex-col gap-6 rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
-const CHIP =
-  'cursor-pointer rounded-full border-[1.5px] border-ink px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink transition-colors duration-200 ease-brutal disabled:cursor-default';
-const CHIP_ON = 'bg-volt shadow-brutal-sm';
-const CHIP_OFF = 'bg-paper hover:bg-wash';
+const FORM = 'flex flex-col gap-4 rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
+const SUBMIT =
+  'mt-2 h-12 cursor-pointer self-center rounded-full border-[1.5px] border-ink bg-volt px-8 text-base text-ink shadow-brutal hover:bg-volt/85';
+const AGAIN = 'mt-2 h-11 cursor-pointer rounded-full border-[1.5px] border-ink bg-paper px-6 text-ink hover:bg-wash';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 12;
@@ -63,7 +62,7 @@ export default function ContactForm() {
     const found = validate(values);
     setTouched({ name: true, email: true, message: true });
     setErrors(found);
-    const first = ['name', 'email', 'message'].find((field) => found[field]);
+    const first = ['message', 'name', 'email'].find((field) => found[field]);
     if (first) {
       formRef.current?.elements[first]?.focus();
       return;
@@ -95,18 +94,18 @@ export default function ContactForm() {
     value: values[field],
     onChange: change(field),
     onBlur: blur(field),
+    placeholder: fields[field].placeholder,
+    'aria-label': fields[field].label,
     'aria-invalid': Boolean(errors[field]),
     'aria-describedby': errors[field] ? `${field}-error` : undefined,
     disabled: pending,
   });
   const errorFor = (field) =>
     errors[field] ? (
-      <p id={`${field}-error`} role='alert' className='flex items-start gap-1.5 text-sm leading-[1.4] text-ink'>
-        <CircleAlert aria-hidden='true' className='mt-0.5 size-4 shrink-0 text-destructive' />
+      <p id={`${field}-error`} role='alert' className='sr-only'>
         {errors[field]}
       </p>
     ) : null;
-
   if (status === 'sent')
     return (
       <div className={PANEL} role='status'>
@@ -115,79 +114,33 @@ export default function ContactForm() {
         </span>
         <h3 className='font-display text-3xl leading-none tracking-[-0.01em] text-ink'>{success.title}</h3>
         <p className='text-base leading-[1.6] text-mut'>{success.body}</p>
-        <Button
-          type='button'
-          onClick={reset}
-          variant='outline'
-          className='mt-2 h-11 rounded-full border-[1.5px] border-ink bg-paper px-6 text-ink hover:bg-wash'
-        >
+        <Button type='button' onClick={reset} variant='outline' className={AGAIN}>
           {success.again}
         </Button>
       </div>
     );
-
   return (
     <form ref={formRef} noValidate onSubmit={send} className={FORM}>
-      <div className='flex flex-col gap-2'>
-        <Label htmlFor='message' className={LABEL}>
-          {fields.message.label}
-          <span className='text-destructive'>*</span>
-        </Label>
-        <Textarea
-          {...fieldProps('message')}
-          rows={6}
-          placeholder={fields.message.placeholder}
-          className={cn(
-            'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base',
-            errors.message && FIELD_BAD
-          )}
-        />
-        {errorFor('message')}
-      </div>
-      <div className='grid gap-6 md:grid-cols-2'>
-        <div className='flex flex-col gap-2'>
-          <Label htmlFor='name' className={LABEL}>
-            {fields.name.label}
-            <span className='text-destructive'>*</span>
-          </Label>
-          <Input
-            {...fieldProps('name')}
-            type='text'
-            autoComplete={fields.name.autoComplete}
-            placeholder={fields.name.placeholder}
-            className={cn(FIELD, errors.name && FIELD_BAD)}
-          />
-          {errorFor('name')}
-        </div>
-        <div className='flex flex-col gap-2'>
-          <Label htmlFor='email' className={LABEL}>
-            {fields.email.label}
-            <span className='text-destructive'>*</span>
-          </Label>
-          <Input
-            {...fieldProps('email')}
-            type='email'
-            inputMode='email'
-            autoComplete={fields.email.autoComplete}
-            placeholder={fields.email.placeholder}
-            className={cn(FIELD, errors.email && FIELD_BAD)}
-          />
-          {errorFor('email')}
-        </div>
-      </div>
-      <div className='flex flex-col gap-2'>
-        <Label htmlFor='company' className={LABEL}>
-          {fields.company.label}
-          <span className='text-grey'>({fields.company.optional})</span>
-        </Label>
+      <Textarea {...fieldProps('message')} rows={6} className={cn(AREA, errors.message && FIELD_BAD)} />
+      {errorFor('message')}
+      <div className='grid gap-4 md:grid-cols-2'>
         <Input
-          {...fieldProps('company')}
+          {...fieldProps('name')}
           type='text'
-          autoComplete={fields.company.autoComplete}
-          placeholder={fields.company.placeholder}
-          className={FIELD}
+          autoComplete={fields.name.autoComplete}
+          className={cn(FIELD, errors.name && FIELD_BAD)}
         />
+        {errorFor('name')}
+        <Input
+          {...fieldProps('email')}
+          type='email'
+          inputMode='email'
+          autoComplete={fields.email.autoComplete}
+          className={cn(FIELD, errors.email && FIELD_BAD)}
+        />
+        {errorFor('email')}
       </div>
+      <Input {...fieldProps('company')} type='text' autoComplete={fields.company.autoComplete} className={FIELD} />
       <input
         ref={trapRef}
         type='text'
@@ -197,11 +150,7 @@ export default function ContactForm() {
         aria-hidden='true'
         className='pointer-events-none absolute left-[-9999px] size-px opacity-0'
       />
-      <Button
-        type='submit'
-        disabled={pending}
-        className='h-12 self-center rounded-full border-[1.5px] border-ink bg-volt px-8 text-base text-ink shadow-brutal hover:bg-volt/85'
-      >
+      <Button type='submit' disabled={pending} className={SUBMIT}>
         {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
         {pending ? submit.pending : submit.idle}
       </Button>

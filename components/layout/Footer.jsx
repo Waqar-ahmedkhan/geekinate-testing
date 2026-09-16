@@ -51,7 +51,7 @@ export default function Footer() {
     <footer className='relative z-50 p-4'>
       <div className='border-brutal relative flex min-h-[calc(100svh-2rem)] flex-col justify-between overflow-hidden rounded-[12px] bg-void/20 p-6'>
         <div className='relative flex flex-1 flex-col gap-8 lg:w-1/2'>
-          <div className='flex flex-col items-start gap-2.5'>
+          <div className='flex flex-col items-start gap-3'>
             <Link
               href='/'
               aria-label={`${SITE.name} home`}
@@ -60,6 +60,12 @@ export default function Footer() {
               <BrandMark size={39} className='shrink-0' />
               {SITE.name}
             </Link>
+            <a
+              href={`mailto:${SITE.email}`}
+              className='w-fit font-display text-2xl leading-none text-paper underline decoration-volt decoration-[3px] underline-offset-[7px] transition-[text-decoration-color] duration-200 hover:decoration-paper'
+            >
+              {SITE.email}
+            </a>
           </div>
           <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:my-auto md:w-fit md:gap-x-30 md:gap-y-12'>
             {footerColumns.map(({ title, links }) => (

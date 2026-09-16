@@ -545,7 +545,7 @@ intentional. Both positions are on record; do not "fix" it back without asking.
 The card is **black** with the type sitting directly on the footage, no scrim, which is why `--footer-mut` (#b9c2bc) exists: it
 was reserved for this surface long before the surface did.
 
-The top row splits 50/50 — lockup, location and email on the left, four columns spread with `justify-between` on the right. Those
+The top row splits 50/50 — lockup and email on the left, four columns spread with `justify-between` on the right. Those
 columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
 `services` array in the same file** so the pillar list cannot drift from the section that renders it. Legal has no pages yet;
 an empty `href` renders as plain text rather than a dead link, the same rule `WorkTile` follows.

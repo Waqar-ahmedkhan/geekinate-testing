@@ -123,8 +123,8 @@ right-hand index rail — and that was rejected on 2026-09-08 for the opposite r
 approved, so the site now carried two unrelated marketing layouts. The instruction was to make the service pages consistent with
 `/partner` **and to share the code rather than build a second design**.
 
-It now runs: `PageHero` (`clear`, `min-h-svh`), then Scope as a `paper` band of `Card`s, Process as an `ink` band of `StepIndex`
-steps against a sticky header, Deliverables as a `paper` band, then `CtaBand`, then the reused `Contact` — every section
+It now runs: `PageHero` (`clear`, `min-h-svh`), then Scope as a `paper` band of `Card`s, Deliverables as an `ink` band, Process
+as a `paper` band of `StepIndex` steps against a sticky header, then `CtaBand`, then the reused `Contact` — every section
 `mx-auto max-w-6xl`, alternating paper and ink, exactly as `/partner` does. The dossier's own devices are gone: no index rail, no
 ledger grid, no gsap timeline, no full-bleed. `Contact` no longer takes a `className` because nothing needs to override its width
 any more.
@@ -138,26 +138,35 @@ matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove th
 switches to a single centred column whenever no `aside` is passed, so restoring it is a matter of passing the panel back — the clip
 is still in `lib/content/index.js`.
 
-**The Blueprint is gated by copy, and it calls OpenAI with no ceiling above it.** `/services/development` carries the generated
-Today-vs-automated block; `blueprintFor(slug)` returns `null` for the other two services, so they render without it and act as the
-standing proof that the page is complete with the feature absent. Do not convert that to a boolean flag. On cost: the route calls
-OpenAI directly, and `maxOutputTokens`, the 500-character cap, the 24h cache and the 3-per-hour throttle bound how large and how
-often requests are — **none of them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so
-never describe this feature as spend-capped.
+**The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It docks in the
+`/services/development` hero — `guidedServices` in `lib/content/guide.js` picks the pages — and floats once the dock is off screen
+or under the sheet. A `goToSection` call used to scroll the moment the reply streamed in, which took the page away before the
+answer could be read; since 2026-09-14 it renders a button under that reply instead, labelled from `guideContent.jumps`, and the
+page moves only when the visitor presses it. `highlight` is the one action that still runs on arrival, because it moves nothing.
+The Blueprint section, its form and its `/api/blueprint` routes were removed the same day. On cost: `maxOutputTokens`, the
+500-character message cap, the eight-turn cap and the 20-per-day throttle bound how large and how often requests are — **none of
+them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so never describe this feature as
+spend-capped.
 
-**The in-process throttle assumes exactly one Node process.** `app/api/{partner,blueprint}` keep their counters in a module-scope
+**The in-process throttle assumes exactly one Node process.** `app/api/{partner,guide}` keep their counters in a module-scope
 `Map`. That is real on a single `next start`, resets on restart, and **silently multiplies by the worker count** under pm2 cluster
 mode or two containers. It also depends on the reverse proxy setting `x-forwarded-for`: without it every visitor keys to `'local'`
 and one submitter throttles the site. Neither has been verified on the real host. In dev, editing a route hot-reloads the module
 and wipes the counter, which reads as the limiter not working — it is.
 
+**A host that builds from the repo has to be given `OPENAI_API_KEY` itself.** Every `.env*` file except `.env.example` is
+gitignored, so a Vercel deploy has no key unless it is set in the project's environment settings, and a variable added after a
+deploy only takes effect on the next one. Without it `/api/guide` answers 503 `not-configured` and the chat reads "The guide is
+not running right now." — which is exactly what staging showed on 2026-09-14 while the same page answered locally. A Vercel
+deploy also runs more than one instance, so the throttle above is per instance there.
+
 **Read `node_modules/ai/docs/` before touching the AI SDK, the same way you would for Next.** It is v7 and the surface moves.
 Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Schema and **not yup**, so the model's shape goes
-through `jsonSchema()` and yup rides its `validate` hook; `generateObject`, `maxTokens` and tool `parameters` are all gone; and
+through `jsonSchema()` (the removed Blueprint rode yup on its `validate` hook); `generateObject`, `maxTokens` and tool `parameters` are all gone; and
 `zod` sits in the lockfile only as a required peer of `ai`, so importing it would be depending on a transitive.
 
 **A sticky grid item is not clamped to its own row.** `Process`, `Deliverables` and `Contact` all put `lg:sticky` directly on a
-`<header>` grid child, which is safe only because those grids have one row. The Blueprint added a second, full-width row and the
+`<header>` grid child, which is safe only because those grids have one row. The Blueprint (removed 2026-09-14) added a second, full-width row and the
 header slid straight over it. If a grid with a sticky header ever gains another row, wrap the header in a stretching grid item so
 the sticky is bounded by the row — and drop `items-start`, which stops the wrapper stretching.
 
@@ -167,6 +176,22 @@ a glow or a gradient down there because "the hero does it" is the misreading to 
 
 **The hero paints no ground of its own.** The canvas is fixed at `z-[1]` and every `Section` is `relative z-10`, so a background on
 section 01 would cover the very thing it exists to frame. The black comes from `html`.
+
+**The service and partner heroes sit under a sheet.** Instructed 2026-09-14: past the hero, the next white section has to slide up
+over it like a sheet rather than scroll it away. `HeroSheet` does it for `/services/[slug]` and `/partner` alike — the page passes
+its hero as `hero` and every later section as children — so a new marketing page reuses it rather than restyling a section. From
+`lg` up the hero is held `sticky` for one `100svh` of scroll while the sheet rises, rounded at its top edge, and the hero scales
+back and darkens underneath (`SHEET` in `constants/sheet.js`). Below `lg` the hero scrolls normally and only the rounded edge
+arrives: held on a phone, the stacked hero parks the Guide's chat under the thumb for a whole screen of scroll, and a swipe on its
+log moves the log instead of the page. The sheet wrapper is a plain, unpositioned `div` on purpose: `Nav` reads
+`.on-paper` bands from `offsetTop`, and a `relative` wrapper would shift every band by the hero's height. See ARCHITECTURE.md
+§The hero sheet.
+
+**The Scope cards answer hover, and only hover.** Picked on 2026-09-15 after two rounds of prototypes: a scroll-in fade-up was
+turned down on sight, and a card that simply lifts on a bigger shadow read as the hover every site already has. `DeckCard` tips
+the card a degree and slides a volt card out from under it, which takes over the hard shadow. The cursor stays an arrow and there
+is no arrow icon: these cards link nowhere, and a hover that promised a click was the objection raised against animating them at
+all. Do not bring a scroll reveal back to this grid.
 
 ## Conventions
 
@@ -219,7 +244,8 @@ library; this mark has one, so `scripts/sample-g-path.mjs` derives the centrelin
 
 **`id="hero"` is load-bearing, and `/services/[slug]` depends on not having one.** `measureStage` falls back to `heroOut = 1` when
 the page carries no `#hero`, which is what stops the particle cloud parking in its globe pose. Any new section on that route takes
-its own id — the Blueprint takes `blueprint` — and never `hero`.
+its own id — the dossier's take `scope`, `process` and `deliverables` — and never `hero`. The hero itself is `hero-service`, and
+under `HeroSheet` it is stuck, so nothing may try to scroll to it.
 
 **The shadcn `Button` base has no `cursor-pointer`.** Every button built from it sits on a default arrow until the class is added
 by hand. The site's own chips already do this; new buttons must too.
@@ -292,8 +318,25 @@ scrolled to `0`, and the particle cloud stayed in its footer letterform. The tel
 check that before touching the shader. `resetStage()` in `lib/scroll/stage.js` runs one frame after each pathname change and resyncs
 the engine (`syncScrollEngine`), the cached offset, and the layout. Any future scroll-derived state needs the same reset.
 
+**A Lenis glide survives a client navigation, and drags the new page back down.** Clicking a service card on the home page within
+about a second of scrolling landed `/services/development` at 3200px — the old page's scroll target, deep in the contact form on a
+4831px page — instead of the top; the same click 2.5s after the last wheel tick landed at 0. Next does scroll to the top
+(`documentElement.scrollTop = 0` in `layout-router`), but Lenis ignores native scroll events while `isScrolling === 'smooth'`, so
+the next frame of the old lerp writes its own value straight back. `syncScrollEngine` could not rescue it: `resize()` sets the
+target to the current position, and `scrollTo` returns early on an unchanged target without stopping the animation.
+`SmoothScroll` now calls `settleScrollEngine()` — `stop()` then `start()`, which is Lenis's own reset — in a layout effect keyed on
+the pathname, so it runs in the same commit as Next's scroll handler, before any frame of the old glide can. Do not swap it for
+`scrollTo(y, { immediate: true })`: that sets `preventNextNativeScrollEvent`, which swallows the scroll event Next's reset produces.
+
 **`IntersectionObserver`'s ratio is relative to the target, not the viewport.** A threshold of `0.5` on a section taller than the
 screen can never fire, silently. Compare `intersectionRect.height` against `Math.min(sectionHeight, innerHeight) * 0.5` instead.
+
+**A covered element is still on screen.** Under `HeroSheet` the Guide's dock never leaves the viewport — the sheet slides over it —
+so an `IntersectionObserver` on the dock keeps reporting it visible, and the floating launcher would not appear until the released
+hero had scrolled a whole viewport further. Occlusion is invisible to `IntersectionObserver`; v2's `isVisible` would see it but is
+Chromium-only. `HeroSheet` publishes whether it covers the hero through `lib/scroll/sheet.js` — `markSheet` / `watchSheet`, the
+same singleton shape as `lib/boot/ready.js` — and the dock floats on either signal. Anything inside a hero that hides or pauses
+on "left the screen" needs the same second listener.
 
 **An in-page hash link does not fire `hashchange` here.** With Lenis anchors and the Next router in play, a CTA pointing at
 `#refer-a-lead` scrolls but never notifies a `hashchange` listener, so anything keyed on it works on a cold load and silently fails

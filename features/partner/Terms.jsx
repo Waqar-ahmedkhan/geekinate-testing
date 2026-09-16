@@ -9,7 +9,7 @@ export default function Terms() {
     </p>
   ));
   return (
-    <Section variant='ink' className='py-14 md:py-16'>
+    <Section variant='ink' compact className='py-14 md:py-16'>
       <div className='mx-auto grid w-full max-w-6xl gap-8 lg:grid-cols-[5fr_7fr] lg:items-start lg:gap-16'>
         <header className='flex flex-col gap-3'>
           <Eyebrow>{eyebrow}</Eyebrow>

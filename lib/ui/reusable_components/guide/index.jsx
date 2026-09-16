@@ -5,14 +5,15 @@ import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import AgentMark from './AgentMark';
 import Chat from './Chat';
-import { actionsOf, readGuide, textOf } from './stream';
+import { actionsOf, isNavigation, jumpOf, readGuide, textOf } from './stream';
 import BrandMark from '../BrandMark';
 import { Button } from '@/components/ui/button';
 import { runPageActions } from '@/lib/ai/bus';
 import { watchGate } from '@/lib/boot/gate';
+import { watchSheet } from '@/lib/scroll/sheet';
 import { cn } from '@/lib/utils';
 import { guideContent } from '@/lib/content';
-import { GUIDE, SECTION_IDS } from '@/constants';
+import { GUIDE, PAGE_ACTIONS, SECTION_IDS } from '@/constants';
 
 const DOCK = 'flex h-[min(34rem,72svh)] flex-col gap-4 rounded-lg border-[1.5px] border-line bg-glass p-5 shadow-brutal md:p-6';
 const HEAD = 'flex items-center gap-3 border-b-[1.5px] border-line pb-4';
@@ -85,26 +86,37 @@ export default function Guide() {
   useEffect(() => {
     const dock = dockRef.current;
     if (!dock) return undefined;
+    let inView = true,
+      covered = false;
+    const settle = () => {
+      window.clearTimeout(exitRef.current);
+      exitRef.current = 0;
+      if (!inView || covered) {
+        setLeaving(false);
+        setFloating(true);
+        return;
+      }
+      setLeaving(true);
+      exitRef.current = window.setTimeout(() => {
+        setFloating(false);
+        setLeaving(false);
+        exitRef.current = 0;
+      }, GUIDE.dockExitMs);
+    };
     const watcher = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) {
-          window.clearTimeout(exitRef.current);
-          exitRef.current = 0;
-          setLeaving(false);
-          setFloating(true);
-          return;
-        }
-        setLeaving(true);
-        exitRef.current = window.setTimeout(() => {
-          setFloating(false);
-          setLeaving(false);
-          exitRef.current = 0;
-        }, GUIDE.dockExitMs);
+        inView = entry.isIntersecting;
+        settle();
       },
       { threshold: 0 }
     );
+    const release = watchSheet((over) => {
+      covered = over;
+      settle();
+    });
     watcher.observe(dock);
     return () => {
+      release();
       watcher.disconnect();
       window.clearTimeout(exitRef.current);
       exitRef.current = 0;
@@ -145,7 +157,7 @@ export default function Guide() {
   }, [floating, open, messages.length]);
 
   const perform = useCallback((message) => {
-    const fresh = actionsOf(message).filter(({ id }) => !ran.current.has(id));
+    const fresh = actionsOf(message).filter(({ id, action }) => !ran.current.has(id) && !isNavigation(action));
     if (!fresh.length) return;
     fresh.forEach(({ id }) => ran.current.add(id));
     runPageActions(fresh.map(({ action }) => action));
@@ -181,7 +193,8 @@ export default function Guide() {
       for await (const message of readGuide(response.body)) {
         perform(message);
         const said = textOf(message);
-        if (said) setMessages([...history, { id: replyId, role: 'assistant', text: said }]);
+        const jump = jumpOf(message);
+        if (said || jump) setMessages([...history, { id: replyId, role: 'assistant', text: said, jump }]);
       }
       setPending(false);
     } catch {
@@ -194,6 +207,10 @@ export default function Guide() {
     event.preventDefault();
     ask(draft);
   };
+  const go = (sectionId) => {
+    setOpen(false);
+    runPageActions([{ type: PAGE_ACTIONS.goTo, sectionId }]);
+  };
   const chat = (fieldId, autoFocus) => (
     <Chat
       messages={messages}
@@ -201,6 +218,7 @@ export default function Guide() {
       onDraft={setDraft}
       onSend={send}
       onStarter={ask}
+      onJump={go}
       pending={pending}
       spent={spent}
       notice={notice}
@@ -221,7 +239,7 @@ export default function Guide() {
 
   return (
     <>
-      <div ref={dockRef} className={DOCK} aria-hidden={floating}>
+      <div ref={dockRef} className={DOCK} aria-hidden={floating} inert={floating}>
         {header}
         {chat('guide-hero', false)}
       </div>

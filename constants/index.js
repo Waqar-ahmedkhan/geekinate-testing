@@ -7,6 +7,7 @@ export * from './lab';
 export * from './marquee';
 export * from './partner';
 export * from './preloader';
+export * from './sheet';
 export * from './snake';
 export * from './substrate';
 export * from './work';

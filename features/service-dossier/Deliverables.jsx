@@ -13,13 +13,13 @@ export default function Deliverables({ block, items }) {
     </li>
   ));
   return (
-    <Section id={block.id} variant='paper' className='scroll-mt-[var(--nav-rail)]'>
+    <Section id={block.id} variant='ink' compact className='scroll-mt-[var(--nav-rail)]'>
       <div className='mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2 lg:items-start lg:gap-16'>
         <header className='flex flex-col gap-4 lg:sticky lg:top-[calc(var(--nav-rail)+2.5rem)]'>
           <Eyebrow>{block.label}</Eyebrow>
           <h2 className='max-w-[14ch] font-display text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.05] tracking-[-0.01em]'>{block.heading}</h2>
         </header>
-        <Card onPaper className='gap-5'>
+        <Card className='gap-5'>
           <ul className='flex flex-col gap-4'>{itemEls}</ul>
         </Card>
       </div>

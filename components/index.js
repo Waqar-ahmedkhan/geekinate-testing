@@ -1,6 +1,7 @@
 export { default as Actions } from './layout/Actions';
 export { default as Card } from './layout/Card';
 export { default as CtaBand } from './layout/CtaBand';
+export { default as DeckCard } from './layout/DeckCard';
 export { default as Eyebrow } from './layout/Eyebrow';
 export { default as Footer } from './layout/Footer';
 export { default as JsonLd } from './layout/JsonLd';

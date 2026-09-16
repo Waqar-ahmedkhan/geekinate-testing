@@ -4,7 +4,7 @@ import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
 export default function Contact() {
-  const { eyebrow, heading, intro, steps, direct } = contactContent;
+  const { eyebrow, headings, intro, steps, direct } = contactContent;
   const stepEls = steps.map(({ title, detail }, index) => (
     <li key={title} className='flex gap-4'>
       <StepIndex value={index + 1} />
@@ -15,13 +15,13 @@ export default function Contact() {
     </li>
   ));
   return (
-    <Section id='contact' variant='paper'>
-      <div className='mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-2 lg:items-start lg:gap-16'>
+    <Section id='contact' variant='paper' className='flex min-h-svh flex-col justify-center'>
+      <div className='mx-auto grid w-full max-w-6xl gap-12 lg:grid-cols-2 lg:items-center lg:gap-16'>
         <div className='flex flex-col gap-8 lg:sticky lg:top-[calc(var(--nav-rail)+2.5rem)]'>
           <header className='flex flex-col gap-4'>
             <Eyebrow>{eyebrow}</Eyebrow>
             <TypedHeading
-              text={heading}
+              phrases={headings}
               className='max-w-[15ch] font-display text-[clamp(2.5rem,5.4vw,4.25rem)] font-normal leading-[1.02] tracking-[-0.01em]'
             />
             <p className='max-w-[46ch] text-base leading-[1.6] text-mut'>{intro}</p>

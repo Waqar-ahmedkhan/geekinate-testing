@@ -29,19 +29,19 @@ the archive of the two older sites and holds nothing from this build.
 | Path | Holds | Notes |
 |---|---|---|
 | `app/` | Routes only | Pages compose components and do nothing else |
-| `app/api/` | Route handlers | `contact/`, `partner/`, `blueprint/` and `blueprint/email/`, all POST-only. The only server code in the project |
-| `lib/ai/` | The Blueprint's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `schema.js` (JSON Schema for the model, yup for validation), `sections.js` (the id registry), `bus.js` (`runPageActions`) |
-| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
+| `app/api/` | Route handlers | `contact/`, `partner/` and `guide/`, all POST-only. The only server code in the project |
+| `lib/ai/` | The Guide's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `tools.js` (`goToSection`, `highlight`), `sections.js` (id lookup), `bus.js` (`runPageActions`) |
+| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
-| `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold) |
+| `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
 | `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `pillars.js`, `order.js`, `snake.js` |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
-| `lib/content/blueprint.js` | Every user-facing string for the Blueprint | `serviceBlueprints` is keyed by slug and gates the section: the copy exists, so the section renders |
+| `lib/content/guide.js` | Every user-facing string for the Guide | `guidedServices` picks the service pages that carry it; `jumps` labels the button under a reply |
 | `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
 | `lib/analytics.js` | Vendor-neutral event shim | `track()` pushes to `window.dataLayer`; no provider is installed |
 | `lib/partner/intent.js` | Which form mode a CTA asked for | `chooseIntent()` from a CTA, `watchIntent()` from the form — same shape as `lib/boot/ready.js` |
@@ -53,7 +53,7 @@ the archive of the two older sites and holds nothing from this build.
 | `constants/preloader.js` | Every tunable the preload gate reads | Ring geometry, milestone weights, the timing floor and the failsafe |
 | `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
 | `constants/partner.js` | Commercial terms and form limits | `PARTNER` rates/window/limits, `PARTNER_EVENTS` names. Rates are fixed product requirements, not design values |
-| `constants/{cta,grain,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file |
+| `constants/{cta,grain,sheet,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file |
 | `constants/snake.js` | Tunables for the retired 3D mark | **Mostly dead** — see *Dead code* below. `SNAKE.scrollLerp` is still live, read by `smooth-scroll` |
 | `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
@@ -85,7 +85,10 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 `features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
 `features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
 `features/partner` holds `/partner`'s fourteen sections; `features/lab` is the `/lab` prototype and is not part of the site.
-`features/blueprint` is the Blueprint, and renders on `/services/development` only — see **The Blueprint**.
+`Scope`'s cards are `DeckCard`s: on hover the card tips a degree and rises while a volt card slides out from under it and takes
+the shadow. It is CSS only — Tailwind's `hover` variants already require a hover-capable pointer, so touch screens see still cards
+— and `motion-reduce` drops the movement. `DeckCard` wraps `Card` and reaches its outer shell through `shellClassName`. It was
+picked on 2026-09-15 from a round of hover prototypes, after a scroll-in reveal was turned down; see `AGENTS.md`.
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
@@ -93,7 +96,8 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 `CtaBand` (the centred italic closing band). `PageHero` renders the split grid when an `aside` is passed and a single centred
 column when it is not — `/partner` passes `FlowRail`, the service pages pass nothing. `Actions` takes a `link` component and a
 `meta` mapper so `/partner` can route every pill through its analytics `TrackedLink` while the service pages use a plain
-`next/link` with no props leaking onto the anchor. Build a new marketing page out of these rather than a fifth variant.
+`next/link` with no props leaking onto the anchor. Build a new marketing page out of these rather than a fifth variant. Both pages
+pass their hero to `HeroSheet`, so everything after it slides up over it — see **The hero sheet**.
 Section numbers live in the eyebrow copy in `lib/content/index.js` — renumber there if the order changes. The hero carries no copy yet,
 so it has no entry there.
 
@@ -107,8 +111,7 @@ so it has no entry there.
 | `/lab` | `app/lab/page.js` | Static, `noindex`. Background prototype — not part of the site |
 | `/api/contact` | `app/api/contact/route.js` | Dynamic. Contact form endpoint |
 | `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
-| `/api/blueprint` | `app/api/blueprint/route.js` | Dynamic. Generates a blueprint — see **The Blueprint** |
-| `/api/blueprint/email` | `app/api/blueprint/email/route.js` | Dynamic. Emails a generated blueprint to the studio |
+| `/api/guide` | `app/api/guide/route.js` | Dynamic. Streams the Guide's replies — see **The Guide** |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service routes are derived from `services` |
 | `/robots.txt` | `app/robots.js` | Static |
@@ -297,9 +300,10 @@ orbiting it, and a percentage in the bottom-right corner.
 
 **It reuses the cursor wake's particle pool rather than growing a second one.** `grain/pool.js` used to read `GRAIN.ringRadius`,
 `ringOrbit`, `ringPerSecond` and `ringLife` straight out of the constants, which pinned the ring to one size. `shedRing` and
-`stepGrain` now take a ring descriptor — `{ x, y, presence, radius, orbit, rate, life }` — so the cursor passes its 34px ring and
-the preloader passes its 100px one into the same maths. Both callers build that object once and mutate it per frame; nothing
-allocates inside the loop.
+`stepGrain` now take a ring descriptor — `{ x, y, presence, radius, orbit, rate, life }` — and the preloader passes its 100px one
+into that maths, building the object once and mutating it per frame so nothing allocates inside the loop. The cursor wake used to
+pass a 34px ring of its own that orbited the pointer while the page scrolled; that ring was removed on 2026-09-15 on instruction,
+and the wake now sheds only its movement trail and calls `stepGrain` with no ring.
 
 The gate is driven by three milestones, weighted in `constants/preloader.js`: fonts ready, document complete, and the globe's first
 painted frame. The third arrives through `lib/boot/ready.js` — `CosmosCanvas` already had an `onFirstFrame` callback for dropping its
@@ -554,51 +558,85 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 **The navbar retreats over the footer** — the reference's behaviour, described under the navbar below. `Footer` carries
 `relative z-50` to match `Nav`'s own so nothing shows through during the 420ms retreat.
 
-## The Blueprint
+## The Guide
 
-`/services/development` carries an interactive block: the visitor describes their business in one sentence and the page renders
-their process as a rail they can drag from manual to automated, plus three things Geekinate would build. Built to
-`../docs/geekinate-ai-page-interaction-spec.md`, which also specifies a conversational Guide that is **not built** — phases 1 and
-2 of that spec are here, phases 3 to 5 are not.
+`/services/development` docks a chat panel in its hero, `lib/ui/reusable_components/guide`. It answers from a knowledge object
+derived from the site's own content, streams through `/api/guide`, and can point at four sections of the page — `scope`,
+`process`, `deliverables` and `contact`, which is `TARGET_IDS` in `constants/ai.js`.
 
 | File | Responsibility |
 |---|---|
-| `features/blueprint/index.jsx` | The section. Sticky header left, form right, result full width beneath |
-| `blueprint-form/index.jsx` | The brief, the status machine, and the section registration |
-| `blueprint-form/Result.jsx` | The summary, the transform rail, the three build cards |
-| `blueprint-form/Transform.jsx` | The scrubbable process rail — one list, dragged from manual to automated |
-| `blueprint-form/Capture.jsx` | The email field, with its own status machine |
-| `blueprint-form/reveal.js` | The completion timeline |
-| `app/api/blueprint/route.js` | Generation |
-| `app/api/blueprint/email/route.js` | Delivery |
-| `lib/ai/` | Grounding, prompts, schema, and the page-control bus |
+| `guide/index.jsx` | Dock, floating launcher, greeting, nudges, the request and the stream loop |
+| `guide/Chat.jsx` | The log, the starters, the button under a reply, the field |
+| `guide/stream.js` | Reads the UI message stream: `textOf`, `actionsOf`, `jumpOf` |
+| `app/api/guide/route.js` | Cross-origin check, turn cap, credential check, throttle, then `streamText` |
+| `lib/ai/prompts.js` + `lib/ai/tools.js` | The system prompt, and the two tools the model may call |
+| `lib/ai/bus.js` | `runPageActions`: `goToSection` scrolls, `highlight` outlines |
 
-**It is gated by the presence of copy, not by a flag.** `blueprintFor(slug)` returns the `development` entry and `null` for
-everything else, so `/services/games` and `/services/marketing` carry no section and no gap. Those two pages are also the spec's
-"the page is complete with the feature absent" acceptance test, permanently, in production. Adding a second blueprint is a
-`lib/content/blueprint.js` edit and nothing else.
+**A reply never moves the page.** A `goToSection` call is read off the streamed message by `jumpOf`, carried on the message as
+`jump`, and rendered as a button under the reply once it has finished streaming. The page scrolls when the visitor presses it;
+pressed from the floating panel, the panel closes first. Scrolling on arrival was the first build and was rejected on 2026-09-14
+because the page left before the answer could be read. `highlight` still runs as soon as it arrives, because it moves nothing.
+The tools exclude `hero-service`: under `HeroSheet` the hero is stuck, and `scrollToElement` would measure its stuck position.
 
-**The schema is declared twice from one source, because yup cannot drive the model.** The AI SDK's `Output.object` takes Zod,
-Valibot or a raw JSON Schema and does not accept yup, so `lib/ai/schema.js` builds `blueprintJsonSchema` to constrain the model
-and `blueprintShape` to validate, wired together through `jsonSchema()`'s `validate` hook. Both read the same frozen arrays in
-`constants/ai.js`, and the `pillar` enum is derived from `services` rather than transcribed.
+**It floats on either of two signals.** Its own `IntersectionObserver` catches the hero scrolling away; `watchSheet` catches the
+sheet covering a dock that is still geometrically on screen. While floating, the dock is `inert` as well as `aria-hidden`, so a
+covered field cannot take focus.
 
 **Grounding is derived, never transcribed.** `lib/ai/knowledge.js` is built from `services`, `work` and `contactContent` and
 stringified once at module load. `testimonials` is excluded because it is invented. `work` is included with its placeholder
 titles, and the system prompt forbids presenting any of them as a named case study — see Known gaps.
 
-**Cost control, in the order it runs:** cross-origin check, honeypot, 500-character cap and a 12-character floor, the credential
-check, a 24h in-process response cache, then a 3-per-hour throttle keyed on a salted IP hash. The cache sits *before* the
-throttle deliberately — a repeat of a brief already answered costs nothing, so it should not spend anyone's allowance. All of
-that bounds how large and how often requests are; **none of it can stop a bill.** The ceiling is set in the OpenAI dashboard
-under Settings → Limits and nothing in this repo can set it.
+**Cost control, in the order it runs:** cross-origin check, the eight-turn cap, the credential check, then a 20-per-day throttle
+keyed on a salted IP hash; every message is trimmed to 500 characters and replies stop at `maxOutputTokens`. All of that bounds
+how large and how often requests are; **none of it can stop a bill.** The ceiling is set in the OpenAI dashboard under Settings →
+Limits and nothing in this repo can set it.
 
-**OpenAI returns 429 for two different things** — too many requests, and no credit left. The route reads the body:
-`insufficient_quota` maps to the quiet unavailable panel, which is the spec's silent static mode, and a real rate limit maps to
-the try-again copy. Those are one status code and two completely different messages to a visitor.
+**"The guide is not running right now." means the route has no key.** Without `OPENAI_API_KEY` the route answers 503
+`not-configured` and the chat shows `guideContent.unavailable`. Every `.env*` file but the example is gitignored, so a host that
+builds from the repo — the Vercel staging project included — needs the key in its own environment settings, then a redeploy.
 
-At most two model calls per request, never three: one attempt, then one repair pass that shows the model its own rejected
-output. Transport failures rethrow before the repair, so a dead credential costs one round-trip rather than two.
+The Blueprint, a generated Today-vs-automated block that sat under Deliverables with `/api/blueprint` and `/api/blueprint/email`
+behind it, was removed on 2026-09-14 at the user's instruction. Its code is in git history before that date.
+
+## The hero sheet
+
+`lib/ui/reusable_components/hero-sheet`, instructed on 2026-09-14: on `/services/[slug]` and `/partner`, scrolling past the dark
+hero should read as the white section beneath sliding up over it like a sheet, not as the hero scrolling away. One component
+serves both routes; each passes its hero as `hero` and every later section as children. The hold, the recede and the cover signal
+run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under the sheet's rounded edge.
+
+| Piece | What it is |
+|---|---|
+| Stage | The hero, `relative z-10`, and from `lg` `sticky` with `top: min(0px, 100svh - var(--hero-h))`. A `ResizeObserver` writes `--hero-h` and refreshes ScrollTrigger |
+| Spacer | `h-svh`, after the stage inside the same plain wrapper — the stage's containing block — so the hero is held for one small viewport of scroll |
+| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand`, `Deliverables` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). A child that is not a `<section>` gets none of it |
+| Recede | One scrubbed timeline over the sheet's `top bottom → top top`: the hero scales to `SHEET.recede.scale` while a black shade rises to `SHEET.recede.dim` |
+| Cover signal | An `IntersectionObserver` on the sheet with `SHEET.coverMargin`: `markSheet(true)` once its top edge passes mid-viewport |
+
+Mechanics worth knowing before editing:
+
+- **The hold lasts one `svh`, and that is exactly enough.** `PageHero` is `min-h-svh`, so the sheet's top reaches the top of the
+  viewport on the same frame the stage releases, and the hero leaves already covered. Every section after it has to stay opaque,
+  or the released hero shows through.
+- **The hold starts at `lg`, the breakpoint the Work pin already uses.** Below it the hero stacks — 1315px tall at 390×844, with
+  the Guide's dock filling most of the screen. Held there, the dock sits under the thumb for a whole screen of scroll, and a swipe
+  that lands on its chat log scrolls the log, or with `overscroll-behavior: contain` nothing at all. Measured before the gate went
+  in: wheel input over the dock left the page parked at 480px. So below `lg` the stage is plain `relative`, the recede and the
+  cover signal are not armed, and the Guide floats on its own `IntersectionObserver` as it always did.
+- **A hero taller than the viewport sticks by its bottom edge.** A short laptop screen can still sit under the hero's height at
+  `lg`; `top` goes negative by the difference, so the proof strip is read before the sheet arrives rather than covered unseen.
+- **The sheet wrapper is deliberately unpositioned.** `Nav` measures `.on-paper` bands with `offsetTop`, which is relative to the
+  nearest positioned ancestor, so a `relative` wrapper shifts every band by the hero's height. The sections keep their own
+  `relative z-10`, and later DOM order is what paints them over the stage.
+- **The stage's `z-10` is for the canvas, not the sheet.** `sticky` opens a stacking context; without its own z-index the hero
+  would paint below the fixed particle canvas at `z-[1]`.
+- **The recede is gated on `prefers-reduced-motion: no-preference` as well as `lg`.** Under reduce the sheet still covers the hero
+  — that is layout — but nothing scales or darkens.
+- **Covered is not off screen.** See the trap in `AGENTS.md`; the Guide listens to `watchSheet` for exactly this.
+
+Measured on `/services/development` at 1568×911 on 2026-09-14: 300px into the page the sheet's top sat at 611, the hero at scale
+0.980 and the shade at 0.198; at 700px the sheet's top was at 211, the launcher had appeared and the dock was inert.
 
 ## Dependencies and why
 
@@ -612,8 +650,9 @@ output. Transport failures rethrow before the repair, so a dead credential costs
 | `shadcn` | The CLI, kept as a dependency by its own installer |
 | `three`, `@react-three/fiber`, `@react-three/drei` | The 3D mark. Raised and approved 2026-08-10 against the standing no-new-deps rule |
 | `lenis` | Scroll smoothing, and the clock the 3D mark runs on. Same approval, added with Phase 2 |
-| `ai` + `@ai-sdk/openai`, `yup` | The Blueprint. Raised and approved 2026-09-09 against the standing no-new-deps rule. `zod` appears in the lockfile as a required peer of `ai`; nothing here imports it |
-| `gsap` | The frame loop the whole site runs on — `gsap.ticker` drives Lenis, the canvases and the marquees — plus `ScrollTrigger` for the work pin and the CTA reveal. Same approval |
+| `ai` + `@ai-sdk/openai` | The Guide. Raised and approved 2026-09-09 for the Blueprint against the standing no-new-deps rule, and the Guide has used them since. `zod` appears in the lockfile as a required peer of `ai`; nothing here imports it |
+| `yup` | **Unused since 2026-09-14.** It was the Blueprint's validator and nothing imports it now. Removing it or reusing it is a decision to raise |
+| `gsap` | The frame loop the whole site runs on — `gsap.ticker` drives Lenis, the canvases and the marquees — plus `ScrollTrigger` for the work pin, the CTA reveal and the hero sheet. Same approval |
 
 Deliberately absent: no form library, no data layer. Adding either is an architectural decision, not a detail — raise it first. The
 3D stack is the one exception and it was granted for the hero brief specifically; the remainder of that brief's list — `zustand`,
@@ -627,17 +666,15 @@ day a transitive version moves. Anything this project actually depends on gets i
 
 ## Known gaps
 
-- **There is no spend ceiling on the Blueprint.** The generation route calls OpenAI directly, so the only limits are
-  `maxOutputTokens`, the input caps, the cache and the per-IP throttle — all of which bound size and rate, none of which stop a
-  bill. A hard limit has to be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
-- **The Blueprint's knowledge object carries placeholder project titles.** `work` is `Project one` … `Project six`, and it is fed
-  to the model as instructed rather than filtered out. The prompt forbids presenting any of them as a named case study and the
-  Blueprint's schema has no case-study field, so nothing can currently surface them — but the Guide, when it is built, will be
-  able to quote them. Replace `work` before that lands.
-- **The Blueprint has not been checked below 1024px.** The grids use standard breakpoint classes with `[&>*]:min-w-0` on both,
-  but the automation window would not resize, so 320 and 375 are unmeasured.
-- **Blueprint delivery is unverified end to end.** Every failure path is exercised, but no webhook or Resend credential has been
-  pointed at `/api/blueprint/email`, so no message has actually been sent.
+- **There is no spend ceiling on the Guide.** `/api/guide` calls OpenAI directly, so the only limits are `maxOutputTokens`, the
+  message and turn caps and the per-IP throttle — all of which bound size and rate, none of which stop a bill. A hard limit has to
+  be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
+- **The Guide's knowledge object carries placeholder project titles.** `work` is `Project one` … `Project six`, and it is fed to
+  the model rather than filtered out. The prompt forbids presenting any of them as a named case study, but the Guide answers in
+  free text, so nothing structural stops it quoting one. Replace `work` with real projects.
+- **`OPENAI_API_KEY` was not reaching the Vercel staging deploy on 2026-09-14** — the guide there read "The guide is not running
+  right now." while the same page answered locally. Setting the variable and redeploying happens in the Vercel dashboard; nothing
+  in the repo can do it.
 - **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their
   own; `AGENTS.md` §Boundaries is currently the only prose describing them, and *The 3D mark* below documents the retired build
   it replaced. Anyone working on the canvas has to read the code. This is the largest gap in this document.

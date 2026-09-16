@@ -12,24 +12,26 @@ import Terms from './Terms';
 import Faq from './Faq';
 import Handoff from './Handoff';
 import Conversion from './Conversion';
+import { HeroSheet } from '@/lib/ui/reusable_components';
 
 export default function Partner() {
   return (
     <main className='flex-1'>
       <Analytics />
-      <Hero />
-      <CoreIdea />
-      <Audiences />
-      <ServiceFit />
-      <Steps />
-      <Commission />
-      <Earnings />
-      <Trust />
-      <Qualification />
-      <Terms />
-      <Faq />
-      <Handoff />
-      <Conversion />
+      <HeroSheet hero={<Hero />}>
+        <CoreIdea />
+        <Audiences />
+        <ServiceFit />
+        <Steps />
+        <Commission />
+        <Earnings />
+        <Trust />
+        <Qualification />
+        <Terms />
+        <Faq />
+        <Handoff />
+        <Conversion />
+      </HeroSheet>
     </main>
   );
 }

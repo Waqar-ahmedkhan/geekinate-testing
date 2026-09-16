@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { LoaderCircle, SendHorizontal } from 'lucide-react';
+import { ArrowRight, LoaderCircle, SendHorizontal } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -18,10 +18,12 @@ const FIELD =
   'h-12 min-w-0 flex-1 rounded-full border-[1.5px] border-line bg-void px-4 text-base text-paper shadow-none transition-colors placeholder:text-mut focus-visible:border-volt focus-visible:ring-0 md:text-base';
 const STARTER =
   'min-h-11 cursor-pointer rounded-full border-[1.5px] border-line bg-transparent px-4 py-2 text-left text-sm leading-[1.45] text-paper transition-colors duration-200 ease-brutal hover:bg-lift disabled:cursor-default';
+const JUMP =
+  'mt-1 flex w-fit cursor-pointer items-center gap-2 rounded-full border-[1.5px] border-[color:var(--line-volt)] px-4 py-2 text-sm leading-[1.45] text-volt transition-colors duration-200 ease-brutal hover:border-[color:var(--volt)] hover:bg-volt hover:text-ink';
 const DOT = 'size-1.5 rounded-full bg-mut motion-safe:animate-pulse';
 
-export default function Chat({ messages, draft, onDraft, onSend, onStarter, pending, spent, notice, autoFocus, fieldId, greeted }) {
-  const { starters, capped } = guideContent;
+export default function Chat({ messages, draft, onDraft, onSend, onStarter, onJump, pending, spent, notice, autoFocus, fieldId, greeted }) {
+  const { starters, capped, jumps } = guideContent;
   const quiet = greeted && messages.length < 2 && !pending && !spent;
   const logRef = useRef(null);
   const fieldRef = useRef(null);
@@ -34,12 +36,25 @@ export default function Chat({ messages, draft, onDraft, onSend, onStarter, pend
     if (autoFocus) fieldRef.current?.focus();
   }, [autoFocus]);
 
-  const saidEls = messages.map(({ id, role, text }) => (
-    <div key={id} className='flex flex-col gap-1'>
-      <span className={cn(WHO, role === 'user' && 'text-right')}>{role === 'user' ? guideContent.you : guideContent.studio}</span>
-      <p className={cn(SAID, role === 'user' ? FROM_YOU : FROM_GUIDE)}>{text}</p>
-    </div>
-  ));
+  const settled = (index) => !pending || index < messages.length - 1;
+  const saidEls = messages.map(({ id, role, text, jump }, index) => {
+    const mine = role === 'user';
+    const jumpLabel = settled(index) && jumps[jump];
+    const bubbleEl = text ? <p className={cn(SAID, mine ? FROM_YOU : FROM_GUIDE)}>{text}</p> : null;
+    const jumpEl = jumpLabel ? (
+      <button type='button' onClick={() => onJump(jump)} className={JUMP}>
+        {jumpLabel}
+        <ArrowRight aria-hidden='true' className='size-3.5' />
+      </button>
+    ) : null;
+    return (
+      <div key={id} className='flex flex-col gap-1'>
+        <span className={cn(WHO, mine && 'text-right')}>{mine ? guideContent.you : guideContent.studio}</span>
+        {bubbleEl}
+        {jumpEl}
+      </div>
+    );
+  });
   const starterEls = starters.map((sentence, index) => (
     <button
       key={sentence}

@@ -7,9 +7,10 @@ const variants = {
   ink: 'bg-black text-paper',
 };
 
-export default function Section({ id, variant = 'clear', className, children }) {
+export default function Section({ id, variant = 'clear', compact = false, className, children }) {
+  const compactFlag = compact ? '' : undefined;
   return (
-    <section id={id} className={cn('relative z-10 px-6 py-20 md:px-10 md:py-28', variants[variant], className)}>
+    <section id={id} data-compact={compactFlag} className={cn('relative z-10 px-6 py-20 md:px-10 md:py-28', variants[variant], className)}>
       {children}
     </section>
   );

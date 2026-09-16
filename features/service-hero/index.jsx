@@ -1,6 +1,6 @@
 import { Actions, PageHero } from '@/components';
 import { Guide } from '@/lib/ui/reusable_components';
-import { servicePageContent, serviceBlueprints } from '@/lib/content';
+import { guidedServices, servicePageContent } from '@/lib/content';
 
 export default function ServiceHero({ service }) {
   const { slug, title, headline, lead, facts } = service;
@@ -11,7 +11,7 @@ export default function ServiceHero({ service }) {
     </>
   );
   const proof = facts.map(({ label, value }) => `${label} — ${value}`);
-  const aside = serviceBlueprints[slug] ? <Guide /> : null;
+  const aside = guidedServices.includes(slug) ? <Guide /> : null;
   return (
     <PageHero
       id='hero-service'

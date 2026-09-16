@@ -2,10 +2,10 @@ import { notFound } from 'next/navigation';
 import { CtaBand, JsonLd } from '@/components';
 import ServiceHero from '@/features/service-hero';
 import ServiceDossier from '@/features/service-dossier';
-import Blueprint from '@/features/blueprint';
 import Contact from '@/features/contact';
+import { HeroSheet } from '@/lib/ui/reusable_components';
 import { buildMetadata, buildServiceJsonLd } from '@/lib/seo';
-import { blueprintFor, servicePageContent, services } from '@/lib/content';
+import { servicePageContent, services } from '@/lib/content';
 
 export const dynamicParams = false;
 
@@ -26,16 +26,15 @@ export default async function ServicePage({ params }) {
   const { slug } = await params;
   const service = findService(slug);
   if (!service) notFound();
-  const { handoff } = servicePageContent;
-  const blueprint = blueprintFor(slug);
+  const { actions } = servicePageContent;
   return (
     <main className='flex-1'>
       <JsonLd id={`json-ld-service-${slug}`} nodes={[buildServiceJsonLd(service)]} />
-      <ServiceHero service={service} />
-      <ServiceDossier service={service} />
-      {blueprint ? <Blueprint content={blueprint} /> : null}
-      <CtaBand headline={handoff.headline} actions={handoff.actions} />
-      <Contact />
+      <HeroSheet hero={<ServiceHero service={service} />}>
+        <ServiceDossier service={service} />
+        <CtaBand headline={service.handoff} actions={actions} />
+        <Contact />
+      </HeroSheet>
     </main>
   );
 }

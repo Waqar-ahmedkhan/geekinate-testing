@@ -138,11 +138,13 @@ matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove th
 switches to a single centred column whenever no `aside` is passed, so restoring it is a matter of passing the panel back — the clip
 is still in `lib/content/index.js`.
 
-**The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It docks in the
-`/services/development` hero — `guidedServices` in `lib/content/guide.js` picks the pages — and floats once the dock is off screen
-or under the sheet. A `goToSection` call used to scroll the moment the reply streamed in, which took the page away before the
-answer could be read; since 2026-09-14 it renders a button under that reply instead, labelled from `guideContent.jumps`, and the
-page moves only when the visitor presses it. `highlight` is the one action that still runs on arrival, because it moves nothing.
+**The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It is **off for now**: pulled from the
+`/services/development` hero on 2026-09-16 ("remove chat agent for now") by emptying `guidedServices` in `lib/content/guide.js`,
+which leaves that hero centred like the other service pages. Every piece of it is still in the tree; putting `'development'` back
+in that array restores it. When on, it docks in the hero and floats once the dock is off screen or under the sheet. A
+`goToSection` call used to scroll the moment the reply streamed in, which took the page away before the answer could be read; since
+2026-09-14 it renders a button under that reply instead, labelled from `guideContent.jumps`, and the page moves only when the
+visitor presses it. `highlight` is the one action that still runs on arrival, because it moves nothing.
 The Blueprint section, its form and its `/api/blueprint` routes were removed the same day. On cost: `maxOutputTokens`, the
 500-character message cap, the eight-turn cap and the 20-per-day throttle bound how large and how often requests are — **none of
 them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so never describe this feature as

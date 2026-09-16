@@ -560,6 +560,9 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 
 ## The Guide
 
+**Off since 2026-09-16:** `guidedServices` is empty, so no page mounts it. The description below is what returns when
+`development` goes back in that array.
+
 `/services/development` docks a chat panel in its hero, `lib/ui/reusable_components/guide`. It answers from a knowledge object
 derived from the site's own content, streams through `/api/guide`, and can point at four sections of the page — `scope`,
 `process`, `deliverables` and `contact`, which is `TARGET_IDS` in `constants/ai.js`.

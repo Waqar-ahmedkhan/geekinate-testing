@@ -1,27 +1,25 @@
 import { Check } from 'lucide-react';
-import { Card, Eyebrow, Section } from '@/components';
+import { Card, Section, SectionHead } from '@/components';
 
-const MARKER = 'mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-volt text-ink';
+const MARKER = 'flex size-9 items-center justify-center rounded-full bg-volt text-ink';
+const STATEMENT = 'max-w-[22ch] font-display text-[clamp(1.75rem,3vw,2.5rem)] leading-[1.1] tracking-[-0.01em] text-paper';
 
 export default function Deliverables({ block, items }) {
   const itemEls = items.map((item) => (
-    <li key={item} className='flex gap-3 text-base leading-[1.5] text-mut'>
-      <span aria-hidden='true' className={MARKER}>
-        <Check className='size-3' />
-      </span>
-      {item}
+    <li key={item}>
+      <Card className='min-h-56 justify-between gap-10'>
+        <span aria-hidden='true' className={MARKER}>
+          <Check className='size-4' />
+        </span>
+        <p className={STATEMENT}>{item}</p>
+      </Card>
     </li>
   ));
   return (
-    <Section id={block.id} variant='ink' compact className='scroll-mt-[var(--nav-rail)]'>
-      <div className='mx-auto grid w-full max-w-6xl gap-10 lg:grid-cols-2 lg:items-start lg:gap-16'>
-        <header className='flex flex-col gap-4 lg:sticky lg:top-[calc(var(--nav-rail)+2.5rem)]'>
-          <Eyebrow>{block.label}</Eyebrow>
-          <h2 className='max-w-[14ch] font-display text-[clamp(2.25rem,5vw,3.75rem)] leading-[1.05] tracking-[-0.01em]'>{block.heading}</h2>
-        </header>
-        <Card className='gap-5'>
-          <ul className='flex flex-col gap-4'>{itemEls}</ul>
-        </Card>
+    <Section id={block.id} variant='ink' className='scroll-mt-[var(--nav-rail)]'>
+      <div className='mx-auto flex w-full max-w-6xl flex-col'>
+        <SectionHead eyebrow={block.label} heading={block.heading} />
+        <ul className='grid gap-6 md:grid-cols-2'>{itemEls}</ul>
       </div>
     </Section>
   );

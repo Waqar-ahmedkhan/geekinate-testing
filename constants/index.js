@@ -1,4 +1,5 @@
 export * from './ai';
+export * from './circuit';
 export * from './cosmos';
 export * from './cta';
 export * from './globe';

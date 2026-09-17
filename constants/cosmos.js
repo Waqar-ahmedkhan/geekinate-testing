@@ -51,4 +51,7 @@ export const COSMOS = {
   footerSplit: 1024,
   globeRoutes: ['/'],
   herolessFade: 2.6,
+  shapeSpan: 0.55,
+  shapeHold: 1,
+  shapeLerp: 2.2,
 };

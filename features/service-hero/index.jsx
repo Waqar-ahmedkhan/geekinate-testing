@@ -1,6 +1,15 @@
 import { Actions, PageHero } from '@/components';
 import { Guide } from '@/lib/ui/reusable_components';
 import { guidedServices, servicePageContent } from '@/lib/content';
+import { SERVICE_SHAPES } from '@/constants';
+
+const SHAPE_SLOT = 'mx-auto aspect-square w-full max-w-sm lg:max-w-none';
+
+const heroAside = (slug) => {
+  if (guidedServices.includes(slug)) return <Guide />;
+  const shape = SERVICE_SHAPES[slug];
+  return shape ? <div data-cosmos-shape={shape} aria-hidden='true' className={SHAPE_SLOT} /> : null;
+};
 
 export default function ServiceHero({ service }) {
   const { slug, title, headline, lead, facts } = service;
@@ -11,7 +20,6 @@ export default function ServiceHero({ service }) {
     </>
   );
   const proof = facts.map(({ label, value }) => `${label} — ${value}`);
-  const aside = guidedServices.includes(slug) ? <Guide /> : null;
   return (
     <PageHero
       id='hero-service'
@@ -20,7 +28,7 @@ export default function ServiceHero({ service }) {
       measure='max-w-[22ch]'
       support={[lead]}
       actions={<Actions items={actions} className='mt-2' />}
-      aside={aside}
+      aside={heroAside(slug)}
       proof={proof}
     />
   );

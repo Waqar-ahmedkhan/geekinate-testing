@@ -2,15 +2,15 @@
 
 import { useRef } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { Vector3 } from 'three';
-import { getCloud } from './cloud';
+import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
+import { getCloud, wearShape } from './cloud';
 import { createGovernor } from './quality';
 import { fitGlobe, getGlobe } from '@/lib/globe/scene';
 import { coastGlobe, globe } from '@/lib/input/globe';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
-import { measureStage, stage } from '@/lib/scroll/stage';
-import { COSMOS, GLOBE } from '@/constants';
+import { measureStage, shapeAnchor, stage } from '@/lib/scroll/stage';
+import { CIRCUIT, COSMOS, GLOBE } from '@/constants';
 
 const HALF_FOV = (COSMOS.cameraFov * Math.PI) / 360;
 const VISIBLE_HEIGHT = 2 * COSMOS.cameraZ * Math.tan(HALF_FOV);
@@ -59,6 +59,12 @@ export default function MorphCloud({ onFirstFrame }) {
   const governor = useRef(createGovernor());
   const wasArriving = useRef(-1);
   const wasOrbiting = useRef(-1);
+  const shapeSpot = useRef(new Vector3());
+  const shapeScale = useRef(new Vector3(1, 1, 1));
+  const shapeEuler = useRef(new Euler());
+  const shapeTurn = useRef(new Quaternion());
+  const shapeInverse = useRef(new Matrix4());
+  const shapeProbe = useRef(new Vector3());
   useFrame((state, delta) => {
     const demoted = governor.current(delta);
     if (demoted) state.setDpr(demoted);
@@ -89,7 +95,23 @@ export default function MorphCloud({ onFirstFrame }) {
     stage.globe = adopting ? orbiting : stage.globe + (orbiting - stage.globe) * Math.min(1, delta * COSMOS.globeLerp);
     values.uForm.value = stage.form;
     values.uGlobeMix.value = stage.globe;
-    values.uOpacity.value = stage.hero ? 1 : clamp01(stage.footerIn * COSMOS.herolessFade);
+    const shaping = Boolean(stage.shape);
+    if (shaping) wearShape(cloud, stage.shape);
+    stage.shapeMix += ((shaping ? clamp01(stage.shapeIn) : 0) - stage.shapeMix) * Math.min(1, delta * COSMOS.shapeLerp);
+    values.uShapeMix.value = stage.shapeMix;
+    values.uShapeSolo.value = shaping && stage.shapeIn > 0 ? 1 : 0;
+    values.uOpacity.value = stage.hero ? 1 : Math.max(clamp01(stage.footerIn * COSMOS.herolessFade), stage.shapeMix ** 2 * stage.shapeGlow);
+    if (shaping) {
+      const unit = VISIBLE_HEIGHT / state.size.height;
+      const [pitch, yaw, roll] = CIRCUIT.pose;
+      const lean = values.uTilt.value;
+      shapeSpot.current.set((shapeAnchor.x - state.size.width / 2) * unit, -(shapeAnchor.y - state.size.height / 2) * unit, 0);
+      shapeTurn.current.setFromEuler(shapeEuler.current.set(pitch + lean.x, yaw + lean.y, roll));
+      shapeScale.current.setScalar((shapeAnchor.size * unit) / CIRCUIT.fit);
+      values.uShapeMatrix.value.compose(shapeSpot.current, shapeTurn.current, shapeScale.current);
+      const pointSize = (shapeAnchor.size / CIRCUIT.point.reference) * CIRCUIT.point.scale;
+      values.uShapeSize.value = Math.min(CIRCUIT.point.max, Math.max(CIRCUIT.point.min, pointSize));
+    }
     values.uScale.value = scale;
     const anchor = rightHalfCentre(state.size.width, viewHalf);
     values.uOffsetX.value = anchor * stage.form;
@@ -126,6 +148,14 @@ export default function MorphCloud({ onFirstFrame }) {
     values.uPointer.value.copy(smooth.current);
     values.uPointerTrail.value.copy(trail.current);
     values.uPointerActive.value = attention.current;
+    const firing = shaping && stage.shapeMix > 0.85 && pointer.active > 0.5 && clock - values.uShapeFireTime.value > CIRCUIT.fireRest;
+    if (firing) {
+      const local = shapeProbe.current.copy(world.current).applyMatrix4(shapeInverse.current.copy(values.uShapeMatrix.value).invert());
+      if (Math.hypot(local.x, local.y) <= CIRCUIT.fireReach) {
+        values.uShapeFireAt.value.set(local.x, local.y, 0);
+        values.uShapeFireTime.value = clock;
+      }
+    }
     const focused =
       stage.globe > 0.4 && pointer.active > 0.5 ? nearestAnchor(shell.anchors, spin, GLOBE.tilt, radius, centreY, world.current) : -1;
     shell.select.uFocus.value = focused;

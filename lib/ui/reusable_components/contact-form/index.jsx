@@ -16,7 +16,7 @@ const AREA =
   'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
-const FORM = 'flex flex-col gap-4 rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
+const FORM = 'rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
 const SUBMIT =
   'mt-2 h-12 cursor-pointer self-center rounded-full border-[1.5px] border-ink bg-volt px-8 text-base text-ink shadow-brutal hover:bg-volt/85';
 const AGAIN = 'mt-2 h-11 cursor-pointer rounded-full border-[1.5px] border-ink bg-paper px-6 text-ink hover:bg-wash';
@@ -121,26 +121,45 @@ export default function ContactForm() {
     );
   return (
     <form ref={formRef} noValidate onSubmit={send} className={FORM}>
-      <Textarea {...fieldProps('message')} rows={6} className={cn(AREA, errors.message && FIELD_BAD)} />
-      {errorFor('message')}
-      <div className='grid gap-4 md:grid-cols-2'>
-        <Input
-          {...fieldProps('name')}
-          type='text'
-          autoComplete={fields.name.autoComplete}
-          className={cn(FIELD, errors.name && FIELD_BAD)}
-        />
-        {errorFor('name')}
-        <Input
-          {...fieldProps('email')}
-          type='email'
-          inputMode='email'
-          autoComplete={fields.email.autoComplete}
-          className={cn(FIELD, errors.email && FIELD_BAD)}
-        />
-        {errorFor('email')}
+      <div className='flex flex-col gap-4'>
+        <Textarea {...fieldProps('message')} rows={6} className={cn(AREA, errors.message && FIELD_BAD)} />
+        {errorFor('message')}
+        <div className='grid gap-4 md:grid-cols-2'>
+          <Input
+            {...fieldProps('name')}
+            type='text'
+            autoComplete={fields.name.autoComplete}
+            className={cn(FIELD, errors.name && FIELD_BAD)}
+          />
+          {errorFor('name')}
+          <Input
+            {...fieldProps('email')}
+            type='email'
+            inputMode='email'
+            autoComplete={fields.email.autoComplete}
+            className={cn(FIELD, errors.email && FIELD_BAD)}
+          />
+          {errorFor('email')}
+        </div>
+        <Input {...fieldProps('company')} type='text' autoComplete={fields.company.autoComplete} className={FIELD} />
+        <Button type='submit' disabled={pending} className={SUBMIT}>
+          {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
+          {pending ? submit.pending : submit.idle}
+        </Button>
+        {status === 'failed' ? (
+          <div role='alert' className='flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-destructive bg-paper p-5'>
+            <p className='flex items-start gap-2 text-base leading-[1.5] text-ink'>
+              <CircleAlert aria-hidden='true' className='mt-1 size-4 shrink-0 text-destructive' />
+              <span>
+                <strong className='font-medium'>{failure.title}</strong> {failure.body}
+              </span>
+            </p>
+            <a href={`mailto:${SITE.email}`} className='font-mono text-sm text-ink underline underline-offset-4 hover:text-grey'>
+              {SITE.email}
+            </a>
+          </div>
+        ) : null}
       </div>
-      <Input {...fieldProps('company')} type='text' autoComplete={fields.company.autoComplete} className={FIELD} />
       <input
         ref={trapRef}
         type='text'
@@ -150,23 +169,6 @@ export default function ContactForm() {
         aria-hidden='true'
         className='pointer-events-none absolute left-[-9999px] size-px opacity-0'
       />
-      <Button type='submit' disabled={pending} className={SUBMIT}>
-        {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
-        {pending ? submit.pending : submit.idle}
-      </Button>
-      {status === 'failed' ? (
-        <div role='alert' className='flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-destructive bg-paper p-5'>
-          <p className='flex items-start gap-2 text-base leading-[1.5] text-ink'>
-            <CircleAlert aria-hidden='true' className='mt-1 size-4 shrink-0 text-destructive' />
-            <span>
-              <strong className='font-medium'>{failure.title}</strong> {failure.body}
-            </span>
-          </p>
-          <a href={`mailto:${SITE.email}`} className='font-mono text-sm text-ink underline underline-offset-4 hover:text-grey'>
-            {SITE.email}
-          </a>
-        </div>
-      ) : null}
     </form>
   );
 }

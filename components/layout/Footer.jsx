@@ -60,12 +60,6 @@ export default function Footer() {
               <BrandMark size={39} className='shrink-0' />
               {SITE.name}
             </Link>
-            <a
-              href={`mailto:${SITE.email}`}
-              className='w-fit font-display text-2xl leading-none text-paper underline decoration-volt decoration-[3px] underline-offset-[7px] transition-[text-decoration-color] duration-200 hover:decoration-paper'
-            >
-              {SITE.email}
-            </a>
           </div>
           <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:my-auto md:w-fit md:gap-x-30 md:gap-y-12'>
             {footerColumns.map(({ title, links }) => (

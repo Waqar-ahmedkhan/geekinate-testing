@@ -95,6 +95,15 @@ its own material reads as two products. A globe made of the mark's own beads, sh
 mark's own cursor, reads as one object wearing a different shape. **Do not give the globe its own canvas, its own camera or its own
 dot material.** `lib/globe` owns the land *pose*, the fit, and the shells and network around it — never the particles.
 
+Since 2026-09-16 there is a fourth shape: **the AI circuit mark on `/services/development`**, instructed from a reference the user
+supplied (an "AI" badge on a circuit board, blue on navy — redrawn in volt and paper, because there is no approved blue). It is the
+same beads again, not a new scene: 60% of the particles form it beside the hero copy and the other 40% are hidden while it is up.
+Three things were asked for by name and are not to be put back: the orbiting white lights on the outer ring ("remove it"), the
+ring-and-dot eye inside the A ("remove it"), and the background particles that faded out behind the text while the mark formed
+("iski zarurat nhi"). The circuit's first draft did not read as a circuit ("lag hi nhi raha"); what fixed it was thin still traces,
+parallel buses with shared 45° bends, hollow vias at the outer ends and pulses that tint rather than swell. Only the Development &
+AI page carries a shape — `SERVICE_SHAPES` in `constants/circuit.js` is the list. See ARCHITECTURE.md §The service mark.
+
 The camera is the other load-bearing pair: 7.1 degrees at a distance of 60. It is a long lens on purpose, and changing either number
 without the other rescales the entire scene. See the note at the top of `constants/cosmos.js`.
 
@@ -123,7 +132,7 @@ right-hand index rail — and that was rejected on 2026-09-08 for the opposite r
 approved, so the site now carried two unrelated marketing layouts. The instruction was to make the service pages consistent with
 `/partner` **and to share the code rather than build a second design**.
 
-It now runs: `PageHero` (`clear`, `min-h-svh`), then Scope as a `paper` band of `Card`s, Deliverables as an `ink` band, Process
+It now runs: `PageHero` (`clear`, `min-h-svh`), then Scope as a `paper` band of `Card`s, Deliverables as a full-height `ink` section of four statement cards, Process
 as a `paper` band of `StepIndex` steps against a sticky header, then `CtaBand`, then the reused `Contact` — every section
 `mx-auto max-w-6xl`, alternating paper and ink, exactly as `/partner` does. The dossier's own devices are gone: no index rail, no
 ledger grid, no gsap timeline, no full-bleed. `Contact` no longer takes a `className` because nothing needs to override its width
@@ -133,10 +142,12 @@ any more.
 ("Development & AI" / "Referral Partner Program"); the `h1` is the promise, in italic display with one volt phrase. The service name
 still reaches search through the metadata title and the `Service` JSON-LD, so do not "fix" this by promoting the title back to `h1`.
 
-**The service hero carries no aside, for now.** It was built as a split with the service's clip in a bordered panel on the right,
-matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this temporarily") and the content centred. `PageHero`
-switches to a single centred column whenever no `aside` is passed, so restoring it is a matter of passing the panel back — the clip
-is still in `lib/content/index.js`.
+**Only the Development & AI hero carries an aside, and it is an empty slot.** The hero was built as a split with the service's clip
+in a bordered panel on the right, matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this temporarily")
+and the content centred. On 2026-09-16 `/services/development` went back to the split, with the text on the left and the AI circuit
+mark on the right (instructed: object right of the text, and "sirf is AI waly ko service page par laga do"). The aside is a bare
+square `div` carrying `data-cosmos-shape` — the particles draw into its box from the fixed canvas, so it must stay empty and
+unstyled. Games and Marketing still pass nothing and stay centred; the clips are still in `lib/content/index.js`.
 
 **The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It is **off for now**: pulled from the
 `/services/development` hero on 2026-09-16 ("remove chat agent for now") by emptying `guidedServices` in `lib/content/guide.js`,
@@ -167,7 +178,7 @@ Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Sc
 through `jsonSchema()` (the removed Blueprint rode yup on its `validate` hook); `generateObject`, `maxTokens` and tool `parameters` are all gone; and
 `zod` sits in the lockfile only as a required peer of `ai`, so importing it would be depending on a transitive.
 
-**A sticky grid item is not clamped to its own row.** `Process`, `Deliverables` and `Contact` all put `lg:sticky` directly on a
+**A sticky grid item is not clamped to its own row.** `Process` and `Contact` both put `lg:sticky` directly on a
 `<header>` grid child, which is safe only because those grids have one row. The Blueprint (removed 2026-09-14) added a second, full-width row and the
 header slid straight over it. If a grid with a sticky header ever gains another row, wrap the header in a stretching grid item so
 the sticky is bounded by the row — and drop `items-start`, which stops the wrapper stretching.
@@ -189,14 +200,28 @@ log moves the log instead of the page. The sheet wrapper is a plain, unpositione
 `.on-paper` bands from `offsetTop`, and a `relative` wrapper would shift every band by the hero's height. See ARCHITECTURE.md
 §The hero sheet.
 
-**The Scope cards answer hover, and only hover.** Picked on 2026-09-15 after two rounds of prototypes: a scroll-in fade-up was
-turned down on sight, and a card that simply lifts on a bigger shadow read as the hover every site already has. `DeckCard` tips
-the card a degree and slides a volt card out from under it, which takes over the hard shadow. The cursor stays an arrow and there
-is no arrow icon: these cards link nowhere, and a hover that promised a click was the objection raised against animating them at
-all. Do not bring a scroll reveal back to this grid. Since 2026-09-16 each card's title is volt at rest (instructed: "heading text
-color to green replacing white"), and the same hover wipes a volt marker across it left to right while the type flips to ink — two
-nested spans in `Scope.jsx`, a growing `background-size` bar under a `bg-clip-text` gradient on the same timing, so the ink edge
-tracks the bar exactly. No padding may sit on the outer span, or the two gradients stop lining up.
+**The Scope cards answer hover, and only hover.** A scroll-in fade-up was turned down on sight on 2026-09-15 and must not come
+back. `DeckCard` (the card tips a degree and a volt card slides out from under it) was picked from
+the second prototype round and shipped. On 2026-09-17 the user asked to try round two's option G instead, "just wanna see how
+it will look": `LiftCard` lifts the card 3px on a spring with its shadow growing to 6px, `RollIndex` rolls each digit of the
+index through a full turn in volt, and the detail follows a beat behind. It is **on trial**, and `DeckCard` stays in the tree
+unused until the call is made, so reverting is a two-line import swap in `Scope.jsx`. Round one's objection to a plain lift
+("the hover every site already has") is why the roll is not optional here. The titles are white at rest and turn volt on the
+same hover, a plain colour transition (2026-09-16): a volt marker that wiped across the title while the type flipped to ink was
+rejected ("green highlighter na aye"), so do not put a background behind the title. The cursor stays an arrow and there is no
+arrow icon: these cards link nowhere.
+
+**The Process steps are big type that runs itself, and a row never changes height.** It went through three shapes on
+2026-09-16. All four steps open was the original. A hover accordion (the step under the cursor opens, the rest close) was
+instructed from a reference and then rejected the same day as reading empty ("khali khali"): four single words carrying half a
+full-screen section, with step 01 already open on arrival. Three layouts were prototyped; a list beside a black stage card was
+built and turned down ("woh bura lag raha hai"), and option C was picked: `features/service-dossier/Steps.jsx` sets each step
+name in the display face, dims the inactive ones to `text-grey/40`, and slides the active step's sentence in beside its name on
+the same line. It starts on step 01 and advances every `PROCESS.dwellMs` once half of it is on screen, with a volt bar filling
+along the top of the active row; hover or focus on the step list holds the step, and leaving resumes. The hold sits on the `ol`, not the
+wrapper: pausing while the pointer rested on "How it runs." read as the section freezing for no reason. The sentence is always in
+the layout and only its opacity changes, so no row changes height: a row that grew would push the next one under a still
+pointer and the hover would oscillate. Below `md` every sentence is shown under its name.
 
 ## Conventions
 

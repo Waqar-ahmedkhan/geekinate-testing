@@ -31,7 +31,7 @@ the archive of the two older sites and holds nothing from this build.
 | `app/` | Routes only | Pages compose components and do nothing else |
 | `app/api/` | Route handlers | `contact/`, `partner/` and `guide/`, all POST-only. The only server code in the project |
 | `lib/ai/` | The Guide's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `tools.js` (`goToSection`, `highlight`), `sections.js` (id lookup), `bus.js` (`runPageActions`) |
-| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
+| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
@@ -39,7 +39,7 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
-| `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `pillars.js`, `order.js`, `snake.js` |
+| `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js` |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
 | `lib/content/guide.js` | Every user-facing string for the Guide | `guidedServices` picks the service pages that carry it; `jumps` labels the button under a reply |
 | `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
@@ -54,6 +54,7 @@ the archive of the two older sites and holds nothing from this build.
 | `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
 | `constants/partner.js` | Commercial terms and form limits | `PARTNER` rates/window/limits, `PARTNER_EVENTS` names. Rates are fixed product requirements, not design values |
 | `constants/{cta,grain,sheet,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file |
+| `constants/circuit.js` | The AI circuit mark's geometry and tuning, and `SERVICE_SHAPES` | Which service slug wears which shape; only `development` today |
 | `constants/snake.js` | Tunables for the retired 3D mark | **Mostly dead** — see *Dead code* below. `SNAKE.scrollLerp` is still live, read by `smooth-scroll` |
 | `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
@@ -85,17 +86,24 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 `features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
 `features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
 `features/partner` holds `/partner`'s fourteen sections; `features/lab` is the `/lab` prototype and is not part of the site.
-`Scope`'s cards are `DeckCard`s: on hover the card tips a degree and rises while a volt card slides out from under it and takes
-the shadow. It is CSS only — Tailwind's `hover` variants already require a hover-capable pointer, so touch screens see still cards
-— and `motion-reduce` drops the movement. `DeckCard` wraps `Card` and reaches its outer shell through `shellClassName`. It was
-picked on 2026-09-15 from a round of hover prototypes, after a scroll-in reveal was turned down; see `AGENTS.md`. Card titles are
-volt, and the same hover wipes a volt marker across them while the type turns ink (2026-09-16).
+`Scope`'s cards are `LiftCard`s with a `RollIndex`, on trial since 2026-09-17: on hover the card lifts 3px on the `ease-spring`
+curve in `globals.css` while its shadow grows to 6px, each index digit rolls a strip of eleven glyphs up `10em` so it lands on
+the digit it started from (the second digit 70ms behind), and the title and detail rise 2px after it. Leaving snaps the strips back
+with no transition, so the roll only ever plays forward. The group is `group/lift` on a static wrapper, so the moving card never
+slides out from under the pointer. It is CSS only: Tailwind's `hover` variants already require a hover-capable pointer, so
+touch screens see still cards, and `motion-reduce` drops the movement. `DeckCard`, the shipped tip-and-sheet hover, is unused
+but kept until the trial is decided; see `AGENTS.md`. Card titles are white and turn volt on the same hover (2026-09-16).
+`Process` stays a server component and passes its header as children to `Steps.jsx`, the one client file in the dossier: it
+owns the active step, an `IntersectionObserver` that starts the autoplay once half of the list is on screen, and the hold on
+hover or focus over the step list only. `PROCESS` in `constants/process.js` carries the dwell and the in-view share; the bar's fill is the
+`step-fill` keyframe in `globals.css`, its duration set inline from the same constant so the two cannot drift. See `AGENTS.md`.
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
 `Separator` over a mono proof strip), `Actions` (the pill pair), `Card` (the glass panel with `ring-edge` and `shadow-brutal`) and
 `CtaBand` (the centred italic closing band). `PageHero` renders the split grid when an `aside` is passed and a single centred
-column when it is not — `/partner` passes `FlowRail`, the service pages pass nothing. `Actions` takes a `link` component and a
+column when it is not — `/partner` passes `FlowRail`, `/services/development` passes the empty slot the AI circuit mark draws
+into (see **The service mark**), and the other two service pages pass nothing. `Actions` takes a `link` component and a
 `meta` mapper so `/partner` can route every pill through its analytics `TrackedLink` while the service pages use a plain
 `next/link` with no props leaking onto the anchor. Build a new marketing page out of these rather than a fifth variant. Both pages
 pass their hero to `HeroSheet`, so everything after it slides up over it — see **The hero sheet**.
@@ -545,10 +553,16 @@ intentional. Both positions are on record; do not "fix" it back without asking.
 The card is **black** with the type sitting directly on the footage, no scrim, which is why `--footer-mut` (#b9c2bc) exists: it
 was reserved for this surface long before the surface did.
 
-The top row splits 50/50 — lockup and email on the left, four columns spread with `justify-between` on the right. Those
+The top row splits 50/50 — the lockup on the left, four columns spread with `justify-between` on the right. Those
 columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
 `services` array in the same file** so the pillar list cannot drift from the section that renders it. Legal has no pages yet;
 an empty `href` renders as plain text rather than a dead link, the same rule `WorkTile` follows.
+
+**The direct email address is not in the footer.** It sat under the lockup for part of 2026-09-16 and was moved on instruction
+to `features/contact`, centred under both columns. On 2026-09-17 it became two lines, picked from a four-option prototype: a mono
+`Eyebrow` reading "Or contact us directly at" (`contactContent.direct`) over the address in the display serif with its volt
+underline. A single line mixing the small grey sans lead with the larger serif address read as the address pasted into the
+sentence, which is why the two no longer share a baseline. Contact is shared, so this shows on the home page and every service page.
 
 `InViewVideo` fills the card. It is the third playback mode in the codebase and the only one not driven by hover: an
 `IntersectionObserver` starts a **one-shot** render as the panel arrives and rewinds it on the way out, matching the reference,
@@ -614,7 +628,7 @@ run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under th
 |---|---|
 | Stage | The hero, `relative z-10`, and from `lg` `sticky` with `top: min(0px, 100svh - var(--hero-h))`. A `ResizeObserver` writes `--hero-h` and refreshes ScrollTrigger |
 | Spacer | `h-svh`, after the stage inside the same plain wrapper — the stage's containing block — so the hero is held for one small viewport of scroll |
-| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand`, `Deliverables` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). A child that is not a `<section>` gets none of it |
+| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). `Deliverables` was compact too until 2026-09-17, when two short black bands on one page read as two banners; it now fills the screen by carrying its four items as large display-type cards in a 2x2 grid, 615px of content on a 900px viewport, rather than by being stretched A child that is not a `<section>` gets none of it |
 | Recede | One scrubbed timeline over the sheet's `top bottom → top top`: the hero scales to `SHEET.recede.scale` while a black shade rises to `SHEET.recede.dim` |
 | Cover signal | An `IntersectionObserver` on the sheet with `SHEET.coverMargin`: `markSheet(true)` once its top edge passes mid-viewport |
 
@@ -641,6 +655,35 @@ Mechanics worth knowing before editing:
 
 Measured on `/services/development` at 1568×911 on 2026-09-14: 300px into the page the sheet's top sat at 611, the hero at scale
 0.980 and the shade at 0.198; at 700px the sheet's top was at 211, the launcher had appeared and the dock was inert.
+
+## The service mark
+
+Added 2026-09-16: the particle cloud forms an "AI" circuit mark in the right-hand column of the `/services/development` hero. It is a
+fourth pose of the one cloud, mixed in the vertex shader after the globe and footer poses — no second canvas, camera or material.
+
+| Piece | What it is |
+|---|---|
+| Slot | `features/service-hero` passes `PageHero` an empty square `div` with `data-cosmos-shape='circuit'` when `SERVICE_SHAPES` names the slug. The Guide still wins the aside if a slug is in `guidedServices` |
+| Sampler | `lib/shape/circuit.js` → `sampleCircuit(count)`: the letters, circuit buses, vias and two rings, drawn in a unit square. Every bead where `index % 5 < 3` joins (18,000 of 30,000), assigned in angle order so beads travel radially; the rest get kind `0` |
+| Buffers | `cloud.js` allocates `aShape`, `aShapeNormal`, `aShapeData` empty and fills them the first time a page asks for the shape (`wearShape`) |
+| Placement | `stage.js` measures the slot on layout, `MorphCloud` turns its box into `uShapeMatrix` every frame — centre from the slot, scale from its size over `CIRCUIT.fit`, turn from `CIRCUIT.pose` plus the shared pointer tilt |
+| Motion | `circuit()` in the vertex shader: pulses run along traces toward the letters and tint them paper; hovering the mark sends a ripple out from the cursor (`uShapeFireAt`/`uShapeFireTime`, at most every `CIRCUIT.fireRest` seconds) |
+| Scroll | `stage.shapeGlow` dims the mark as the sheet rises (over `COSMOS.shapeSpan` of a viewport); `stage.shapeIn` holds it formed until one more viewport has passed (`COSMOS.shapeHold`), so it scatters only once covered |
+| Solo | `uShapeSolo` hides the non-member beads outright while the mark is up. They return only after it has scattered, because the footer G needs them |
+
+Mechanics worth knowing before editing:
+
+- **The slot is measured, never read per frame.** `getBoundingClientRect` in the frame loop is the forced-layout cost the
+  animation-loop trap describes. `measureLayout` records offsets on resize; `measureShape` reconstructs the slot's viewport position
+  from the scroll offset.
+- **`offsetTop` on a sticky element moves with the scroll.** Read on 2026-09-16: the `HeroSheet` stage reported `offsetTop` 0, 300,
+  600, 900 at scroll 0, 300, 600, 900 while its rect stayed at 0. So the slot's offsets are summed only up to the sticky holder, and
+  the holder's own position is rebuilt from its parent's document top, its computed `top` and its parent's height — the sticky rule
+  itself. This assumes the holder is its parent's first child, which is how `HeroSheet` is built.
+- **Scatter starts when the slot's centre passes the middle of the viewport.** On `lg` that is scroll 0, so the mark dims with the
+  sheet. Below `lg` the hero scrolls normally and the slot starts below the text; a first version keyed on "fully in view" had the
+  mark two-thirds scattered by the time a phone user reached it.
+- **Opacity is `max(footer, shapeMix² × glow)`.** On a page with no shape both shape terms are 0 and the heroless rule is unchanged.
 
 ## Dependencies and why
 

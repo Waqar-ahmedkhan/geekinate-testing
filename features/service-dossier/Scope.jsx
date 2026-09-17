@@ -1,21 +1,17 @@
-import { DeckCard, Eyebrow, Section, SectionHead } from '@/components';
+import { LiftCard, RollIndex, Section, SectionHead } from '@/components';
 import { orderLabel } from '@/lib/utils';
 
-const WIPE = 'duration-[460ms] ease-brutal motion-reduce:transition-none';
-const MARK = `-mx-1 bg-[linear-gradient(var(--volt),var(--volt))] bg-[length:0%_100%] bg-left bg-no-repeat transition-[background-size] ${WIPE} group-hover/deck:bg-[length:100%_100%]`;
-const TITLE = `px-1 bg-[linear-gradient(90deg,var(--ink)_50%,var(--volt)_50%)] bg-[length:200%_100%] bg-right bg-clip-text text-transparent transition-[background-position] ${WIPE} group-hover/deck:bg-left`;
+const RISE = 'transition-[color,translate] duration-[460ms] ease-brutal group-hover/lift:-translate-y-0.5 motion-reduce:transition-none';
+const TITLE = `text-xl leading-tight tracking-[-0.01em] text-foreground group-hover/lift:text-volt group-hover/lift:delay-[40ms] ${RISE}`;
+const DETAIL = `text-sm leading-[1.6] text-mut group-hover/lift:delay-[80ms] ${RISE}`;
 
 export default function Scope({ block, intro, items }) {
   const cardEls = items.map(({ title, detail }, index) => (
-    <DeckCard key={title} onPaper>
-      <Eyebrow>{orderLabel(index)}</Eyebrow>
-      <h3 className='text-xl leading-tight tracking-[-0.01em]'>
-        <span className={MARK}>
-          <span className={TITLE}>{title}</span>
-        </span>
-      </h3>
-      <p className='text-sm leading-[1.6] text-mut'>{detail}</p>
-    </DeckCard>
+    <LiftCard key={title} onPaper>
+      <RollIndex value={orderLabel(index)} />
+      <h3 className={TITLE}>{title}</h3>
+      <p className={DETAIL}>{detail}</p>
+    </LiftCard>
   ));
   return (
     <Section id={block.id} variant='paper' className='scroll-mt-[var(--nav-rail)]'>

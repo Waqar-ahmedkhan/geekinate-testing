@@ -108,9 +108,10 @@ list is on screen, and the hold on hover or focus over the list only. `Deliverab
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
 `Separator` over a mono proof strip), `Actions` (the pill pair), `Card` (the glass panel with `ring-edge` and `shadow-brutal`) and
 `CtaBand` (the centred italic closing band). `PageHero` renders the split grid when an `aside` is passed and a single centred
-column when it is not — `/partner` passes `FlowRail`, `/services/development` passes `Clip`, the square that runs the service's
-own `media` through `VideoSurface` and `useHoverVideo({ introduce: true })` on `ground-patch`, so `mix-blend-screen` has the
-page's own ground to drop the clip's black onto, and the other two service pages pass nothing. `ground` in `globals.css` is that
+column when it is not — `/partner` passes `FlowRail`, and every `/services/[slug]` whose slug is in `SERVICE_CLIPS` (all three since
+2026-09-22) passes `Clip`, the square that runs the service's own `media` through `VideoSurface` and
+`useHoverVideo({ introduce: true })` on `ground-patch`, so `mix-blend-screen` has the page's own ground to drop the clip's black
+onto; a slug outside that list passes nothing and centres. `ground` in `globals.css` is that
 ground — the `--void` fill and the two fixed radial glows, applied to `html` itself and reused by the patch; `ground-patch` adds
 the edge feather that keeps the patch from reading as a box once the sheet's transform re-anchors the fixed gradients.
 `CtaBand` sets its volt trail as a `block` span, so the closing line always breaks before it. `Actions` takes a `link` component and a

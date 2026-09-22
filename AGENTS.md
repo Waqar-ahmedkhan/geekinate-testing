@@ -174,7 +174,7 @@ any more.
 ("Development & AI" / "Referral Partner Program"); the `h1` is the promise, in italic display with one volt phrase. The service name
 still reaches search through the metadata title and the `Service` JSON-LD, so do not "fix" this by promoting the title back to `h1`.
 
-**Only the Development & AI hero carries an aside, and it is the service's own clip.** The hero was built as a split with the
+**Every service hero carries an aside, and it is the service's own clip.** The hero was built as a split with the
 clip in a bordered panel on the right, matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this
 temporarily") and the content centred. On 2026-09-16 `/services/development` went back to the split, with the text on the left and
 the AI circuit mark on the right (instructed: object right of the text, and "sirf is AI waly ko service page par laga do"). On
@@ -182,15 +182,18 @@ the AI circuit mark on the right (instructed: object right of the text, and "sir
 Development & AI card runs, in a bare square with no border or panel. The square carries `ground-patch` so the clip's black
 background blends away — see the `mix-blend-screen` trap; do not "tidy" that class off. It plays itself once when it first comes on screen and
 after that only on hover, which is `useHoverVideo({ introduce: true })` and the card's own `loop: false`. `SERVICE_CLIPS` in
-`constants/ai.js` is the list of slugs that get one; Games and Marketing still pass nothing and stay centred.
+`constants/ai.js` is the list of slugs that get one, and a slug outside it falls back to the centred hero. Games and Marketing joined the
+list on 2026-09-22, once the Development & AI page was signed off ("make rest of the services pages as well like a AI & development
+service page"): each runs the clip its home-page card already runs (`game.mp4`, `marketing.mp4`, both cut on black — measured, every
+corner reads `0 0 0`, so the blend holds), and each took a `scopeIntro` line for the Scope head, which only Development carried before.
 
 **The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It is **off for now**: pulled from the
 `/services/development` hero on 2026-09-16 ("remove chat agent for now") by emptying `guidedServices` in `lib/content/guide.js`,
-which leaves that hero centred like the other service pages. Every piece of it is still in the tree; putting `'development'` back
-in that array restores it. When on, it docks in the hero and floats once the dock is off screen or under the sheet. A
-`goToSection` call used to scroll the moment the reply streamed in, which took the page away before the answer could be read; since
-2026-09-14 it renders a button under that reply instead, labelled from `guideContent.jumps`, and the page moves only when the
-visitor presses it. `highlight` is the one action that still runs on arrival, because it moves nothing.
+which hands that hero's aside to the clip (the Guide wins the slot over `SERVICE_CLIPS` when a slug is in both). Every piece of it is
+still in the tree; putting `'development'` back in that array restores it. When on, it docks in the hero and floats once the dock is
+off screen or under the sheet. A `goToSection` call used to scroll the moment the reply streamed in, which took the page away before
+the answer could be read; since 2026-09-14 it renders a button under that reply instead, labelled from `guideContent.jumps`, and the
+page moves only when the visitor presses it. `highlight` is the one action that still runs on arrival, because it moves nothing.
 The Blueprint section, its form and its `/api/blueprint` routes were removed the same day. On cost: `maxOutputTokens`, the
 500-character message cap, the eight-turn cap and the 20-per-day throttle bound how large and how often requests are — **none of
 them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so never describe this feature as

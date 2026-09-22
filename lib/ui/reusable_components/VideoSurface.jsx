@@ -11,6 +11,7 @@ export default function VideoSurface({ ref, media, fit = 'contain', loop = true,
       </div>
     );
   }
+  const focusStyle = media.focus ? { objectPosition: media.focus } : undefined;
   return (
     <video
       ref={ref}
@@ -19,6 +20,7 @@ export default function VideoSurface({ ref, media, fit = 'contain', loop = true,
       muted
       playsInline
       preload='metadata'
+      style={focusStyle}
       className={cn('h-full w-full', fit === 'cover' ? 'object-cover' : 'object-contain', LAYER, className)}
     >
       {sources.map(({ src, type }) => (

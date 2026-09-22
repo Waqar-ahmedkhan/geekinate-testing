@@ -12,7 +12,7 @@ export * from './process';
 export * from './sheet';
 export * from './snake';
 export * from './substrate';
-export * from './work';
+export * from './video';
 
 export const SITE = {
   name: 'Geekinate',

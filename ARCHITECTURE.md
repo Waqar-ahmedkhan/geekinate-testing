@@ -54,7 +54,7 @@ the archive of the two older sites and holds nothing from this build.
 | `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
 | `constants/partner.js` | Commercial terms and form limits | `PARTNER` rates/window/limits, `PARTNER_EVENTS` names. Rates are fixed product requirements, not design values |
 | `constants/{cta,grain,sheet,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file |
-| `constants/circuit.js` | The AI circuit mark's geometry and tuning, and `SERVICE_SHAPES` | Which service slug wears which shape; only `development` today |
+| `constants/circuit.js` | The AI circuit mark's geometry and tuning, and `SERVICE_SHAPES` | Which service slug wears which shape; empty since 2026-09-18, so no page wears one |
 | `constants/snake.js` | Tunables for the retired 3D mark | **Mostly dead** — see *Dead code* below. `SNAKE.scrollLerp` is still live, read by `smooth-scroll` |
 | `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`; run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
@@ -93,17 +93,23 @@ with no transition, so the roll only ever plays forward. The group is `group/lif
 slides out from under the pointer. It is CSS only: Tailwind's `hover` variants already require a hover-capable pointer, so
 touch screens see still cards, and `motion-reduce` drops the movement. `DeckCard`, the shipped tip-and-sheet hover, is unused
 but kept until the trial is decided; see `AGENTS.md`. Card titles are white and turn volt on the same hover (2026-09-16).
-`Process` stays a server component and passes its header as children to `Steps.jsx`, the one client file in the dossier: it
-owns the active step, an `IntersectionObserver` that starts the autoplay once half of the list is on screen, and the hold on
-hover or focus over the step list only. `PROCESS` in `constants/process.js` carries the dwell and the in-view share; the bar's fill is the
+`Process` and `Deliverables` are both thin server components over `Cycle.jsx`, the one client file in the dossier: it draws the
+sticky header and the numbered list, and owns the active row, an `IntersectionObserver` that starts the autoplay once half of the
+list is on screen, and the hold on hover or focus over the list only. `Deliverables` passes `mirror`, which flips the grid to
+`8fr_4fr` and puts the `ol` in `lg:order-first`, and runs it on an `ink` band; the row colours are token-based
+(`text-foreground`, `text-mut`) so the same component reads on paper and on black. `PROCESS` in `constants/process.js` carries the dwell and the in-view share; the bar's fill is the
 `step-fill` keyframe in `globals.css`, its duration set inline from the same constant so the two cannot drift. See `AGENTS.md`.
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
 `Separator` over a mono proof strip), `Actions` (the pill pair), `Card` (the glass panel with `ring-edge` and `shadow-brutal`) and
 `CtaBand` (the centred italic closing band). `PageHero` renders the split grid when an `aside` is passed and a single centred
-column when it is not — `/partner` passes `FlowRail`, `/services/development` passes the empty slot the AI circuit mark draws
-into (see **The service mark**), and the other two service pages pass nothing. `Actions` takes a `link` component and a
+column when it is not — `/partner` passes `FlowRail`, `/services/development` passes `Clip`, the square that runs the service's
+own `media` through `VideoSurface` and `useHoverVideo({ introduce: true })` on `ground-patch`, so `mix-blend-screen` has the
+page's own ground to drop the clip's black onto, and the other two service pages pass nothing. `ground` in `globals.css` is that
+ground — the `--void` fill and the two fixed radial glows, applied to `html` itself and reused by the patch; `ground-patch` adds
+the edge feather that keeps the patch from reading as a box once the sheet's transform re-anchors the fixed gradients.
+`CtaBand` sets its volt trail as a `block` span, so the closing line always breaks before it. `Actions` takes a `link` component and a
 `meta` mapper so `/partner` can route every pill through its analytics `TrackedLink` while the service pages use a plain
 `next/link` with no props leaking onto the anchor. Build a new marketing page out of these rather than a fifth variant. Both pages
 pass their hero to `HeroSheet`, so everything after it slides up over it — see **The hero sheet**.
@@ -297,6 +303,16 @@ Two sections use it, so the behaviour lives in one place:
   `prefers-reduced-motion`.
 - `VideoSurface` — renders the `<video>` (`loop`, `muted`, `playsInline`, `preload="metadata"`, poster) or, when `media.sources` is
   empty, a marked *Media pending* panel. Nothing ever points at a missing file. `fit` picks `contain` or `cover`.
+- `useHoverVideo({ introduce: true })` — the clip plays itself once, then answers hover like any other. It starts only after
+  `INTRODUCE.ratio` of it (nine tenths, measured against the shorter of the clip and the viewport so a tall clip can still
+  qualify) has been on screen for `INTRODUCE.delayMs`; scrolling on before that cancels the timer, so a pass-through does not
+  spend the one shot off screen. Half on screen with no dwell was the first cut, and it started the Elevé intro while the
+  tile's top edge was still arriving, so the clip had finished before the tile was in full view (2026-09-22). The service
+  hero's `Clip` uses the same mode with `loop={false}`. `constants/video.js` holds both numbers.
+- `useHoverVideo({ hoverOnly: true })` — for a clip that exists only under the pointer, stacked over another and faded in by CSS.
+  Enter restarts it from frame 0 and leave **pauses it in place**: the layer is fading out at that moment, and a rewind on leave
+  would snap it to its first frame mid-fade. It never autoplays on touch, since nothing shows it there; a tap's sticky `:hover`
+  does. `WorkTile` uses it for a tile that carries `hoverMedia`.
 
 The pending panel is black even on light sections, because tiles overlay light text on their media and a pale placeholder would make
 that text unreadable.
@@ -367,39 +383,52 @@ re-exports; only the `.webp` files are referenced.
 
 ## The featured work section
 
-`features/work` — section 02: the existing tile grid, now presented inside riseatseven.com's work-section treatment, measured live
-at 1905×911 on 2026-08-27 — a light frame with a pinned dark panel that the grid scrolls through. The reference's *inner* design
-(project-name list, side images) was explicitly not copied; only the frame and the scroll mechanics were.
+`features/work` — section 02: a flat tile grid on a `paper` band, headed by the section title with the All work link opposite it.
+It ran riseatseven.com's treatment from 2026-08-27 to 2026-09-18 — a light frame holding a pinned black panel that the grid
+scrolled through, with a runway whose height was written from the grid and a gsap scrub mapping the grid's `y` 1:1 to page
+scroll. That was removed on instruction ("remove the scroll effect and black background"), against wearestokt.com's *Featured
+Work* as the new reference: the grid sits on the page, the page scrolls it, and nothing is pinned. `constants/work.js` went with
+it — `framePad` and `pinMinWidth` had no other reader.
 
-The measured anatomy, and ours next to it:
+The section is now a plain server component. It is `variant='paper'`, not `clear` with `bg-paper`: the band really is light now,
+so the nav's surface detection must read it, which is the reverse of what the panel version needed.
 
-| Piece | Reference | Ours |
-|---|---|---|
-| Light gutter | `px-4 md:px-7` on #efeeec | Same paddings, `bg-paper` |
-| Runway | 6473px tall block, plain flow | Height set from the grid: content height + 2 × 28px, floored at one viewport |
-| Pinned wrapper | `sticky top-0`, viewport-high, `py-7` | Same, from `lg` only |
-| Dark panel | #111212, `rounded-3xl`, `overflow-hidden`, fills wrapper | Same but `bg-black`, per the dark-fill rule |
-| Content motion | Columns scrubbed `y`, `ease: none`, `top top → bottom bottom` | The whole grid, same mapping — 1:1 with page scroll |
+- The grid is six columns from `lg`, 16px gaps, 10px tile radius, and `span` counts sixths: rhythm **4+2 / 6 / 3+3**, aspect
+  following span, degrading to two columns then one below `lg`. The full-width tile was 16:9 while it ran the AR game and is
+  **2:1 since 2026-09-22**, when the Elevé pair moved onto it: that clip is a 2:1 render whose logo starts 2% in from the
+  left and whose badge ends 2% from the right, and a 16:9 cover would have cut 5.5% off each of them. It was three columns at **2+1 / 3 / 1+1+1** until 2026-09-17, when
+  the middle tile of the last row (an `AI & Automation` Pexels clip) was removed on instruction and the two left took half each;
+  thirds cannot hold a half, hence sixths. A half tile is `lg:aspect-[3/2]`, which lands within a few pixels of the first row's
+  height. **The rhythm needs exactly five projects** — `span` values in `lib/content/index.js` change with the count.
+- Tiles are `WorkTile`: black fill, 1.5px ink border and hard shadow, with the title and discipline chips overlaid on the media
+  and no scrim. A project with no `href` renders a `div` rather than a dead link.
+- **A tile with `hoverMedia` runs two clips.** Instructed 2026-09-22 for the Elevé tile (tile 1 that morning, the
+  full-width tile 3 since the afternoon's swap): `media` is the intro, which plays once when half
+  the tile has settled on screen (`introduce`) and holds its last frame, never replaying on hover; `hoverMedia` sits over it at
+  `opacity-0` and fades in under the pointer (`REVEAL`), restarted from frame 0 on every enter, looping for as long as the
+  pointer stays, and paused in place on leave so the fade-out shows the frame it reached. **Hover is inert
+  until the intro has ended**: the tile holds an `introduced` boolean set from the intro's `ended` event, and until it flips
+  the tile carries no hover handlers and the reveal has no `group-hover` class, so neither playback nor the fade can start
+  mid-intro (instructed 2026-09-22). If the pointer is already resting on the tile when the intro ends, `settle` checks
+  `:hover` and starts the reveal then, rather than waiting for a re-enter that would leave a static first frame fading in
+  under a still pointer. `hoverMedia.tone: 'light'` flips the caption to ink for a clip with a white ground, where the paper
+  title and chips would vanish; it is gated on `introduced` too, or the title would go ink over the dark intro. On touch the
+  intro replays while in view, as every tile does, and a tap reveals the hover clip through the sticky `:hover`.
+- **A tile with `media.poster` shows the poster whenever its clip is not playing.** The native `poster` attribute only covers
+  the time before first playback; once a hover has run the clip, a rewound `<video>` shows its own frame 0, and for the laptop
+  clips that frame is a different render of the screen than the still the designer supplied. So `WorkTile` also lays the poster
+  over the clip as a `next/image` (`fill`, `sizes` by span) and drives its opacity from the clip's `playing` and `pause` events:
+  it fades out as frames start flowing and back in on leave, on scroll-out under touch, and when a `loop: false` clip ends,
+  which is how wearestokt.com's tiles rest on a still and play on hover. `media.loop` and `hoverMedia.loop` are honoured and
+  default to `true`: **every hover clip loops until the pointer leaves**, instructed 2026-09-22 ("sare tiles ki video loop may
+  play hoti rahy gi sirf tb stop hogi jb hover hat jaye ga"). The stats count-up and the Elevé logo reveal ran `loop: false`
+  for an afternoon, holding their final frames, and were switched to loop on that instruction. Only the intro of a pair
+  stays one-shot.
 
-Mechanics worth knowing before editing:
-
-- **The runway height is written by a `ResizeObserver` on the grid**, so tile media loading or viewport changes re-fit it, and each
-  write calls `ScrollTrigger.refresh()`. The scrub's ends are `top top → bottom bottom` with function-based values, so the mapping
-  stays 1:1 whatever the runway becomes.
-- **The section is `variant='clear'` with `bg-paper`, deliberately not `paper`.** Everything visible inside it is the black panel,
-  so the content wants the root dark-side tokens, and the nav's surface detection (below) must not read the section as a light
-  band. The paper class here would be wrong twice.
-- **Pinning is `lg`-and-`prefers-reduced-motion`-gated through `gsap.matchMedia`.** Below `lg`, or reduced, the runway height is
-  cleared and the panel is just a dark rounded box the page scrolls past — the reference disables its pin on touch the same way.
-- The grid itself is unchanged: three columns, 16px gaps, 10px tile radius, span rhythm **2+1 / 3 / 1+1+1**, aspect following span,
-  degrading to two columns then one below `lg`. **The rhythm needs exactly six projects** — `span` values in `lib/content/index.js`
-  change with the count. Tiles overlay title and discipline chips on the media with no scrim; a project with no `href` renders a
-  `div` rather than a dead link.
-
-**The nav reads page surfaces from live layout, and this section is why.** `Nav` classifies the pill's ground by `.on-paper` bands
-measured from the DOM; those offsets go stale the moment a runway height is written after mount — every section below shifts by
-~1.7 viewports and the ring paints ink over black (found on the CTA, 2026-08-27). The bands are re-measured by a `ResizeObserver`
-on `document.body`, so any layout-height change — this runway, media loading, a future pinned section — refreshes them.
+**The nav reads page surfaces from live layout.** `Nav` classifies the pill's ground by `.on-paper` bands measured from the DOM,
+and those offsets go stale whenever a layout height is written after mount — the removed runway did exactly that, shifting every
+section below by ~1.7 viewports and painting an ink ring over black (found on the CTA, 2026-08-27). The bands are re-measured by a
+`ResizeObserver` on `document.body`, so media loading or any future pinned section still refreshes them.
 
 ## The services section
 
@@ -663,7 +692,7 @@ fourth pose of the one cloud, mixed in the vertex shader after the globe and foo
 
 | Piece | What it is |
 |---|---|
-| Slot | `features/service-hero` passes `PageHero` an empty square `div` with `data-cosmos-shape='circuit'` when `SERVICE_SHAPES` names the slug. The Guide still wins the aside if a slug is in `guidedServices` |
+| Slot | `features/service-hero` passes `PageHero` an empty square `div` with `data-cosmos-shape='circuit'` when `SERVICE_SHAPES` names the slug. That map is empty since 2026-09-18 — the hero's aside is the AI clip now — so nothing below fires until a slug is put back in it. The Guide still wins the aside if a slug is in `guidedServices`, and `SERVICE_CLIPS` wins it before the shape |
 | Sampler | `lib/shape/circuit.js` → `sampleCircuit(count)`: the letters, circuit buses, vias and two rings, drawn in a unit square. Every bead where `index % 5 < 3` joins (18,000 of 30,000), assigned in angle order so beads travel radially; the rest get kind `0` |
 | Buffers | `cloud.js` allocates `aShape`, `aShapeNormal`, `aShapeData` empty and fills them the first time a page asks for the shape (`wearShape`) |
 | Placement | `stage.js` measures the slot on layout, `MorphCloud` turns its box into `uShapeMatrix` every frame — centre from the slot, scale from its size over `CIRCUIT.fit`, turn from `CIRCUIT.pose` plus the shared pointer tilt |
@@ -739,12 +768,49 @@ day a transitive version moves. Anything this project actually depends on gets i
   no attribution, so it is safe to ship but says nothing about Geekinate. Replace both with real work. **No tile is on the
   *Media pending* panel any more** — Services' Marketing Systems card took a Pexels clip on 2026-08-07, since Stokt runs three
   service cards and there was no fourth render to transcribe.
+- **The first real work clips were `geekinate-*`.** Supplied on 2026-09-17 from `../VideoClips/work`: the AR game runs the
+  full-width tile (as instructed, "the biggest one on the screen") and the VR game ran the Games & Interactive tile below it
+  until 2026-09-22, replacing the two Pexels clips those tiles carried. Both were re-encoded from the originals with audio
+  stripped (tiles are always muted) and `+faststart`: the AR clip at 1920×1080, the VR clip at 1280×720 because its tile never
+  shows more. The tiles keep their placeholder titles and slugs, renumbered after the removal so none is skipped. The VR clip
+  showed UFC branding on the TV in frame, and its 16:9 frame in a 3:2 tile needed `media.focus: '25% 50%'` to keep the player
+  in the headset; `VideoSurface` applies any `media.focus` as `object-position`, and the Elevé intro on tile 1 still uses it.
+- **Tiles 2 and 5 took designed stills and clips on 2026-09-22**, from `../VideoClips/work-specs`: the twinhub site on a
+  laptop (square, tile 2) and a stats count-up over a photo (3:2, tile 5). A third pair, the Elevé site on a laptop (3:2),
+  went onto tile 4 first and was taken off the same day — "4th tile may AR video game wali video thi pehly woh hi rehne do" —
+  so tile 4 runs the VR game again (re-encoded from its original, since the earlier file had never been committed) and
+  `eleve-site.mp4` / `eleve-site.webp` sit in `public/media/work/` unreferenced, pending a slot. The files arrived named
+  `tile-4` for the square and `tile-2` for the 3:2, the reverse of the spec sheet's numbering — they were placed by aspect,
+  since the spec's slot 2 is the square and slot 4 the 3:2, and the backgrounds were exported at exactly those slots' listed
+  sizes (584×584 and 884×589). Clips re-encoded as above: the square at 1080×1080, the 3:2 pair cropped to an exact 3:2 and
+  scaled to 1440×960. The backgrounds are the posters, converted to WebP at the size supplied, which is 1× for the slot — on
+  a 2× display they upscale about 1.5×; ask for 2× exports (1168×1168 and 1768×1178) if that shows. Both loop under the
+  pointer (see the poster note above). Tile 2's discipline tag still reads AI & Automation, a placeholder now sitting on a web
+  product.
+- **The Elevé pair (2026-09-22) opened on tile 1 and moved to the full-width tile 3 the same day**, swapping with the AR game,
+  which now runs tile 1 with its 16:9 frame cover-cropped to 2:1 ("3 tile ki video 1 tile may ly jao or 1st tile ki video
+  3rd tile may"). `eleve-mockup.mp4` (the brand render, intro) and `eleve-logo.mp4` (the logo colouring in on white, hover)
+  were re-encoded from `../VideoClips/work-specs/tile-1.mp4` and `tile-1-1.mp4`, 4072×2036 sources, at 1920×960
+  — the 2:1 tile never shows more — with audio stripped, `+faststart` and CRF 22, which lands the static renders at 266KB and
+  67KB. The mockup export carries its own ink frame, `#101615` about 60px down each side and 80px top and bottom, which read as
+  padding inside the tile (asked about 2026-09-22); the encode crops it off first, `crop=3780:1890:146:80`, a centred 2:1
+  window inside the frame. Re-export from the source with that crop, or the padding comes back. **The intro is cut at 1.0s**
+  (`-t 1.0`): the export runs 5s, but frame-to-frame motion ends at 0.70s — the logo's flicker-in — and the remaining 4.3s is
+  a still, which read as the clip "still running" with nothing happening; the cut keeps the flicker plus a 0.3s hold on the
+  final frame, which the tile then rests on. **The logo reveal is cut at 2.5s** the same way: its colour fill has faded out
+  by 2.33s and the export held the finished logo for the remaining 2.7s, which under a looping hover read as a frozen image. They replaced the Stokt fish-eye laptop clip. The spec sheets beside them (`1-tile-numbers.png`, `2-safe-areas.png`)
+  number the tiles and mark the bottom band as the text zone the clips keep clear; the logo clip's ground is white, which is why
+  it carries `tone: 'light'`. The render's own logo sits in its left third, outside the sheet's centred mobile safe area, so
+  the intro carries `focus: '0% 50%'`: the square crop below `sm` shows the logo over the office rather than an empty desk. The
+  tile keeps its placeholder title; the discipline tags travelled with the clips, so tile 1 reads Games & Interactive and
+  tile 3 Web Products.
 - **Encode clips as H.264 (`avc1`) in MP4 or VP9 in WebM.** A clip that was H.265/HEVC (`hvc1`) rendered as a blank tile in Chrome on
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a
   dark surface instead of dumping light overlay text onto the page background.
-- **No poster images exist.** With `preload="metadata"` and no `poster`, a resting card can paint black rather than a first frame —
-  reliably so in Safari. Produce a poster per clip alongside the loops.
+- **Posters exist only for work tiles 2 and 5.** The Elevé, AR and VR tiles and every service card still run with `preload="metadata"`
+  and no `poster`, so a resting card can paint black rather than a first frame — reliably so in Safari. Produce a poster per
+  clip alongside the loops.
 - Services copy in `lib/content/index.js` is placeholder wording pending sign-off. The structure is settled.
 - **The footer clip is `stokt-golf-ball-render.webm` — wearestokt.com's own render, with their wordmark printed on the balls. MUST
   NOT SHIP.** It is also 13MB and WebM-only, so Safari falls through to the black panel and every other browser pays for it on

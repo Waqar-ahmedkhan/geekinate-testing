@@ -18,8 +18,9 @@ Geekinate's agency website, rebuilt from scratch. A single Next.js app living at
 **Games & Interactive** (`games`), **Marketing Systems** (`marketing`). This file previously named four pillars with Web Products
 as its own — that is no longer true at the service level; Web Products is folded into Development & AI, whose summary reads "Web
 products, platforms, and the agents and pipelines that run inside them." The four-pillar vocabulary survives in exactly one
-place, as **tags** on the featured work: `work[].disciplines` still uses `AI & Automation`, `Games & Interactive`,
-`Marketing Systems` and `Web Products`. Derive from `services` rather than transcribing a count anywhere.
+place, as **tags** on the featured work: `work[].disciplines` draws from `AI & Automation`, `Games & Interactive`,
+`Marketing Systems` and `Web Products`. Since 2026-09-17 no tile carries `Marketing Systems`: it sat on a span-3 tile that was
+removed. As of 2026-09-22 the AR game runs tile 1 and the Elevé pair the full-width tile 3, both tags travelling with them. Derive from `services` rather than transcribing a count anywhere.
 
 Design direction is not open to invention: it is decided in the Asana thread *Revamp Web Design to a modern design*, with
 `wearestokt.com` as the agreed base, `denqid.com` for the hero, and `landing.love/categories/agency` for further reference. It is
@@ -102,7 +103,9 @@ Three things were asked for by name and are not to be put back: the orbiting whi
 ring-and-dot eye inside the A ("remove it"), and the background particles that faded out behind the text while the mark formed
 ("iski zarurat nhi"). The circuit's first draft did not read as a circuit ("lag hi nhi raha"); what fixed it was thin still traces,
 parallel buses with shared 45° bends, hollow vias at the outer ends and pulses that tint rather than swell. Only the Development &
-AI page carries a shape — `SERVICE_SHAPES` in `constants/circuit.js` is the list. See ARCHITECTURE.md §The service mark.
+AI page carries a shape — `SERVICE_SHAPES` in `constants/circuit.js` is the list. It is **off since 2026-09-18**: that map is
+empty, because the hero now runs the home page's own AI clip in the same slot. Every piece of the mark is still in the tree, and
+putting `{ development: 'circuit' }` back in that map restores it. See ARCHITECTURE.md §The service mark.
 
 The camera is the other load-bearing pair: 7.1 degrees at a distance of 60. It is a long lens on purpose, and changing either number
 without the other rescales the entire scene. See the note at the top of `constants/cosmos.js`.
@@ -118,6 +121,21 @@ the supplied originals that stay beside them in `public/media/clients/`: ink-on-
 (`*-color.webp`, LinkTax refilled in its brand navy because its white type cannot sit on the light strip). The strip runs the
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
 flipping `src` values in `lib/content/index.js` is the whole change either way.
+
+**The Elevé tile plays its intro once, and hover runs a second clip.** Instructed 2026-09-22: the Elevé render — tile 1
+that morning, the full-width tile 3 since the afternoon's swap with the AR game — plays itself when the tile scrolls into
+view, once, and after that the tile answers hover with a different clip — the logo colouring in — not a replay. Its `work`
+entry carries both as `media` and `hoverMedia`; `WorkTile` stacks the second over the first and
+fades it in under the pointer. Do not collapse them into one clip, loop the intro, or let hover restart it. The hover clip's
+ground is white, so `hoverMedia.tone: 'light'` turns the caption ink for it; drop that and the title disappears on hover. The
+intro waits for the tile to settle — nine tenths on screen for 600ms, `INTRODUCE` in `constants/video.js` — because starting
+at half on screen ran the whole clip while the tile was still scrolling in ("jb taak pura tile dekhne pohonchta hoon video
+khatam bhi hochuki hoti hai", 2026-09-22). Lowering that back to an instant start is the complaint coming back. And hover
+does nothing while the intro runs ("jb autoplay wali video chal rahi hai toh hover wali nhi chaly gi", same day): the reveal
+is gated on the intro's `ended` event, in both the handlers and the CSS, and starts on its own if the pointer is already there.
+Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi sirf tb stop
+hogi jb hover hat jaye ga", 2026-09-22); only the intro is one-shot, and it is cut at 1.0s because its export held a still for
+four seconds past the flicker-in, which read as the clip running on with nothing happening.
 
 **The preload gate must never be able to trap the page.** `lib/ui/reusable_components/preloader` holds a black overlay over
 everything until the globe paints its first frame, which reaches it through `lib/boot/ready.js`. That signal can legitimately never
@@ -142,12 +160,15 @@ any more.
 ("Development & AI" / "Referral Partner Program"); the `h1` is the promise, in italic display with one volt phrase. The service name
 still reaches search through the metadata title and the `Service` JSON-LD, so do not "fix" this by promoting the title back to `h1`.
 
-**Only the Development & AI hero carries an aside, and it is an empty slot.** The hero was built as a split with the service's clip
-in a bordered panel on the right, matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this temporarily")
-and the content centred. On 2026-09-16 `/services/development` went back to the split, with the text on the left and the AI circuit
-mark on the right (instructed: object right of the text, and "sirf is AI waly ko service page par laga do"). The aside is a bare
-square `div` carrying `data-cosmos-shape` — the particles draw into its box from the fixed canvas, so it must stay empty and
-unstyled. Games and Marketing still pass nothing and stay centred; the clips are still in `lib/content/index.js`.
+**Only the Development & AI hero carries an aside, and it is the service's own clip.** The hero was built as a split with the
+clip in a bordered panel on the right, matching `/partner`'s `FlowRail`; the panel was pulled on 2026-09-08 ("remove this
+temporarily") and the content centred. On 2026-09-16 `/services/development` went back to the split, with the text on the left and
+the AI circuit mark on the right (instructed: object right of the text, and "sirf is AI waly ko service page par laga do"). On
+2026-09-18 the mark was taken out of that slot and the clip put back in it — the same `/media/services/ai.mp4` the home page's
+Development & AI card runs, in a bare square with no border or panel. The square carries `ground-patch` so the clip's black
+background blends away — see the `mix-blend-screen` trap; do not "tidy" that class off. It plays itself once when it first comes on screen and
+after that only on hover, which is `useHoverVideo({ introduce: true })` and the card's own `loop: false`. `SERVICE_CLIPS` in
+`constants/ai.js` is the list of slugs that get one; Games and Marketing still pass nothing and stay centred.
 
 **The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It is **off for now**: pulled from the
 `/services/development` hero on 2026-09-16 ("remove chat agent for now") by emptying `guidedServices` in `lib/content/guide.js`,
@@ -215,13 +236,25 @@ arrow icon: these cards link nowhere.
 2026-09-16. All four steps open was the original. A hover accordion (the step under the cursor opens, the rest close) was
 instructed from a reference and then rejected the same day as reading empty ("khali khali"): four single words carrying half a
 full-screen section, with step 01 already open on arrival. Three layouts were prototyped; a list beside a black stage card was
-built and turned down ("woh bura lag raha hai"), and option C was picked: `features/service-dossier/Steps.jsx` sets each step
-name in the display face, dims the inactive ones to `text-grey/40`, and slides the active step's sentence in beside its name on
+built and turned down ("woh bura lag raha hai"), and option C was picked: `features/service-dossier/Cycle.jsx` sets each step
+name in the display face, dims the inactive ones to `text-mut/40`, and slides the active step's sentence in beside its name on
 the same line. It starts on step 01 and advances every `PROCESS.dwellMs` once half of it is on screen, with a volt bar filling
 along the top of the active row; hover or focus on the step list holds the step, and leaving resumes. The hold sits on the `ol`, not the
 wrapper: pausing while the pointer rested on "How it runs." read as the section freezing for no reason. The sentence is always in
 the layout and only its opacity changes, so no row changes height: a row that grew would push the next one under a still
 pointer and the hover would oscillate. Below `md` every sentence is shown under its name.
+
+**Deliverables runs the same list, mirrored.** Instructed 2026-09-18 ("same design uper waly section may bhi kardo ... but flip
+karky"): the four statement cards on the black band were replaced by the Process list, so `Cycle.jsx` serves both and the section
+is the one component with `mirror` passed — the list takes the wide column on the left and the sticky header sits in the narrow
+one on the right, the reverse of Process. The mirror is a CSS `order` on the `ol`, not a DOM swap, so the header still comes
+first when the grid stacks below `lg`. The list's colours are `text-foreground` and `text-mut`, never `text-ink`/`text-grey`, or
+it would not survive the move from a paper band to an ink one. The deliverables in `lib/content/index.js` were rewritten from
+single sentences to `{ title, detail }` the same day, because the design needs a one-word name to set in display type.
+
+**`CtaBand` breaks its line before the volt phrase.** Instructed 2026-09-18 ("let's new line par ajaye ga"): the trail is a
+`block` span, so "Got a vibe coded app?" and "Let's Geekinate it." are always two lines rather than wrapping wherever the
+measure lands. `/partner` shares the band and reads the same way.
 
 ## Conventions
 
@@ -279,6 +312,19 @@ under `HeroSheet` it is stuck, so nothing may try to scroll to it.
 
 **The shadcn `Button` base has no `cursor-pointer`.** Every button built from it sits on a default arrow until the class is added
 by hand. The site's own chips already do this; new buttons must too.
+
+**`mix-blend-screen` needs a backdrop inside the same stacking context, or it does nothing — and the page's ground is not a
+flat colour.** The hero clip is a black-backed video on a black page, and `mix-blend-screen` alone left it as a visible box:
+`Section` is `relative z-10` and `HeroSheet`'s hero wrapper carries a gsap transform, either of which forms an isolated blending
+group, so the video had nothing to blend with and painted its own `#000` over a page that is `--void` `#050704` — darker than
+its surroundings, which is what made the rectangle read. Painting the slot flat `--void` was not enough either: `html` carries
+two fixed radial gradients over that colour (the volt wash from the bottom, the paper one from the top), so a flat patch cut a
+hole in the glow and the box came back, brightest on short viewports. The slot now carries `ground-patch`: the `ground` utility
+that `html` itself uses, so the blend resolves against the page's real colour, plus a 9% feather on all four edges. The feather
+is load-bearing — `background-attachment: fixed` re-anchors to the transformed ancestor once the sheet starts receding, which
+puts a whole viewport's gradient inside a 453px square and reads as a bright box mid-scroll. Feathered, the mismatch is a soft
+glow instead of an edge: the worst inside/outside difference across three viewports and three scroll positions measures two
+levels. Measure that difference before and after any change here; five levels is enough to see.
 
 **A positioned ancestor with a z-index traps a fixed child's z-index.** `Section` carries `relative z-10`, which opens a stacking
 context. The 3D canvas was rendered inside the hero's `Section` with `fixed inset-0 z-40`, and that 40 is scoped to the hero's own

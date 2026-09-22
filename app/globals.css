@@ -336,11 +336,7 @@
   }
   html {
     @apply font-sans;
-    background-color: var(--void);
-    background-image:
-      radial-gradient(125% 85% at 50% 116%, rgba(184, 224, 27, 0.13), transparent 60%),
-      radial-gradient(95% 55% at 50% -12%, rgba(253, 253, 251, 0.045), transparent 58%);
-    background-attachment: fixed;
+    @apply ground;
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
   }
@@ -357,6 +353,23 @@
     background: var(--volt);
     color: var(--ink);
   }
+}
+
+@utility ground {
+  background-color: var(--void);
+  background-image:
+    radial-gradient(125% 85% at 50% 116%, rgba(184, 224, 27, 0.13), transparent 60%),
+    radial-gradient(95% 55% at 50% -12%, rgba(253, 253, 251, 0.045), transparent 58%);
+  background-attachment: fixed;
+}
+
+@utility ground-patch {
+  @apply ground;
+  mask-image:
+    linear-gradient(to right, transparent, #000 9%, #000 91%, transparent),
+    linear-gradient(to bottom, transparent, #000 9%, #000 91%, transparent);
+  mask-composite: intersect;
+  -webkit-mask-composite: source-in;
 }
 
 @utility border-brutal {

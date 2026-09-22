@@ -6,6 +6,8 @@ export const SERVICE_SECTIONS = Object.freeze({
   contact: 'contact',
 });
 
+export const SERVICE_CLIPS = Object.freeze(['development']);
+
 export const SECTION_IDS = Object.freeze(Object.values(SERVICE_SECTIONS));
 export const TARGET_IDS = Object.freeze(SECTION_IDS.filter((id) => id !== SERVICE_SECTIONS.hero));
 

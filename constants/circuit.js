@@ -16,4 +16,4 @@ export const CIRCUIT = {
   fireRest: 1.4,
 };
 
-export const SERVICE_SHAPES = { development: 'circuit' };
+export const SERVICE_SHAPES = {};

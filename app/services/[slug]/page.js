@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { CtaBand, JsonLd } from '@/components';
+import { CtaBand, HydrationSplit, JsonLd } from '@/components';
 import ServiceHero from '@/features/service-hero';
 import ServiceDossier from '@/features/service-dossier';
 import Contact from '@/features/contact';
@@ -31,9 +31,11 @@ export default async function ServicePage({ params }) {
     <main className='flex-1'>
       <JsonLd id={`json-ld-service-${slug}`} nodes={[buildServiceJsonLd(service)]} />
       <HeroSheet hero={<ServiceHero service={service} />}>
-        <ServiceDossier service={service} />
-        <CtaBand headline={service.handoff} actions={actions} />
-        <Contact />
+        <HydrationSplit>
+          <ServiceDossier service={service} />
+          <CtaBand headline={service.handoff} actions={actions} />
+          <Contact />
+        </HydrationSplit>
       </HeroSheet>
     </main>
   );

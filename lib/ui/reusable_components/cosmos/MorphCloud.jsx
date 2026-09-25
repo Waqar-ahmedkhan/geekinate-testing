@@ -10,6 +10,7 @@ import { coastGlobe, globe } from '@/lib/input/globe';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { measureStage, shapeAnchor, stage } from '@/lib/scroll/stage';
+import { footprint } from '@/lib/shape/footprint';
 import { CIRCUIT, COSMOS, GLOBE } from '@/constants';
 
 const HALF_FOV = (COSMOS.cameraFov * Math.PI) / 360;
@@ -113,6 +114,7 @@ export default function MorphCloud({ onFirstFrame }) {
       values.uShapeSize.value = Math.min(CIRCUIT.point.max, Math.max(CIRCUIT.point.min, pointSize));
     }
     values.uScale.value = scale;
+    footprint.scale = scale;
     const anchor = rightHalfCentre(state.size.width, viewHalf);
     values.uOffsetX.value = anchor * stage.form;
     values.uFaceYaw.value = Math.atan2(anchor, COSMOS.cameraZ) * stage.form;

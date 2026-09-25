@@ -12,6 +12,7 @@ import Terms from './Terms';
 import Faq from './Faq';
 import Handoff from './Handoff';
 import Conversion from './Conversion';
+import { HydrationSplit } from '@/components';
 import { HeroSheet } from '@/lib/ui/reusable_components';
 
 export default function Partner() {
@@ -19,18 +20,20 @@ export default function Partner() {
     <main className='flex-1'>
       <Analytics />
       <HeroSheet hero={<Hero />}>
-        <CoreIdea />
-        <Audiences />
-        <ServiceFit />
-        <Steps />
-        <Commission />
-        <Earnings />
-        <Trust />
-        <Qualification />
-        <Terms />
-        <Faq />
-        <Handoff />
-        <Conversion />
+        <HydrationSplit>
+          <CoreIdea />
+          <Audiences />
+          <ServiceFit />
+          <Steps />
+          <Commission />
+          <Earnings />
+          <Trust />
+          <Qualification />
+          <Terms />
+          <Faq />
+          <Handoff />
+          <Conversion />
+        </HydrationSplit>
       </HeroSheet>
     </main>
   );

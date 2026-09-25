@@ -79,7 +79,7 @@ export default function WorkTile({ title, disciplines = [], span = 2, href, medi
   ) : null;
   return (
     <Tag ref={tileRef} {...linkProps} {...hoverHandlers} className={className}>
-      <VideoSurface ref={introRef} media={media} fit='cover' loop={loop} />
+      <VideoSurface ref={introRef} media={media} fit='cover' loop={loop} poster={false} />
       {posterEl}
       {revealEl}
       <div className='absolute inset-x-0 bottom-0 flex flex-col items-start gap-2 p-5 md:p-6'>

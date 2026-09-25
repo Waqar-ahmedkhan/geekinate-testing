@@ -3,7 +3,7 @@
 import { useEffect, useRef } from 'react';
 import VideoSurface from './VideoSurface';
 
-export default function InViewVideo({ media, fit = 'cover', loop = false, threshold = 0.2, className }) {
+export default function InViewVideo({ media, fit = 'cover', loop = false, eager = false, threshold = 0.2, className }) {
   const videoRef = useRef(null);
   useEffect(() => {
     const video = videoRef.current;
@@ -22,5 +22,5 @@ export default function InViewVideo({ media, fit = 'cover', loop = false, thresh
     observer.observe(video);
     return () => observer.disconnect();
   }, [threshold]);
-  return <VideoSurface ref={videoRef} media={media} fit={fit} loop={loop} className={className} />;
+  return <VideoSurface ref={videoRef} media={media} fit={fit} loop={loop} eager={eager} className={className} />;
 }

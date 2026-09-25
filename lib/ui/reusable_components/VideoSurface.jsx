@@ -1,9 +1,20 @@
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { preloadAfterLoad, preloadWhenNear } from '@/lib/media/preload';
 import { cn } from '@/lib/utils';
 
 const LAYER = '[backface-visibility:hidden] [transform:translateZ(0)]';
 
-export default function VideoSurface({ ref, media, fit = 'contain', loop = true, className }) {
+export default function VideoSurface({ ref, media, fit = 'contain', loop = true, eager = false, poster = true, className }) {
+  const ownRef = useRef(null);
+  const videoRef = ref ?? ownRef;
   const sources = media?.sources ?? [];
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return undefined;
+    return eager ? preloadAfterLoad(video) : preloadWhenNear(video);
+  }, [eager, videoRef]);
   if (!sources.length) {
     return (
       <div className={cn('flex h-full w-full items-center justify-center bg-black', className)}>
@@ -12,14 +23,15 @@ export default function VideoSurface({ ref, media, fit = 'contain', loop = true,
     );
   }
   const focusStyle = media.focus ? { objectPosition: media.focus } : undefined;
+  const posterSrc = poster ? media.poster : undefined;
   return (
     <video
-      ref={ref}
-      poster={media.poster || undefined}
+      ref={videoRef}
+      poster={posterSrc || undefined}
       loop={loop}
       muted
       playsInline
-      preload='metadata'
+      preload='none'
       style={focusStyle}
       className={cn('h-full w-full', fit === 'cover' ? 'object-cover' : 'object-contain', LAYER, className)}
     >

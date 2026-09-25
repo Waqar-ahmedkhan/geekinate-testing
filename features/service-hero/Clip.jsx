@@ -8,7 +8,7 @@ export default function Clip({ media }) {
   const { videoRef, hoverHandlers } = useHoverVideo({ introduce: true });
   return (
     <div {...hoverHandlers} className={SLOT}>
-      <VideoSurface ref={videoRef} media={media} loop={false} className='mix-blend-screen' />
+      <VideoSurface ref={videoRef} media={media} loop={false} eager className='mix-blend-screen' />
     </div>
   );
 }

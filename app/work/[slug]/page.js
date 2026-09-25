@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { JsonLd } from '@/components';
+import { HydrationSplit, JsonLd } from '@/components';
 import CaseHero from '@/features/case-hero';
 import CaseStudy from '@/features/case-study';
 import Contact from '@/features/contact';
@@ -29,8 +29,10 @@ export default async function WorkPage({ params }) {
     <main className='flex-1'>
       <JsonLd id={`json-ld-work-${slug}`} nodes={[buildCaseStudyJsonLd(project)]} />
       <CaseHero project={project} />
-      <CaseStudy project={project} />
-      <Contact />
+      <HydrationSplit>
+        <CaseStudy project={project} />
+        <Contact />
+      </HydrationSplit>
     </main>
   );
 }

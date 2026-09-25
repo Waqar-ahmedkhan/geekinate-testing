@@ -3,9 +3,9 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { createLife } from '../cosmos/automata';
-import { getCloud } from '../cosmos/cloud';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { stage } from '@/lib/scroll/stage';
+import { footprint } from '@/lib/shape/footprint';
 import { SUBSTRATE } from '@/constants';
 
 const TAU = Math.PI * 2;
@@ -120,7 +120,7 @@ export default function SubstrateField() {
       if (clock >= interval) {
         clock %= interval;
         const headroom = Math.max(0, 1 - life.population / (life.cols * life.rows * SUBSTRATE.density));
-        if (stage.form > 0.4) stampGlyph(life, getCloud().mask, getCloud().uniforms.uScale.value, headroom);
+        if (stage.form > 0.4) stampGlyph(life, footprint.mask, footprint.scale, headroom);
         life.step(SUBSTRATE.decay, SUBSTRATE.spawn * headroom);
       }
       context.clearRect(0, 0, size.width, size.height);

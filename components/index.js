@@ -4,6 +4,7 @@ export { default as CtaBand } from './layout/CtaBand';
 export { default as DeckCard } from './layout/DeckCard';
 export { default as Eyebrow } from './layout/Eyebrow';
 export { default as Footer } from './layout/Footer';
+export { default as HydrationSplit } from './layout/HydrationSplit';
 export { default as JsonLd } from './layout/JsonLd';
 export { default as LiftCard } from './layout/LiftCard';
 export { default as PageHero } from './layout/PageHero';

@@ -17,10 +17,22 @@ const GLOBE_STANDIN =
 export default function CosmosCanvas() {
   const pathname = usePathname();
   const [painted, setPainted] = useState(false);
+  const [sceneWanted, setSceneWanted] = useState(false);
   const standing = COSMOS.globeRoutes.includes(pathname);
   const onFirstFrame = useCallback(() => {
     setPainted(true);
     markGlobeReady();
+  }, []);
+  const sceneEl = sceneWanted ? <Scene onFirstFrame={onFirstFrame} /> : null;
+  useEffect(() => {
+    let timer = 0;
+    const frame = requestAnimationFrame(() => {
+      timer = setTimeout(() => setSceneWanted(true), 0);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      clearTimeout(timer);
+    };
   }, []);
   useEffect(() => trackPointer(), []);
   useEffect(() => trackGlobe(), []);
@@ -36,7 +48,7 @@ export default function CosmosCanvas() {
         className='absolute inset-0 transition-opacity duration-700 ease-out'
         style={{ backgroundImage: GLOBE_STANDIN, opacity: painted || !standing ? 0 : 1 }}
       />
-      <Scene onFirstFrame={onFirstFrame} />
+      {sceneEl}
     </div>
   );
 }

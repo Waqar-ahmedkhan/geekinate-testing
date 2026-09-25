@@ -20,7 +20,9 @@ as its own — that is no longer true at the service level; Web Products is fold
 products, platforms, and the agents and pipelines that run inside them." The four-pillar vocabulary survives in exactly one
 place, as **tags** on the featured work: `work[].disciplines` draws from `AI & Automation`, `Games & Interactive`,
 `Marketing Systems` and `Web Products`. Since 2026-09-17 no tile carries `Marketing Systems`: it sat on a span-3 tile that was
-removed. As of 2026-09-22 the AR game runs tile 1 and the Elevé pair the full-width tile 3, both tags travelling with them. Derive from `services` rather than transcribing a count anywhere.
+removed. As of 2026-09-22 the AR game runs tile 1 and the Elevé pair the full-width tile 3, both tags travelling with them.
+Since 2026-09-24 no tile carries `AI & Automation` either: it was a placeholder on the Twinhub website, retagged `Web Products`
+when that tile got its case page. Derive from `services` rather than transcribing a count anywhere.
 
 Design direction is not open to invention: it is decided in the Asana thread *Revamp Web Design to a modern design*, with
 `wearestokt.com` as the agreed base, `denqid.com` for the hero, and `landing.love/categories/agency` for further reference. It is
@@ -137,6 +139,18 @@ Every hover clip on every tile loops until the pointer leaves ("sare tiles ki vi
 hogi jb hover hat jaye ga", 2026-09-22); only the intro is one-shot, and it is cut at 1.0s because its export held a still for
 four seconds past the flicker-in, which read as the clip running on with nothing happening.
 
+**The case pages take the old site's content order and Stokt's case-study layout.** Instructed 2026-09-24: `/work/[slug]`
+carries the portfolio page on geekinate.com in order (title, cover, Requirements / Challenge / Solution, technologies, three
+more projects, contact), laid out as wearestokt.com's Heron case study below the hero: a statement-and-paragraph intro with a
+ruled facts table, a tech-stack marquee strip, then editorial text sections. The hero alone is the old site's — centred title,
+the clip below it straddling the black ground and a white panel with the old band's curved edge — instructed by screenshot
+("make hero section exact same like the previous version") after a Stokt media-card hero ran for an afternoon, so the route
+carries no `HeroSheet`. Two layouts invented without the reference were rejected the same day — the old page copied band for
+band ("very bad"), then a card-heavy rework ("still very poor") — so reach for the reference before inventing a third. Do not bring the old page's look across (the green blobs, the
+check-circle bullets, the logo strip). **Four of the five pages are drafted copy** — only Twinhub's is transcribed from the old
+site — so treat every word on the AR game, Elevé, VR game and Shifa International pages as a placeholder until the real copy
+replaces it. See ARCHITECTURE.md §The case pages.
+
 **The preload gate must never be able to trap the page.** `lib/ui/reusable_components/preloader` holds a black overlay over
 everything until the globe paints its first frame, which reaches it through `lib/boot/ready.js`. That signal can legitimately never
 arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` completes the gate regardless. Removing that failsafe, or
@@ -236,7 +250,7 @@ arrow icon: these cards link nowhere.
 2026-09-16. All four steps open was the original. A hover accordion (the step under the cursor opens, the rest close) was
 instructed from a reference and then rejected the same day as reading empty ("khali khali"): four single words carrying half a
 full-screen section, with step 01 already open on arrival. Three layouts were prototyped; a list beside a black stage card was
-built and turned down ("woh bura lag raha hai"), and option C was picked: `features/service-dossier/Cycle.jsx` sets each step
+built and turned down ("woh bura lag raha hai"), and option C was picked: `Cycle` (in `lib/ui/reusable_components` since 2026-09-24) sets each step
 name in the display face, dims the inactive ones to `text-mut/40`, and slides the active step's sentence in beside its name on
 the same line. It starts on step 01 and advances every `PROCESS.dwellMs` once half of it is on screen, with a volt bar filling
 along the top of the active row; hover or focus on the step list holds the step, and leaving resumes. The hold sits on the `ol`, not the
@@ -245,7 +259,7 @@ the layout and only its opacity changes, so no row changes height: a row that gr
 pointer and the hover would oscillate. Below `md` every sentence is shown under its name.
 
 **Deliverables runs the same list, mirrored.** Instructed 2026-09-18 ("same design uper waly section may bhi kardo ... but flip
-karky"): the four statement cards on the black band were replaced by the Process list, so `Cycle.jsx` serves both and the section
+karky"): the four statement cards on the black band were replaced by the Process list, so `Cycle` serves both — and since 2026-09-24 the case page's Solution band too, on black but *not* mirrored (heading left, list right, instructed after a mirrored first cut) — and the section
 is the one component with `mirror` passed — the list takes the wide column on the left and the sticky header sits in the narrow
 one on the right, the reverse of Process. The mirror is a CSS `order` on the `ol`, not a DOM swap, so the header still comes
 first when the grid stacks below `lg`. The list's colours are `text-foreground` and `text-mut`, never `text-ink`/`text-grey`, or

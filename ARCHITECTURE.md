@@ -34,13 +34,14 @@ the archive of the two older sites and holds nothing from this build.
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
 | `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js` |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
+| `lib/content/work.js` | The five projects and every string on `/work/[slug]` | One entry per project feeds its home-page tile and its case page; `href` is derived from `WORK.path` |
 | `lib/content/guide.js` | Every user-facing string for the Guide | `guidedServices` picks the service pages that carry it; `jumps` labels the button under a reply |
 | `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
 | `lib/analytics.js` | Vendor-neutral event shim | `track()` pushes to `window.dataLayer`; no provider is installed |
@@ -53,7 +54,7 @@ the archive of the two older sites and holds nothing from this build.
 | `constants/preloader.js` | Every tunable the preload gate reads | Ring geometry, milestone weights, the timing floor and the failsafe |
 | `constants/marquee.js` | The ticker's transcribed Stokt values | Speed, gap, fade width, padding — measured, not guessed |
 | `constants/partner.js` | Commercial terms and form limits | `PARTNER` rates/window/limits, `PARTNER_EVENTS` names. Rates are fixed product requirements, not design values |
-| `constants/{cta,grain,sheet,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file |
+| `constants/{cta,grain,sheet,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file. `WORK` is the case-page path and the related count |
 | `constants/circuit.js` | The AI circuit mark's geometry and tuning, and `SERVICE_SHAPES` | Which service slug wears which shape; empty since 2026-09-18, so no page wears one |
 | `constants/snake.js` | Tunables for the retired 3D mark | **Mostly dead** — see *Dead code* below. `SNAKE.scrollLerp` is still live, read by `smooth-scroll` |
 | `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`; run by hand, never at runtime |
@@ -86,6 +87,8 @@ Built so far, in page order: `features/hero` (01), `features/clients`, `features
 `features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
 `features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
 `features/partner` holds `/partner`'s fourteen sections; `features/lab` is the `/lab` prototype and is not part of the site.
+The case route adds `features/case-hero` (which owns the hero's `Cover.jsx`) and `features/case-study` (which owns
+`Intro.jsx`, `Stack.jsx`, `Brief.jsx`, `Solution.jsx` and `More.jsx`), and reuses `features/contact`.
 `Scope`'s cards are `LiftCard`s with a `RollIndex`, on trial since 2026-09-17: on hover the card lifts 3px on the `ease-spring`
 curve in `globals.css` while its shadow grows to 6px, each index digit rolls a strip of eleven glyphs up `10em` so it lands on
 the digit it started from (the second digit 70ms behind), and the title and detail rise 2px after it. Leaving snaps the strips back
@@ -93,7 +96,8 @@ with no transition, so the roll only ever plays forward. The group is `group/lif
 slides out from under the pointer. It is CSS only: Tailwind's `hover` variants already require a hover-capable pointer, so
 touch screens see still cards, and `motion-reduce` drops the movement. `DeckCard`, the shipped tip-and-sheet hover, is unused
 but kept until the trial is decided; see `AGENTS.md`. Card titles are white and turn volt on the same hover (2026-09-16).
-`Process` and `Deliverables` are both thin server components over `Cycle.jsx`, the one client file in the dossier: it draws the
+`Process` and `Deliverables` are both thin server components over `Cycle` (`lib/ui/reusable_components/Cycle.jsx` since 2026-09-24,
+when the case page's Solution became its third user and it left the dossier so sections would not import each other): it draws the
 sticky header and the numbered list, and owns the active row, an `IntersectionObserver` that starts the autoplay once half of the
 list is on screen, and the hold on hover or focus over the list only. `Deliverables` passes `mirror`, which flips the grid to
 `8fr_4fr` and puts the `ol` in `lg:order-first`, and runs it on an `ink` band; the row colours are token-based
@@ -122,13 +126,14 @@ so it has no entry there.
 |---|---|---|
 | `/` | `app/page.js` | Static. Composes hero, clients, work, services, testimonials, cta, contact |
 | `/services/[slug]` | `app/services/[slug]/page.js` | SSG. One route serves all three services; `generateStaticParams` reads `services` in `lib/content/index.js`, `dynamicParams` is `false` so anything else 404s |
+| `/work/[slug]` | `app/work/[slug]/page.js` | SSG. One case page per entry in `work` (`lib/content/work.js`), `dynamicParams` `false`. See **The case pages** |
 | `/partner` | `app/partner/page.js` | Static. Referral Partner Program — 13 sections from `features/partner`, plus `FAQPage` JSON-LD |
 | `/lab` | `app/lab/page.js` | Static, `noindex`. Background prototype — not part of the site |
 | `/api/contact` | `app/api/contact/route.js` | Dynamic. Contact form endpoint |
 | `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
 | `/api/guide` | `app/api/guide/route.js` | Dynamic. Streams the Guide's replies — see **The Guide** |
 | 404 | `app/not-found.js` | Static |
-| `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service routes are derived from `services` |
+| `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service and work routes are derived from `services` and `work` |
 | `/robots.txt` | `app/robots.js` | Static |
 
 `app/layout.js` owns fonts, metadata, the site JSON-LD graph, `Preloader`, `Nav`, `Footer`, and the toaster.
@@ -399,7 +404,7 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   left and whose badge ends 2% from the right, and a 16:9 cover would have cut 5.5% off each of them. It was three columns at **2+1 / 3 / 1+1+1** until 2026-09-17, when
   the middle tile of the last row (an `AI & Automation` Pexels clip) was removed on instruction and the two left took half each;
   thirds cannot hold a half, hence sixths. A half tile is `lg:aspect-[3/2]`, which lands within a few pixels of the first row's
-  height. **The rhythm needs exactly five projects** — `span` values in `lib/content/index.js` change with the count.
+  height. **The rhythm needs exactly five projects** — `span` values in `lib/content/work.js` change with the count.
 - Tiles are `WorkTile`: black fill, 1.5px ink border and hard shadow, with the title and discipline chips overlaid on the media
   and no scrim. A project with no `href` renders a `div` rather than a dead link.
 - **A tile with `hoverMedia` runs two clips.** Instructed 2026-09-22 for the Elevé tile (tile 1 that morning, the
@@ -429,6 +434,61 @@ so the nav's surface detection must read it, which is the reverse of what the pa
 and those offsets go stale whenever a layout height is written after mount — the removed runway did exactly that, shifting every
 section below by ~1.7 viewports and painting an ink ring over black (found on the CTA, 2026-08-27). The bands are re-measured by a
 `ResizeObserver` on `document.body`, so media loading or any future pinned section still refreshes them.
+
+## The case pages
+
+`/work/[slug]`, added 2026-09-24: one page per featured-work tile, and every tile on the home grid now links to its page. The
+content order comes from the old site's portfolio page (geekinate.com/portfolio/Fintech_SAAS_App): title, cover, Requirements /
+Challenge / Solution, technologies, three more projects, contact. **The layout is transcribed from wearestokt.com's own case
+study** (wearestokt.com/case-study-collection/heron, read at 1568×900 the same day), because Stokt is the agreed base for the
+whole site and two layouts invented without it were rejected first:
+
+1. The old page transcribed band for band: a text-only full-screen hero, the clip a whole screen below it, then three identical
+   full-width numbered lists, a lone band of technology pills and a More band held at full height. Rejected as "very bad".
+2. A rework through the ui-ux-pro-max checklist: the clip moved under a left-aligned headline in the hero, a ruled spec sheet,
+   Requirements and Challenge as two glass cards with volt step badges, Solution as a grid of `LiftCard`s. Rejected as "still
+   very poor". Boxes inside boxes, and nothing like the reference the rest of the site is built on.
+
+| Piece | What it is | Stokt's |
+|---|---|---|
+| `CaseHero` (`features/case-hero`) | **The old site's hero, on our ground** (instructed 2026-09-24, "make hero section exact same like the previous version", with a screenshot of geekinate.com's Fintech SAAS App page). The project `title` centred in display type, one line on a desktop, and below it the tile's clip in a bordered frame with an ink hard shadow, 16:9 unless the media carries a `ratio`, capped at `62svh` of height. The frame plays the project's `cover` when it has one and its tile `media` otherwise; only Elevé has one (below). A `paper` panel starts 42% of the way down the frame and runs to the hero's foot, so the frame straddles the black ground and the white page as the old mockup straddled its green band; the panel's top edge dips in the middle through a radial `mask-image`, the old band's curve | Stokt's Heron hero card ran here for an afternoon and was replaced on this instruction |
+| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Start a project* pill | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
+| `Stack` | A thin `ink` strip: the *Tech stack* label beside a `Marquee` of the stack in mono caps with volt squares, the client strip's own component at a 64px gap. The label sits above the marquee below `md` | Heron's *[ TECH STACK ]* strip |
+| `Brief` | `paper`. Requirements and Challenge side by side as two editorial columns, each an eyebrow, a display heading and a hairline-ruled numbered list | |
+| `Solution` | `ink`. The service page's Deliverables list, reused on instruction (2026-09-24, "reuse this or this based on dark or light section"): `Cycle` on a dark band, heading left and list right — it ran mirrored like Deliverables for an hour and was flipped back on instruction ("left section moves to right and right to left"). Each solution point is `{ title, detail }`: a short name set in display type, the sentence beside it. The names were added that day; the sentences are the brief's own, Twinhub's still the old site's except the SEO line, cut to its first sentence because `Cycle` keeps every sentence in the layout and the full line made row 07 visibly taller than the rest | |
+| `More` | `paper`, closed by a hairline before `Contact`: the next three projects in `work` order, wrapping, as `WorkTile`s at `aspect-[3/2]` through the tile's `className`. The clips were exported for the 3:2 and 2:1 slots with the caption zone at the bottom, and a square crop pushed the Shifa figures under the caption | |
+
+Mechanics worth knowing before editing:
+
+- **There is no `HeroSheet` on this route.** The hero's lower half is already white, so a white sheet rising over it would read
+  as nothing, and the old page has no sheet either. Every other marketing page keeps it. The `compact` flags on the sections are
+  inert here for the same reason.
+- **The white panel is marked `.on-paper` so the nav reads it**, and `Nav` measures `.on-paper` bands with `offsetTop`, which is
+  relative to the nearest positioned ancestor — the hero `Section` here, not the page. It measures right only because the hero
+  starts at the top of the document. Put anything above the hero and the nav's surface detection over the panel goes wrong.
+- **The Elevé intro plays once and rests on its last frame**, through `useHoverVideo({ introduce: true })`; the frame is fully on
+  screen at load, so the usual nine-tenths rule passes. A looping clip plays through `InViewVideo` while the frame is in view.
+- **The frame crops with `object-cover` to 16:9**: Twinhub's square clip keeps its whole laptop inside that crop and the Shifa
+  grid loses only its outer rules. Elevé's 2:1 render carries `ratio: 2`, or its badge on the right would be cut.
+- There is no `CtaBand`: the old page goes straight from View More to the form. The page carries no `#hero` (the hero is `hero-work`), so the particle cloud takes the heroless path the service
+  pages rely on.
+
+**Elevé's hero runs its own clip, not the tile's.** Supplied 2026-09-24 as `../VideoClips/Project 4 Hover Video.mp4` with the
+instruction to use it on the Elevé page: the Elevé website scrolling on a laptop, the render that sat on tile 4 for part of
+2026-09-22. The tile keeps its intro-and-reveal pair. The source was 3246×2160 H.264 at 29.5 Mbps, 23.3MB, with a near-silent
+stereo track. It is re-encoded as `eleve-site.mp4`: 1920 wide (the frame never shows more than 72rem), H.264 High, `-preset
+slow -crf 20`, audio dropped, `+faststart` — **2.2MB**. Scored with VMAF against the source scaled to the same size: 97.9 mean,
+95.5 on the worst frame; CRF 22 saved another 340KB but its worst frame fell to 94.7, and a crop of the pricing cards read
+identical to the source at CRF 20. `eleve-site.webp` is its first frame as the poster, 73KB. Motion stops at 3.6s and the last
+2.7s hold the pricing screen; it was left uncut, since that is the screen people read, and it loops from there. Trim it the way
+the Elevé intro was trimmed if the hold starts to read as frozen.
+
+**Four of the five pages carry drafted copy.** Only Twinhub had a case study on the old site, and its Requirements, Challenge,
+Solution and stack are transcribed from it (geekinate.com/portfolio/Twinhub_-_Coworking_Space_Website), as is its *Visit* link.
+The AR game, Elevé, the VR game and Shifa International were drafted on 2026-09-24, with the user's go-ahead, from what their
+clips show: headline, summary, facts, brief and stack alike. Elevé's stack is the one drafted part read off a real
+source, the `../Eleve/development/frontend` package. Tile 5 was named Shifa International by the user the same day. See
+Known gaps.
 
 ## The services section
 
@@ -745,9 +805,12 @@ day a transitive version moves. Anything this project actually depends on gets i
 - **There is no spend ceiling on the Guide.** `/api/guide` calls OpenAI directly, so the only limits are `maxOutputTokens`, the
   message and turn caps and the per-IP throttle — all of which bound size and rate, none of which stop a bill. A hard limit has to
   be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
-- **The Guide's knowledge object carries placeholder project titles.** `work` is `Project one` … `Project six`, and it is fed to
-  the model rather than filtered out. The prompt forbids presenting any of them as a named case study, but the Guide answers in
-  free text, so nothing structural stops it quoting one. Replace `work` with real projects.
+- **Four case pages run drafted copy, and it reads as fact.** Since 2026-09-24 `work` holds real project names, but only
+  Twinhub's page is transcribed from the old site. The AR game, Elevé, the VR game and Shifa International carry headlines,
+  facts, briefs and stacks drafted from their clips (see **The case pages**) — the games' platforms and engines, Elevé's brand
+  work, Shifa's whole brief. Each needs the real copy before it is public, the same standing as the invented testimonials.
+  The Guide's prompt still tells it never to present a `projects` entry as a named case study, which stays right while that
+  copy is unconfirmed; revisit that line once it is.
 - **`OPENAI_API_KEY` was not reaching the Vercel staging deploy on 2026-09-14** — the guide there read "The guide is not running
   right now." while the same page answered locally. Setting the variable and redeploying happens in the Vercel dashboard; nothing
   in the repo can do it.
@@ -772,21 +835,22 @@ day a transitive version moves. Anything this project actually depends on gets i
   full-width tile (as instructed, "the biggest one on the screen") and the VR game ran the Games & Interactive tile below it
   until 2026-09-22, replacing the two Pexels clips those tiles carried. Both were re-encoded from the originals with audio
   stripped (tiles are always muted) and `+faststart`: the AR clip at 1920×1080, the VR clip at 1280×720 because its tile never
-  shows more. The tiles keep their placeholder titles and slugs, renumbered after the removal so none is skipped. The VR clip
+  shows more. The tiles kept placeholder titles and slugs until the case pages named them on 2026-09-24. The VR clip
   showed UFC branding on the TV in frame, and its 16:9 frame in a 3:2 tile needed `media.focus: '25% 50%'` to keep the player
   in the headset; `VideoSurface` applies any `media.focus` as `object-position`, and the Elevé intro on tile 1 still uses it.
 - **Tiles 2 and 5 took designed stills and clips on 2026-09-22**, from `../VideoClips/work-specs`: the twinhub site on a
   laptop (square, tile 2) and a stats count-up over a photo (3:2, tile 5). A third pair, the Elevé site on a laptop (3:2),
   went onto tile 4 first and was taken off the same day — "4th tile may AR video game wali video thi pehly woh hi rehne do" —
   so tile 4 runs the VR game again (re-encoded from its original, since the earlier file had never been committed) and
-  `eleve-site.mp4` / `eleve-site.webp` sit in `public/media/work/` unreferenced, pending a slot. The files arrived named
+  that pair's files were later deleted as untracked leftovers. The Elevé site clip came back on 2026-09-24 as the Elevé case
+  page's hero cover — see **The case pages**. The files arrived named
   `tile-4` for the square and `tile-2` for the 3:2, the reverse of the spec sheet's numbering — they were placed by aspect,
   since the spec's slot 2 is the square and slot 4 the 3:2, and the backgrounds were exported at exactly those slots' listed
   sizes (584×584 and 884×589). Clips re-encoded as above: the square at 1080×1080, the 3:2 pair cropped to an exact 3:2 and
   scaled to 1440×960. The backgrounds are the posters, converted to WebP at the size supplied, which is 1× for the slot — on
   a 2× display they upscale about 1.5×; ask for 2× exports (1168×1168 and 1768×1178) if that shows. Both loop under the
-  pointer (see the poster note above). Tile 2's discipline tag still reads AI & Automation, a placeholder now sitting on a web
-  product.
+  pointer (see the poster note above). Tile 2's discipline tag read AI & Automation, a placeholder on a web product, until it
+  became Web Products with its case page on 2026-09-24; no tile carries AI & Automation now.
 - **The Elevé pair (2026-09-22) opened on tile 1 and moved to the full-width tile 3 the same day**, swapping with the AR game,
   which now runs tile 1 with its 16:9 frame cover-cropped to 2:1 ("3 tile ki video 1 tile may ly jao or 1st tile ki video
   3rd tile may"). `eleve-mockup.mp4` (the brand render, intro) and `eleve-logo.mp4` (the logo colouring in on white, hover)
@@ -802,8 +866,8 @@ day a transitive version moves. Anything this project actually depends on gets i
   number the tiles and mark the bottom band as the text zone the clips keep clear; the logo clip's ground is white, which is why
   it carries `tone: 'light'`. The render's own logo sits in its left third, outside the sheet's centred mobile safe area, so
   the intro carries `focus: '0% 50%'`: the square crop below `sm` shows the logo over the office rather than an empty desk. The
-  tile keeps its placeholder title; the discipline tags travelled with the clips, so tile 1 reads Games & Interactive and
-  tile 3 Web Products.
+  discipline tags travelled with the clips, so tile 1 reads Games & Interactive and tile 3 Web Products. On its case page
+  the intro is the cover and plays once; the logo reveal appears only on the tile.
 - **Encode clips as H.264 (`avc1`) in MP4 or VP9 in WebM.** A clip that was H.265/HEVC (`hvc1`) rendered as a blank tile in Chrome on
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a

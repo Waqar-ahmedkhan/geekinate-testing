@@ -544,7 +544,7 @@ breakpoints, per the twMerge trap) and the header carries `px-6 md:px-10` itself
 
 **The stagger is the anchor sequence, not the content.** Every card sits in a 520px slot anchored top, middle or bottom; the
 sequence is authored per card on the reference and is transcribed as `ANCHORS` in `TestimonialMarquee`. Without it the row is a
-flat strip. Quote lengths are deliberately uneven in `lib/content/index.js` for the same reason — equal-length cards flatten it too.
+flat strip. Equal-length quotes flatten it too; the real ones vary enough on their own.
 
 `TestimonialMarquee` owns the motion, with no animation library:
 
@@ -557,8 +557,15 @@ flat strip. Quote lengths are deliberately uneven in `lib/content/index.js` for 
 - The cursor is hidden over the track and replaced by the reference's circular **DRAG** badge, positioned at the pointer.
 - `prefers-reduced-motion` skips the loop entirely: the drift is the whole effect and there is no meaningful reduced version.
 
-Twelve testimonials, because a wide viewport needs the list to fill twice over and `ANCHORS` is written for twelve. Changing the
-count means changing that sequence.
+Eight testimonials since 2026-09-25. The anchor is picked by the card's position in the list, not in the doubled track, so both
+copies carry the same sequence — indexing the track instead jumps every card vertically at the wrap whenever the count is not a
+multiple of `ANCHORS`' twelve. Half the track has to be at least a viewport wide or the seam shows: eight cards give 3185px at
+`sm` and up, which clears everything short of a 5K screen at 1x. A shorter list needs more cards, not a slower drift.
+
+The card's avatar reads initials off the capitalised words of `name`, so the two anonymous Clutch reviews, which carry the
+reviewer's role as their name, render `OI` and `DD` rather than `O&` and `Do`. The handoff forbids inventing a person or company
+for them; their caption ends `· Clutch` instead (2026-09-25), which says where the review is verified and why no name
+is given.
 
 ## The pre-contact CTA
 
@@ -691,7 +698,8 @@ sheet covering a dock that is still geometrically on screen. While floating, the
 covered field cannot take focus.
 
 **Grounding is derived, never transcribed.** `lib/ai/knowledge.js` is built from `services`, `work` and `contactContent` and
-stringified once at module load. `testimonials` is excluded because it is invented. `work` is included with its placeholder
+stringified once at module load. `testimonials` is excluded — it was written when they were invented, and nothing has asked for
+them since they became real. `work` is included with its placeholder
 titles, and the system prompt forbids presenting any of them as a named case study — see Known gaps.
 
 **Cost control, in the order it runs:** cross-origin check, the eight-turn cap, the credential check, then a 20-per-day throttle
@@ -881,9 +889,11 @@ day a transitive version moves. Anything this project actually depends on gets i
   first paint. The replacement needs an H.264 MP4 alongside the WebM, a poster, and a far smaller file.
 - `footerContent.location` reads `Remote — Worldwide` as a placeholder. The reference carries a city line there; confirm what
   Geekinate should say.
-- **All twelve testimonials are invented**, names and roles included. They must be replaced with real, cleared quotes before this
-  is public — fabricated client praise is the one placeholder on the page that is not merely unfinished. No headshots exist
-  either, so the avatar renders the speaker's initials rather than stock faces standing in for clients.
+- **The testimonials are real but not yet cleared.** Since 2026-09-25 they are the eight from
+  `../docs/geekinate-testimonial-handoff.md`: three verified Clutch reviews and six from the live homepage (Twinhub sits in both),
+  lightly edited for card length. The handoff asks Geekinate to confirm the edited homepage quotes may be reused and the named
+  attributions are still current before this is public. Twinhub's is credited to Jahangir Afzal, not the Clutch reviewer, because
+  the reviewer is no longer active there. No headshots exist, so the avatar renders initials rather than stock faces.
 - The footer's Legal column links nowhere — no privacy or terms page exists. `/partner`'s consent checkboxes therefore state the
   Privacy Policy as plain text with no link, and section 10 omits the `Read referral terms →` link entirely rather than pointing at
   a placeholder. Both need wiring when those pages exist, along with the `partner_terms_click` event.

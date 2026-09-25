@@ -23,6 +23,7 @@ export const PRELOADER = {
   driftCap: 0.9,
   easeRate: 2.4,
   settleRate: 7,
+  countStepCap: 0.25,
   minMs: 900,
   maxMs: 7000,
   holdMs: 260,

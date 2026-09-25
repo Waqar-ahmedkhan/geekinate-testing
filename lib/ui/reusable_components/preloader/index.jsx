@@ -94,13 +94,15 @@ export default function Preloader() {
     };
     const draw = (now) => {
       frame = requestAnimationFrame(draw);
-      const delta = Math.min((now - stamp) / 1000, 0.05);
+      const elapsed = (now - stamp) / 1000;
+      const delta = Math.min(elapsed, 0.05),
+        tick = Math.min(elapsed, PRELOADER.countStepCap);
       stamp = now;
       const settled = settledAt(now);
       const drift = Math.min((now - started) / PRELOADER.maxMs, 1) * PRELOADER.driftCap;
       const goal = settled ? 1 : Math.min(Math.max(reached(done), drift), PRELOADER.creepCap);
       const rate = settled ? PRELOADER.settleRate : PRELOADER.easeRate;
-      value += (goal - value) * (1 - Math.exp(-rate * delta));
+      value += (goal - value) * (1 - Math.exp(-rate * tick));
       if (countRef.current) countRef.current.textContent = `${Math.round(value * 100)}`;
       ring.radius = PRELOADER.ringRadius - value * PRELOADER.ringRadiusPull;
       ring.orbit = PRELOADER.ringOrbit + value * PRELOADER.ringOrbitGain;

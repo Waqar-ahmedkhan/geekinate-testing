@@ -17,49 +17,64 @@ export default function Cta() {
   useLayoutEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const release = (hold) => `bottom ${stage.current.offsetHeight + Math.round(window.innerHeight * hold)}px`;
-    const context = gsap.context(() => {
-      const letters = line.current.querySelectorAll('[data-letter]');
-      gsap.fromTo(
-        letters,
-        { yPercent: CTA.letter.shift, rotate: CTA.letter.tilt },
-        {
-          yPercent: 0,
-          rotate: 0,
-          ease: `back.inOut(${CTA.letter.overshoot})`,
-          duration: CTA.letter.settle,
-          stagger: CTA.letter.stagger,
-          scrollTrigger: {
-            trigger: frame.current,
-            start: `top ${CTA.letter.lead * 100}%`,
-            end: () => release(CTA.letter.hold),
-            scrub: true,
-          },
-        }
-      );
-      const restX = () => {
-        const words = line.current.querySelectorAll('[data-word]');
-        const tail = words[words.length - 1].getBoundingClientRect();
-        const origin = line.current.getBoundingClientRect().left;
-        return window.innerWidth / 2 - (tail.left - origin + tail.width / 2);
-      };
-      gsap.fromTo(
-        line.current,
-        { x: () => window.innerWidth * CTA.sweep.headVw, y: () => stage.current.offsetHeight * CTA.sweep.dip },
-        {
-          x: restX,
-          y: () => stage.current.offsetHeight * CTA.sweep.drop,
-          ease: 'none',
-          scrollTrigger: {
-            trigger: frame.current,
-            start: `top ${CTA.sweep.lead * 100}%`,
-            end: () => release(CTA.sweep.hold),
-            scrub: true,
-            invalidateOnRefresh: true,
-          },
-        }
-      );
-    }, frame);
-    return () => context.revert();
+    let context = null;
+    const arm = () => {
+      context = gsap.context(() => {
+        const letters = line.current.querySelectorAll('[data-letter]');
+        gsap.fromTo(
+          letters,
+          { yPercent: CTA.letter.shift, rotate: CTA.letter.tilt },
+          {
+            yPercent: 0,
+            rotate: 0,
+            ease: `back.inOut(${CTA.letter.overshoot})`,
+            duration: CTA.letter.settle,
+            stagger: CTA.letter.stagger,
+            scrollTrigger: {
+              trigger: frame.current,
+              start: `top ${CTA.letter.lead * 100}%`,
+              end: () => release(CTA.letter.hold),
+              scrub: true,
+            },
+          }
+        );
+        const restX = () => {
+          const words = line.current.querySelectorAll('[data-word]');
+          const tail = words[words.length - 1].getBoundingClientRect();
+          const origin = line.current.getBoundingClientRect().left;
+          return window.innerWidth / 2 - (tail.left - origin + tail.width / 2);
+        };
+        gsap.fromTo(
+          line.current,
+          { x: () => window.innerWidth * CTA.sweep.headVw, y: () => stage.current.offsetHeight * CTA.sweep.dip },
+          {
+            x: restX,
+            y: () => stage.current.offsetHeight * CTA.sweep.drop,
+            ease: 'none',
+            scrollTrigger: {
+              trigger: frame.current,
+              start: `top ${CTA.sweep.lead * 100}%`,
+              end: () => release(CTA.sweep.hold),
+              scrub: true,
+              invalidateOnRefresh: true,
+            },
+          }
+        );
+      }, frame);
+    };
+    const watcher = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        watcher.disconnect();
+        arm();
+      },
+      { rootMargin: CTA.armAhead }
+    );
+    watcher.observe(frame.current);
+    return () => {
+      watcher.disconnect();
+      context?.revert();
+    };
   }, []);
   const wordEls = heading.split(' ').map((word, wordAt) => (
     <span key={`${word}-${wordAt}`} data-word='' className='flex'>

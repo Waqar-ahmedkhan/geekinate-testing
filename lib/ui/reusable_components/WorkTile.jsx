@@ -28,7 +28,7 @@ const CHIP = 'rounded-[5px] bg-paper/25 px-[10px] py-[5px] text-xs text-paper ba
 const ON_LIGHT = { title: 'group-hover:text-ink group-hover:drop-shadow-none', chip: 'group-hover:bg-ink/10 group-hover:text-ink' };
 const NO_HANDLERS = {};
 
-export default function WorkTile({ title, disciplines = [], span = 2, href, media, hoverMedia }) {
+export default function WorkTile({ title, disciplines = [], span = 2, href, media, hoverMedia, className: tileClassName }) {
   const introduce = Boolean(hoverMedia);
   const poster = media?.poster;
   const tileRef = useRef(null);
@@ -61,7 +61,7 @@ export default function WorkTile({ title, disciplines = [], span = 2, href, medi
   const pairHandlers = introduced ? revealHandlers : NO_HANDLERS;
   const hoverHandlers = introduce ? pairHandlers : introHandlers;
   const onLight = introduced && hoverMedia?.tone === 'light';
-  const className = cn(TILE, SPANS[span] ?? SPANS[2]);
+  const className = cn(TILE, SPANS[span] ?? SPANS[2], tileClassName);
   const titleClass = cn(TITLE, onLight && ON_LIGHT.title);
   const chipClass = cn(CHIP, onLight && ON_LIGHT.chip);
   const Tag = href ? Link : 'div';

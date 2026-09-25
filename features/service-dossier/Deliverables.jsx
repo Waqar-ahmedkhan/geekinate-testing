@@ -1,5 +1,5 @@
-import Cycle from './Cycle';
 import { Section } from '@/components';
+import { Cycle } from '@/lib/ui/reusable_components';
 
 export default function Deliverables({ block, items }) {
   return (

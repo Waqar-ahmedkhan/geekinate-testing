@@ -1,4 +1,4 @@
-import { services } from '@/lib/content';
+import { services, work } from '@/lib/content';
 import { PARTNER, SITE } from '@/constants';
 
 const toAbsolute = (path) => new URL(path, SITE.url).toString();
@@ -12,6 +12,7 @@ export default function sitemap() {
     changeFrequency: 'monthly',
     priority: 0.8,
   }));
+  const workPages = work.map(({ href }) => ({ url: toAbsolute(href), lastModified, changeFrequency: 'monthly', priority: 0.7 }));
   const partner = { url: toAbsolute(PARTNER.path), lastModified, changeFrequency: 'monthly', priority: 0.8 };
-  return [home, ...servicePages, partner];
+  return [home, ...servicePages, ...workPages, partner];
 }

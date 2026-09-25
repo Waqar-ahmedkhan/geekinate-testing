@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Eyebrow } from '@/components';
+import Eyebrow from '@/components/layout/Eyebrow';
 import { cn, orderLabel } from '@/lib/utils';
 import { PROCESS } from '@/constants';
 

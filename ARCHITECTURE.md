@@ -171,6 +171,12 @@ rule against inventing values.
 - `lib/seo.js` is the only place the metadata shape is defined. `buildMetadata({ title, description, path, image })` returns title,
   description, canonical, OpenGraph and Twitter in one object. Pages call it rather than hand-rolling `metadata`.
 - `metadataBase` is set once in `app/layout.js`; that is what makes relative canonicals resolve. The title template lives there too.
+- The share image is `public/images/openGraph.png` (`SITE.ogImage`), the designer's own Canva export (page 7 of *OG image
+  Geekinate*, 2026-09-25), and every page carries it; `buildMetadata`'s `image` is the per-page override. It must stay 1200×630
+  because the metadata declares those dimensions. Replacing it is a file swap: export from Canva rather than screenshot the editor,
+  which captures at the zoom level and bleeds the editor's grey into the edge. Its URL is made absolute from `SITE.url`, and every page is
+  prerendered, so `NEXT_PUBLIC_APP_URL` has to be set when `next build` runs, not only at `next start`. Without it the HTML ships
+  `http://localhost:3000/images/openGraph.png`, which no crawler can fetch.
 - JSON-LD is one `@graph` per page through `components/layout/JsonLd.jsx`. Organization is the anchor; `WebSite` and `Service`
   reference it by `@id`. Preserve that linkage when adding node types.
 - `next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on any `*.vercel.app` host so previews cannot outrank production.
@@ -891,8 +897,6 @@ day a transitive version moves. Anything this project actually depends on gets i
 - **The in-memory rate limiter in `app/api/partner/route.js` assumes one process and a proxy that sets `x-forwarded-for`.** With
   no such header every visitor keys to `'local'` and one submitter throttles the whole site; under pm2 cluster mode or multiple
   containers each worker keeps its own counter and the limit silently multiplies. Neither has been verified on the real host.
-- `SITE.ogImage` points at `/images/openGraph.png`, which does not exist. A 1200×630 image is needed; the square app icon is not a
-  substitute because the metadata declares those dimensions.
 - `constants/index.js` carries `// PLACEHOLDER` contact and social values.
 - **Placeholder media, two kinds — check the filename prefix.** `stokt-*` was taken from wearestokt.com to exercise the layouts and
   **must not ship**; one services clip carries their wordmark on a keycap. `pexels-*` is Pexels stock, free for commercial use with

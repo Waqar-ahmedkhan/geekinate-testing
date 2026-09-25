@@ -549,8 +549,13 @@ y 779–2052, and the notch is x 1291–1502 down to y 828, filled `#161616` wit
 52px menu band across the top of the screen with the notch redrawn over it, as macOS does, because the notch otherwise lands
 on Elevé's nav links; the page fills the 1972×1222 below it. The page was recorded frame by frame in headless Chrome over
 CDP at 1440×892 CSS and DPR 2, `window.scrollTo` per frame with an eased curve: hero held 0.8s, then Amenities, Spaces and
-Membership, each held, the last until the loop. Composited with ffmpeg `overlay`, scaled to 1440², H.264 High, `-preset slow
--crf 20`, no audio, `+faststart` — 2.1MB. `eleve-site.webp` is its first frame, 66KB. Re-record it the same way when the
+Membership, each held, the last until the loop. **The page's own motion runs on the recording's clock, not the wall's**: a
+frame takes about half a second to capture, and the first cut let the hero's background video play in real time meanwhile,
+so its footage raced through at ~16× and read as the site being broken ("hero section ki video within 1 sec puri guzar kar
+nechy scroll hojata hai"). Every `video` is paused and seeked to `frame / 30` and every `document.getAnimations()` entry
+(the marquee, the nav's transitions) is paused and stepped 33.3ms per frame before the capture. Composited with ffmpeg
+`overlay`, scaled to 1440², H.264 High, `-preset slow -crf 20`, no audio, `+faststart` — 0.9MB. `eleve-site.webp` is its
+first frame, 64KB. Re-record it the same way when the
 Elevé site changes; the tile keeps its intro-and-reveal pair either way.
 
 **Four of the five pages carry drafted copy.** Only Twinhub had a case study on the old site, and its Requirements, Challenge,

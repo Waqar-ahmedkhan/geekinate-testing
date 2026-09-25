@@ -251,11 +251,14 @@ arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` co
 gating on a signal without one, ships a black screen to whoever the globe fails for. `minMs` is the other half: it stops a warm
 cache flashing the overlay for three frames.
 
-**Phones get no preloader and no scene until they touch the page.** Instructed 2026-09-25, after PSI mobile read 41 with every
-no-visual-change fix live: below `48rem` (`PHONE.query`) the preloader opens the gate on mount, the hero shows a pre-rendered
-still of the globe, and the live scene starts on the first touch, scroll, wheel or key press and crossfades over the still. The
-user picked the still over the plain glow from side-by-side captures. Desktop is unchanged. The still must match the live globe:
-re-capture it when the globe's look or fit changes, and keep it sized by viewport height. See ARCHITECTURE.md §Performance.
+**Phones open on a recording of the globe, and the live scene takes over without a seam.** Instructed 2026-09-25, after PSI
+mobile read 41 with every no-visual-change fix live: below `48rem` (`PHONE.query`) there is no preloader, the hero paints a still
+of the globe and then plays an eight-second recording of it, and the live scene wakes on the first input or near the clip's end
+and takes over time-synced. A still held until a tap shipped first and was rejected on sight as breaking the design; a live globe started
+right after first paint instead measured 40–59 at 10x, no better than the original. Desktop is unchanged. The recording must be
+the live globe: the cloud's randoms are seeded for that, and the still and clip are re-recorded with
+`scripts/record-phone-globe.mjs` whenever the globe's look, fit or seed changes. Do not hand off mid-hero — the live globe spins
+and disperses on scroll and the recording cannot. See ARCHITECTURE.md §Performance.
 
 **The service page speaks the partner page's language, and the two share their primitives.** `/services/[slug]` has been through
 three shapes. It was first built as the home page's own language and rejected on 2026-09-04 as "a replica of home page"; it then ran

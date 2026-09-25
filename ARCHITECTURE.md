@@ -58,6 +58,7 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `useSettled`, `DeferredToaster`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/boot/settled.js` | `watchSettled`: window `load` plus one painted frame | The gate for everything the first paint does not need; `useSettled` is its hook. See §Performance |
+| `lib/boot/clock.js` | The scene clock | Starts at zero on the scene's first frame; `cueSceneClock` sets it to the phone clip's time at the handoff |
 | `lib/boot/phone.js` | `isPhone`, `onFirstInput` | Below `PHONE.query` (`constants/phone.js`) the preloader is skipped and the scene waits for the first input |
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state. The globe drag takes mouse and touch; `#hero` is `touch-pan-y` so a sideways swipe turns the globe and a vertical one still scrolls (mouse-only until 2026-10-08) |
@@ -81,7 +82,7 @@ the archive of the two older sites and holds nothing from this build.
 | `constants/{cta,grain,sheet,substrate,work,lab}.js` | Per-feature tuning numbers | One object per file, named after the file. `WORK` is the case-page path and the related count |
 | `constants/circuit.js` | The AI circuit mark's geometry and tuning, and `SERVICE_SHAPES` | Which service slug wears which shape; empty since 2026-09-18, so no page wears one |
 | `constants/snake.js` | Tunables for the retired 3D mark | **Mostly dead** — see *Dead code* below. `SNAKE.scrollLerp` is still live, read by `smooth-scroll` |
-| `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`; run by hand, never at runtime |
+| `scripts/` | One-off build scripts | `sample-g-path.mjs`, `build-land-mask.mjs`, `record-phone-globe.mjs` (the phone hero's still and clip, see §Performance); run by hand, never at runtime |
 | `public/brand/` | Mark, lockups, app icon | Brand asset source of truth |
 
 ### Dead code
@@ -516,16 +517,33 @@ round-two deploy, the user chose the phone hero and the cuts below the same day.
 - **No preloader.** It has nothing to wait for on a phone, so it opens the gate on mount and unmounts one frame later; its
   markup carries `max-md:hidden` so the server-rendered overlay never flashes. A phone rotated past `48rem` is not trapped behind
   it, because it has unmounted.
-- **The scene waits for the first input** — `pointerdown`, `touchstart`, `wheel`, `scroll` or `keydown`, through `onFirstInput`
-  in `lib/boot/phone.js`. PSI never touches the page, so three and R3F never load in its measurement; a visitor gets the live
-  globe about a second after the first touch or scroll.
-- **A still of the globe holds the slot until then.** `public/media/hero/globe-phone.avif` (42KB, WebP fallback at 85KB) through
-  the `phone-globe` utility in `globals.css`, preloaded from `app/page.js` with the phone media query, and faded out by the same
-  `painted` flag as the desktop stand-in. It was picked over the plain glow by the user from side-by-side captures. It is sized
-  by **viewport height**, not width (`h-[53.83%]`, the crop's share of the 412×823 frame it was taken from), because the camera's
-  field of view is vertical and the live globe scales with height; sized by width it sat 26px low on a 390×844 phone and jumped
-  at the crossfade. Re-capture it whenever the globe's look or fit changes: 412×823 at DPR 2, the scene woken, every element but
-  the canvas layer hidden, cropped from y=760, encoded with `libaom-av1 -still-picture 1 -crf 42`.
+- **The hero globe is a recording until the live scene takes over.** `cosmos/PhoneGlobe.jsx` shows the still
+  (`public/media/hero/globe-phone.avif`, 43KB, WebP fallback 92KB, through the `phone-globe` utility and preloaded from
+  `app/page.js`) as the first paint, then plays `globe-phone.mp4` — eight seconds of the real globe, 468KB — once settled. The
+  still is the clip's first frame, so playback starting changes nothing but motion. The first build held the still until a tap
+  and was rejected on sight as breaking the design: a frozen globe that swapped late read as broken. Sized by **viewport height**,
+  not width (`h-[53.83%]`, the crop's share of the 412×823 frame), because the camera's field of view is vertical and the live
+  globe scales with height; sized by width it sat 26px low on a 390×844 phone.
+- **The live scene wakes on the first input, or 2.5s before the clip ends** (`PHONE.clip.wakeLead`) — `pointerdown`,
+  `touchstart`, `wheel`, `scroll` or `keydown` through `onFirstInput` in `lib/boot/phone.js`. PSI never touches the page and its
+  trace ends long before the clip does, so three and R3F never load in its measurement.
+- **The handoff is time-synced and never happens mid-hero.** The live canvas stays at `max-md:opacity-0` until `PhoneGlobe` hands
+  off: at the top of the page (`stage.heroOut ≤ PHONE.clip.handoffAtTop`) it cues the scene clock to the clip's `currentTime`
+  (`cueSceneClock` in `lib/boot/clock.js`, read by `TickerLoop` through `readSceneClock`) and swaps two frames later, which
+  measured closer than two consecutive clip frames; once the hero has scrolled away (`heroOut ≥ 1`) the globe is gone and it
+  swaps directly. In between, the clip layer sinks and fades with the scroll (`fitGlobe`, now in the three-free
+  `lib/globe/fit.js`) and the live globe waits, because the live one also spins and disperses on scroll and no recording can.
+  Three things make the synced frame match: the cloud's random attributes and scattered sample are **seeded**
+  (`COSMOS.seed`), the scene clock starts at zero on its first frame rather than at gsap's start, and touch pointers no longer
+  tilt or pull the particles (`lib/input/pointer.js` ignores `pointerType === 'touch'`).
+- **Re-record the clip and the still whenever the globe's look, fit or seed changes.** Run `next start`, then
+  `node scripts/record-phone-globe.mjs http://localhost:3007/ .tmp/phone-globe 8`: it steps `requestAnimationFrame` and the
+  page clock by hand at 1/60s and screenshots every second step, so the frames are exact and frame 0 is the scene clock's zero.
+  Crop 824×886 from y=760. Still: `libaom-av1 -still-picture 1 -crf 42 -pix_fmt yuv444p`, and `libwebp -quality 72`. Clip:
+  `libx264 -preset veryslow -crf 35 -movflags +faststart -an` after
+  `format=yuv444p,geq=lum='lum(X,Y)':cb='clip(128+(cb(X,Y)-128)*(1+0.5*clip((lum(X,Y)-45)/50,0,1)),16,240)':cr='(same)',format=yuv420p`
+  — 4:2:0 chroma dims the one-pixel volt dots, and a global saturation boost tinted the black ground green, so the boost is gated
+  on luma and clamped (unclamped, the brightest rim dots wrapped to lavender). `.tmp/` is not ignored; delete the frames after.
 
 Everywhere, work that the first paint does not need now waits for `watchSettled` (`lib/boot/settled.js`): window `load` **and
 then one painted frame**. `load` alone is not late enough — in Lighthouse's observed trace it fires at about 140ms while the first

@@ -31,7 +31,7 @@ export default async function WorkPage({ params }) {
       <CaseHero project={project} />
       <HydrationSplit>
         <CaseStudy project={project} />
-        <Contact />
+        <Contact topic={project.service} />
       </HydrationSplit>
     </main>
   );

@@ -34,7 +34,7 @@ export default async function ServicePage({ params }) {
         <HydrationSplit>
           <ServiceDossier service={service} />
           <CtaBand headline={service.handoff} actions={actions} />
-          <Contact />
+          <Contact topic={slug} />
         </HydrationSplit>
       </HeroSheet>
     </main>

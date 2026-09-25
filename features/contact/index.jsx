@@ -3,8 +3,9 @@ import { ContactForm, TypedHeading } from '@/lib/ui/reusable_components';
 import { contactContent } from '@/lib/content';
 import { SITE } from '@/constants';
 
-export default function Contact() {
-  const { eyebrow, headings, intro, steps, direct } = contactContent;
+export default function Contact({ topic = 'home' }) {
+  const { eyebrow, pitches, steps, direct } = contactContent;
+  const { headings, intro } = pitches[topic] ?? pitches.home;
   const stepEls = steps.map(({ title, detail }, index) => (
     <li key={title} className='flex gap-4'>
       <StepIndex value={index + 1} />

@@ -17,7 +17,8 @@ export * from './work';
 
 export const SITE = {
   name: 'Geekinate',
-  description: 'Geekinate builds AI automation, games, marketing systems, and web products. Real builders, not a template factory.',
+  description:
+    'Geekinate builds AI products, games and marketing systems that win customers. One team from first idea to launch, and long after it.',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   locale: 'en_US',
   ogImage: '/images/openGraph.png',

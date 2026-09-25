@@ -660,6 +660,11 @@ frames the canvas skips rendering until the gate opens, which is invisible behin
 "speed things up" was measured on 2026-09-25 and scored lower (TBT 860ms against 490ms), because the globe then draws from the
 first frame. See ARCHITECTURE.md §Performance before trying it again.
 
+**Lighthouse at its default 4x on this machine reads about forty points above PageSpeed.** The first performance pass scored 82
+locally and PSI printed 42 for the same build (2026-09-25): this machine's benchmark index is about 2,760, and PSI's CPU is far
+slower. `--throttling.cpuSlowdownMultiplier=10` brought staging to 47 here against PSI's 42. Profile and score at 10x, or the
+work that matters on PSI never shows up as a long task.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

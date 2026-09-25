@@ -251,6 +251,12 @@ arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` co
 gating on a signal without one, ships a black screen to whoever the globe fails for. `minMs` is the other half: it stops a warm
 cache flashing the overlay for three frames.
 
+**Phones get no preloader and no scene until they touch the page.** Instructed 2026-09-25, after PSI mobile read 41 with every
+no-visual-change fix live: below `48rem` (`PHONE.query`) the preloader opens the gate on mount, the hero shows a pre-rendered
+still of the globe, and the live scene starts on the first touch, scroll, wheel or key press and crossfades over the still. The
+user picked the still over the plain glow from side-by-side captures. Desktop is unchanged. The still must match the live globe:
+re-capture it when the globe's look or fit changes, and keep it sized by viewport height. See ARCHITECTURE.md §Performance.
+
 **The service page speaks the partner page's language, and the two share their primitives.** `/services/[slug]` has been through
 three shapes. It was first built as the home page's own language and rejected on 2026-09-04 as "a replica of home page"; it then ran
 a bespoke Swiss-grid dossier — opaque `ink` masthead, full-bleed 12-column ledger rows, a gsap-scrubbed process spine, a sticky
@@ -658,7 +664,12 @@ clip on the home page at 0.7s — nine of them, about 1.3MB — alongside the st
 **The globe is paused while the preloader covers it, and the preloader is not what makes the page slow.** After its two ready
 frames the canvas skips rendering until the gate opens, which is invisible behind the black overlay. Opening the gate on mount to
 "speed things up" was measured on 2026-09-25 and scored lower (TBT 860ms against 490ms), because the globe then draws from the
-first frame. See ARCHITECTURE.md §Performance before trying it again.
+first frame. See ARCHITECTURE.md §Performance before trying it again. That measurement was on every device; phones have since
+dropped the preloader for a different reason — they no longer load the scene at all until the first input.
+
+**"After load" is not after the first paint.** In Lighthouse's observed trace window `load` fired at about 140ms and the first
+paint landed near 300ms, so a request started on `load` still counts as loaded before the LCP. Anything deferred for the first
+paint goes through `watchSettled` in `lib/boot/settled.js` — `load` plus one painted frame — not a bare `load` listener.
 
 **Lighthouse at its default 4x on this machine reads about forty points above PageSpeed.** The first performance pass scored 82
 locally and PSI printed 42 for the same build (2026-09-25): this machine's benchmark index is about 2,760, and PSI's CPU is far

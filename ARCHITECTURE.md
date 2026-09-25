@@ -55,8 +55,10 @@ the archive of the two older sites and holds nothing from this build.
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `RollDie`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer`, `HydrationSplit` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
-| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
+| `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `useSettled`, `DeferredToaster`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
+| `lib/boot/settled.js` | `watchSettled`: window `load` plus one painted frame | The gate for everything the first paint does not need; `useSettled` is its hook. See §Performance |
+| `lib/boot/phone.js` | `isPhone`, `onFirstInput` | Below `PHONE.query` (`constants/phone.js`) the preloader is skipped and the scene waits for the first input |
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state. The globe drag takes mouse and touch; `#hero` is `touch-pan-y` so a sideways swipe turns the globe and a vertical one still scrolls (mouse-only until 2026-10-08) |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos`. `pose.js` is the pure half, which runs in `cosmos/shapes.worker.js` |
@@ -315,6 +317,8 @@ splits links and CTA into separate left and right pills; ours merges them into a
 | `ProgressRing.jsx` | Scroll progress as a stroke tracing the pill outline |
 | `NavLinks.jsx` | Links plus the sliding hover highlight |
 | `useScrollProgress.js` | Lerped scroll progress and raw offset |
+| `MobileMenu.jsx` | The menu button below `lg`: owns `open`, holds the scroll, returns focus to itself on close |
+| `MenuPanel.jsx` | The Radix dialog, loaded on the button's first touch, hover or focus so it stays out of the first load |
 
 Mechanics worth knowing before editing:
 
@@ -504,10 +508,43 @@ Local 10x went from about 60 to 66–69, TBT from about 1.4s to 0.65–0.83s. Me
 What is left is the scene existing during the load window at all: three and R3F evaluate in one task (about 450ms at 10x),
 the renderer and its first compile take another 200ms or so, and every frame after the gate is a 40–130ms task on PSI's
 software GPU. The one lever still worth about fifteen points is not starting the scene until after load on phones, which
-changes what a phone visitor sees first. It was put to the user on 2026-09-25 with three variants — start on first touch or
-scroll, a pre-rendered still on phones, start a few seconds after load — and the answer was **keep the live globe loading on
-every device**. Do not reopen it as an optimisation. The work clips are the next lever for real phones
-rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in view on touch.
+changes what a phone visitor sees first. It was put to the user on 2026-09-25 and first declined; after PSI read 41 on the
+round-two deploy, the user chose the phone hero and the cuts below the same day.
+
+**Round three: phones and the first paint.** Below `48rem` (`PHONE.query`, the same breakpoint as Tailwind's `max-md`):
+
+- **No preloader.** It has nothing to wait for on a phone, so it opens the gate on mount and unmounts one frame later; its
+  markup carries `max-md:hidden` so the server-rendered overlay never flashes. A phone rotated past `48rem` is not trapped behind
+  it, because it has unmounted.
+- **The scene waits for the first input** — `pointerdown`, `touchstart`, `wheel`, `scroll` or `keydown`, through `onFirstInput`
+  in `lib/boot/phone.js`. PSI never touches the page, so three and R3F never load in its measurement; a visitor gets the live
+  globe about a second after the first touch or scroll.
+- **A still of the globe holds the slot until then.** `public/media/hero/globe-phone.avif` (42KB, WebP fallback at 85KB) through
+  the `phone-globe` utility in `globals.css`, preloaded from `app/page.js` with the phone media query, and faded out by the same
+  `painted` flag as the desktop stand-in. It was picked over the plain glow by the user from side-by-side captures. It is sized
+  by **viewport height**, not width (`h-[53.83%]`, the crop's share of the 412×823 frame it was taken from), because the camera's
+  field of view is vertical and the live globe scales with height; sized by width it sat 26px low on a 390×844 phone and jumped
+  at the crossfade. Re-capture it whenever the globe's look or fit changes: 412×823 at DPR 2, the scene woken, every element but
+  the canvas layer hidden, cropped from y=760, encoded with `libaom-av1 -still-picture 1 -crf 42`.
+
+Everywhere, work that the first paint does not need now waits for `watchSettled` (`lib/boot/settled.js`): window `load` **and
+then one painted frame**. `load` alone is not late enough — in Lighthouse's observed trace it fires at about 140ms while the first
+paint lands near 300ms, so anything started on `load` still counts as loaded before the LCP.
+
+| Deferred until settled | Was | Now |
+|---|---|---|
+| Toasts | `sonner` in the layout | `DeferredToaster` mounts it; the contact form imports `toast` at submit |
+| Client logos and tile posters | Fetched with the first paint (76KB) | `ClientLogo` holds a sized box until settled; `WorkTile` adds its poster then |
+| Lenis and ScrollTrigger | Static imports in `SmoothScroll` | Imported when settled; the CTA imports ScrollTrigger when it arms |
+| The mobile menu's Radix dialog | In the layout chunk | `MenuPanel`, loaded on first touch, hover or focus of the button, opened on click |
+
+`IBM Plex Mono` is no longer preloaded, which stops the home page fetching the 500 weight only `/partner` uses. Local 10x:
+**77–88** (TBT 180–470ms, LCP 3.6–3.7s, Speed Index 1.3–2.0s); desktop preset **98**. What caps the phone LCP now is bytes
+that have to arrive: React and Next (about 130KB), the fonts, the stylesheet and the still. `experimental.inlineCss` was tried
+again and scored worse — it put the HTML at 401KB raw and FCP at 1.6s.
+
+The work clips are the next lever for real phones rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in
+view on touch.
 
 Attribute before optimising. Build once with `productionBrowserSourceMaps: true` (never commit it) and map chunk bytes and
 CPU-profile samples back to source files; the barrel leak and the sort were both invisible until then.

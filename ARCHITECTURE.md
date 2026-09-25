@@ -536,19 +536,22 @@ Mechanics worth knowing before editing:
 - **The Elevé intro plays once and rests on its last frame**, through `useHoverVideo({ introduce: true })`; the frame is fully on
   screen at load, so the half-on-screen rule passes at once. A looping clip plays through `InViewVideo` while the frame is in view.
 - **The frame crops with `object-cover` to 16:9**: Twinhub's square clip keeps its whole laptop inside that crop and the Shifa
-  grid loses only its outer rules. Elevé's 2:1 render carries `ratio: 2`, or its badge on the right would be cut.
+  grid loses only its outer rules. Elevé's cover is the same square mockup, so it crops identically.
 - There is no `CtaBand`: the old page goes straight from View More to the form. The page carries no `#hero` (the hero is `hero-work`), so the particle cloud takes the heroless path the service
   pages rely on.
 
-**Elevé's hero runs its own clip, not the tile's.** Supplied 2026-09-24 as `../VideoClips/Project 4 Hover Video.mp4` with the
-instruction to use it on the Elevé page: the Elevé website scrolling on a laptop, the render that sat on tile 4 for part of
-2026-09-22. The tile keeps its intro-and-reveal pair. The source was 3246×2160 H.264 at 29.5 Mbps, 23.3MB, with a near-silent
-stereo track. It is re-encoded as `eleve-site.mp4`: 1920 wide (the frame never shows more than 72rem), H.264 High, `-preset
-slow -crf 20`, audio dropped, `+faststart` — **2.2MB**. Scored with VMAF against the source scaled to the same size: 97.9 mean,
-95.5 on the worst frame; CRF 22 saved another 340KB but its worst frame fell to 94.7, and a crop of the pricing cards read
-identical to the source at CRF 20. `eleve-site.webp` is its first frame as the poster, 73KB. Motion stops at 3.6s and the last
-2.7s hold the pricing screen; it was left uncut, since that is the screen people read, and it loops from there. Trim it the way
-the Elevé intro was trimmed if the hold starts to read as frozen.
+**Elevé's hero runs its own clip, not the tile's, and it wears Twinhub's laptop.** The first cover (2026-09-24) was
+`../VideoClips/Project 4 Hover Video.mp4`, a laptop in a dark room shot from a distance; on 2026-09-25 the user asked for the
+laptop to sit exactly as it does on Twinhub's page ("the laptop in the video is a bit far"). `eleve-site.mp4` is now Twinhub's
+own mockup source (`../VideoClips/work-specs/tile-4.mp4`, 2880², 190 frames at 30fps, static camera, head-on screen) with
+the live eleve.space scroll composited into the screen. Measured in that source: the screen's content rectangle is x 441–2412,
+y 779–2052, and the notch is x 1291–1502 down to y 828, filled `#161616` with ~4px corners. The composite puts a black
+52px menu band across the top of the screen with the notch redrawn over it, as macOS does, because the notch otherwise lands
+on Elevé's nav links; the page fills the 1972×1222 below it. The page was recorded frame by frame in headless Chrome over
+CDP at 1440×892 CSS and DPR 2, `window.scrollTo` per frame with an eased curve: hero held 0.8s, then Amenities, Spaces and
+Membership, each held, the last until the loop. Composited with ffmpeg `overlay`, scaled to 1440², H.264 High, `-preset slow
+-crf 20`, no audio, `+faststart` — 2.1MB. `eleve-site.webp` is its first frame, 66KB. Re-record it the same way when the
+Elevé site changes; the tile keeps its intro-and-reveal pair either way.
 
 **Four of the five pages carry drafted copy.** Only Twinhub had a case study on the old site, and its Requirements, Challenge,
 Solution and stack are transcribed from it (geekinate.com/portfolio/Twinhub_-_Coworking_Space_Website), as is its *Visit* link.

@@ -3,17 +3,17 @@
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
+import PhoneGlobe from './PhoneGlobe';
 import { isPhone, onFirstInput } from '@/lib/boot/phone';
 import { markGlobeReady } from '@/lib/boot/ready';
 import { trackGlobe } from '@/lib/input/globe';
 import { trackPointer } from '@/lib/input/pointer';
 import { resetStage, watchStage } from '@/lib/scroll/stage';
+import { cn } from '@/lib/utils';
 import { COSMOS } from '@/constants';
 
 const Scene = dynamic(() => import('./Scene'), { ssr: false });
 
-const PHONE_STILL =
-  'absolute bottom-0 left-1/2 h-[53.83%] aspect-[824/886] -translate-x-1/2 transition-opacity duration-700 ease-out max-md:phone-globe md:hidden';
 const GLOBE_STANDIN =
   'radial-gradient(115% 78% at 50% 118%, rgba(184,224,27,0.20) 0%, rgba(184,224,27,0.07) 42%, rgba(184,224,27,0.02) 62%, transparent 76%)';
 
@@ -21,14 +21,20 @@ export default function CosmosCanvas() {
   const pathname = usePathname();
   const [painted, setPainted] = useState(false);
   const [sceneWanted, setSceneWanted] = useState(false);
+  const [handedOff, setHandedOff] = useState(false);
   const standing = COSMOS.globeRoutes.includes(pathname);
   const onFirstFrame = useCallback(() => {
     setPainted(true);
     markGlobeReady();
   }, []);
+  const wake = useCallback(() => setSceneWanted(true), []);
+  const handOff = useCallback(() => setHandedOff(true), []);
+  const phoneHero = standing && !handedOff;
   const sceneEl = sceneWanted ? <Scene onFirstFrame={onFirstFrame} /> : null;
+  const phoneEl = phoneHero ? <PhoneGlobe live={painted} onWake={wake} onHandoff={handOff} /> : null;
+  const sceneClass = cn('absolute inset-0', phoneHero && 'max-md:opacity-0');
   useEffect(() => {
-    if (isPhone()) return onFirstInput(() => setSceneWanted(true));
+    if (isPhone()) return onFirstInput(wake);
     let timer = 0;
     const frame = requestAnimationFrame(() => {
       timer = setTimeout(() => setSceneWanted(true), 0);
@@ -37,7 +43,7 @@ export default function CosmosCanvas() {
       cancelAnimationFrame(frame);
       clearTimeout(timer);
     };
-  }, []);
+  }, [wake]);
   useEffect(() => trackPointer(), []);
   useEffect(() => trackGlobe(), []);
   useEffect(() => watchStage(), []);
@@ -52,8 +58,8 @@ export default function CosmosCanvas() {
         className='absolute inset-0 transition-opacity duration-700 ease-out'
         style={{ backgroundImage: GLOBE_STANDIN, opacity: painted || !standing ? 0 : 1 }}
       />
-      <div className={PHONE_STILL} style={{ opacity: painted || !standing ? 0 : 1 }} />
-      {sceneEl}
+      {phoneEl}
+      <div className={sceneClass}>{sceneEl}</div>
     </div>
   );
 }

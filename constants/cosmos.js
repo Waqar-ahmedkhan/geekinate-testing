@@ -1,5 +1,6 @@
 export const COSMOS = {
   count: 30000,
+  seed: 0xc105d,
   glyphCount: 13000,
   cameraFov: 7.111,
   cameraZ: 60,

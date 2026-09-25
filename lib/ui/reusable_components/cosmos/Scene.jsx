@@ -7,6 +7,7 @@ import GlobeShell from './GlobeShell';
 import MorphCloud from './MorphCloud';
 import { prepareCloud } from './cloud';
 import { startingDpr } from './quality';
+import { readSceneClock } from '@/lib/boot/clock';
 import { gate } from '@/lib/boot/gate';
 import { boot } from '@/lib/boot/ready';
 import { COSMOS } from '@/constants';
@@ -24,7 +25,7 @@ function TickerLoop() {
       compiled = true;
     });
     const step = (time) => {
-      if (compiled && !coveredByPreloader()) advance(time);
+      if (compiled && !coveredByPreloader()) advance(readSceneClock(time));
     };
     gsap.ticker.add(step);
     return () => gsap.ticker.remove(step);

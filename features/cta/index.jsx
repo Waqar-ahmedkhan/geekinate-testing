@@ -2,12 +2,9 @@
 
 import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Section } from '@/components';
 import { ctaContent } from '@/lib/content';
 import { CTA } from '@/constants';
-
-gsap.registerPlugin(ScrollTrigger);
 
 export default function Cta() {
   const { heading } = ctaContent;
@@ -17,8 +14,12 @@ export default function Cta() {
   useLayoutEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     const release = (hold) => `bottom ${stage.current.offsetHeight + Math.round(window.innerHeight * hold)}px`;
-    let context = null;
-    const arm = () => {
+    let context = null,
+      live = true;
+    const arm = async () => {
+      const { ScrollTrigger } = await import('gsap/ScrollTrigger');
+      if (!live) return;
+      gsap.registerPlugin(ScrollTrigger);
       context = gsap.context(() => {
         const letters = line.current.querySelectorAll('[data-letter]');
         gsap.fromTo(
@@ -72,6 +73,7 @@ export default function Cta() {
     );
     watcher.observe(frame.current);
     return () => {
+      live = false;
       watcher.disconnect();
       context?.revert();
     };

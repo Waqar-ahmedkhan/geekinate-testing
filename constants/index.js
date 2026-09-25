@@ -8,6 +8,7 @@ export * from './grain';
 export * from './lab';
 export * from './marquee';
 export * from './partner';
+export * from './phone';
 export * from './preloader';
 export * from './process';
 export * from './sheet';

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import VideoSurface from './VideoSurface';
 import useHoverVideo from './useHoverVideo';
+import useSettled from './useSettled';
 import { cn } from '@/lib/utils';
 import { WORK } from '@/constants';
 
@@ -31,6 +32,7 @@ const ON_LIGHT = { title: 'text-ink text-shadow-none', chip: 'bg-ink/10 text-ink
 
 export default function WorkTile({ title, disciplines = [], span = 2, href, media, hoverMedia, className: tileClassName }) {
   const paired = Boolean(hoverMedia);
+  const settled = useSettled();
   const poster = media?.poster;
   const [playing, setPlaying] = useState(false);
   const { videoRef: baseRef, hoverHandlers: baseHandlers } = useHoverVideo({ line: WORK.playLine });
@@ -61,9 +63,10 @@ export default function WorkTile({ title, disciplines = [], span = 2, href, medi
   const focusStyle = media?.focus ? { objectPosition: media.focus } : undefined;
   const posterClass = cn(POSTER, playing && !paired && 'opacity-0');
   const revealClass = cn(REVEAL, revealed && 'opacity-100');
-  const posterEl = poster ? (
-    <Image src={poster} alt='' fill sizes={SIZES[span] ?? SIZES[2]} style={focusStyle} className={posterClass} />
-  ) : null;
+  const posterEl =
+    poster && settled ? (
+      <Image src={poster} alt='' fill sizes={SIZES[span] ?? SIZES[2]} style={focusStyle} className={posterClass} />
+    ) : null;
   const baseEl = paired ? null : <VideoSurface ref={baseRef} media={media} fit='cover' loop={loop} poster={false} />;
   const revealEl = paired ? (
     <VideoSurface ref={revealRef} media={hoverMedia} fit='cover' loop={revealLoop} className={revealClass} />

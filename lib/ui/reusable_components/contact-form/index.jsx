@@ -2,7 +2,6 @@
 
 import { useRef, useState } from 'react';
 import { Check, ChevronDown, CircleAlert, LoaderCircle } from 'lucide-react';
-import { toast } from 'sonner';
 import { Select } from 'radix-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +23,10 @@ const MENU =
   'on-paper z-[60] max-h-(--radix-select-content-available-height) w-(--radix-select-trigger-width) overflow-hidden rounded-lg border-[1.5px] border-ink bg-paper p-1.5 text-ink shadow-brutal data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2';
 const OPTION =
   'relative flex cursor-pointer select-none items-center rounded-md py-2.5 pl-3 pr-10 text-base leading-tight text-ink outline-none! transition-colors duration-150 data-[highlighted]:bg-wash data-[state=checked]:bg-volt data-[state=checked]:data-[highlighted]:bg-volt';
+const notify = async (kind, { title, body }) => {
+  const { toast } = await import('sonner');
+  toast[kind](title, { description: body });
+};
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
 const FORM = 'rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
 
@@ -85,10 +88,10 @@ export default function ContactForm({ topic }) {
       setStatus('sent');
       setValues(EMPTY);
       setTouched({});
-      toast.success(success.title, { description: success.body });
+      notify('success', success);
     } catch {
       setStatus('failed');
-      toast.error(failure.title, { description: failure.body });
+      notify('error', failure);
     }
   };
   const reset = () => {

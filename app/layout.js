@@ -1,7 +1,6 @@
 import { IBM_Plex_Mono, Instrument_Serif, Red_Hat_Display } from 'next/font/google';
-import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
-import { CosmosCanvas, GrainWake, Nav, Preloader, SmoothScroll, SubstrateField } from '@/lib/ui/reusable_components';
+import { CosmosCanvas, DeferredToaster, GrainWake, Nav, Preloader, SmoothScroll, SubstrateField } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
 import { joinNames } from '@/lib/utils';
 import { homeMeta, serviceNames } from '@/lib/content';
@@ -16,7 +15,13 @@ const display = Instrument_Serif({
   variable: '--font-instrument-serif',
 });
 const sans = Red_Hat_Display({ subsets: ['latin'], display: 'swap', variable: '--font-red-hat-display' });
-const mono = IBM_Plex_Mono({ subsets: ['latin'], display: 'swap', weight: ['400', '500'], variable: '--font-ibm-plex-mono' });
+const mono = IBM_Plex_Mono({
+  subsets: ['latin'],
+  display: 'swap',
+  weight: ['400', '500'],
+  preload: false,
+  variable: '--font-ibm-plex-mono',
+});
 const pillars = joinNames(Object.values(serviceNames).map(({ title, short = title }) => short));
 const rootMetadata = buildMetadata({
   title: `${SITE.name} | ${pillars}`,
@@ -48,7 +53,7 @@ export default function RootLayout({ children }) {
         <Nav />
         {children}
         <Footer />
-        <Toaster />
+        <DeferredToaster />
       </body>
     </html>
   );

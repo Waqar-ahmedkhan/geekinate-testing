@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
+import { isPhone, onFirstInput } from '@/lib/boot/phone';
 import { markGlobeReady } from '@/lib/boot/ready';
 import { trackGlobe } from '@/lib/input/globe';
 import { trackPointer } from '@/lib/input/pointer';
@@ -11,6 +12,8 @@ import { COSMOS } from '@/constants';
 
 const Scene = dynamic(() => import('./Scene'), { ssr: false });
 
+const PHONE_STILL =
+  'absolute bottom-0 left-1/2 h-[53.83%] aspect-[824/886] -translate-x-1/2 transition-opacity duration-700 ease-out max-md:phone-globe md:hidden';
 const GLOBE_STANDIN =
   'radial-gradient(115% 78% at 50% 118%, rgba(184,224,27,0.20) 0%, rgba(184,224,27,0.07) 42%, rgba(184,224,27,0.02) 62%, transparent 76%)';
 
@@ -25,6 +28,7 @@ export default function CosmosCanvas() {
   }, []);
   const sceneEl = sceneWanted ? <Scene onFirstFrame={onFirstFrame} /> : null;
   useEffect(() => {
+    if (isPhone()) return onFirstInput(() => setSceneWanted(true));
     let timer = 0;
     const frame = requestAnimationFrame(() => {
       timer = setTimeout(() => setSceneWanted(true), 0);
@@ -48,6 +52,7 @@ export default function CosmosCanvas() {
         className='absolute inset-0 transition-opacity duration-700 ease-out'
         style={{ backgroundImage: GLOBE_STANDIN, opacity: painted || !standing ? 0 : 1 }}
       />
+      <div className={PHONE_STILL} style={{ opacity: painted || !standing ? 0 : 1 }} />
       {sceneEl}
     </div>
   );

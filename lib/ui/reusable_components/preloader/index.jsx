@@ -5,6 +5,7 @@ import BrandMark from '../BrandMark';
 import { createGrain, grainFade, shedGrain, shedRing, stepGrain } from '../grain/pool';
 import { bakeGrain } from '../grain/sprite';
 import { openGate } from '@/lib/boot/gate';
+import { isPhone } from '@/lib/boot/phone';
 import { watchGlobeReady } from '@/lib/boot/ready';
 import { pointer } from '@/lib/input/pointer';
 import { cn } from '@/lib/utils';
@@ -22,6 +23,11 @@ export default function Preloader() {
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return undefined;
+    if (isPhone()) {
+      openGate();
+      const skip = requestAnimationFrame(() => setGone(true));
+      return () => cancelAnimationFrame(skip);
+    }
     const ctx = canvas.getContext('2d');
     const root = document.documentElement;
     const held = root.style.overflow;
@@ -153,7 +159,7 @@ export default function Preloader() {
   }, [leaving]);
 
   if (gone) return null;
-  const shell = cn('fixed inset-0 z-[100] bg-black transition-opacity ease-out', leaving && 'pointer-events-none opacity-0');
+  const shell = cn('fixed inset-0 z-[100] bg-black transition-opacity ease-out max-md:hidden', leaving && 'pointer-events-none opacity-0');
   return (
     <div aria-hidden='true' className={shell} style={{ transitionDuration: `${PRELOADER.fadeMs}ms` }}>
       <canvas ref={canvasRef} className='absolute inset-0' />

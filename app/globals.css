@@ -399,6 +399,16 @@
   -webkit-mask-composite: source-in;
 }
 
+@utility phone-globe {
+  background-image: image-set(
+    url('/media/hero/globe-phone.avif') type('image/avif'),
+    url('/media/hero/globe-phone.webp') type('image/webp')
+  );
+  background-size: cover;
+  background-position: bottom;
+  mask-image: linear-gradient(to bottom, transparent, #000 18%);
+}
+
 @utility border-brutal {
   border: 1.5px solid var(--line);
 }

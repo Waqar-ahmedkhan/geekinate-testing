@@ -323,12 +323,14 @@ Two sections use it, so the behaviour lives in one place:
   PageSpeed's mobile throttle the render-blocking stylesheet did not land until 4s. A hover or an intro that calls `play()`
   before the warm-up still loads the clip. `poster={false}` drops the native poster where `WorkTile` lays its own `next/image`
   over the clip, so the still is not fetched twice.
-- `useHoverVideo({ introduce: true })` — the clip plays itself once, then answers hover like any other. It starts only after
-  `INTRODUCE.ratio` of it (nine tenths, measured against the shorter of the clip and the viewport so a tall clip can still
-  qualify) has been on screen for `INTRODUCE.delayMs`; scrolling on before that cancels the timer, so a pass-through does not
-  spend the one shot off screen. Half on screen with no dwell was the first cut, and it started the Elevé intro while the
-  tile's top edge was still arriving, so the clip had finished before the tile was in full view (2026-09-22). The service
-  hero's `Clip` uses the same mode with `loop={false}`. `constants/video.js` holds both numbers.
+- `useHoverVideo({ introduce: true })` — the clip plays itself once, then answers hover like any other. It starts the moment
+  `INTRODUCE.ratio` of it (half, measured against the shorter of the clip and the viewport so a tall clip can still qualify)
+  is on screen, with no dwell. Half with no dwell was the first cut; on 2026-09-22 it became nine tenths held for 600ms,
+  because the one-second Elevé intro finished while the tile was still arriving; on 2026-09-25 that was reversed on
+  instruction, because the dwell made the visitor stop scrolling before the tile did anything. Measured after the change at
+  1440×900: at 30% on screen the clip is still at frame 0, and past half it plays. The service hero's `Clip` uses the same
+  mode with `loop={false}`; it is fully on screen at load, so it now starts as soon as it can play instead of 600ms later.
+  `constants/video.js` holds the ratio.
 - `useHoverVideo({ hoverOnly: true })` — for a clip that exists only under the pointer, stacked over another and faded in by CSS.
   Enter restarts it from frame 0 and leave **pauses it in place**: the layer is fading out at that moment, and a rewind on leave
   would snap it to its first frame mid-fade. It never autoplays on touch, since nothing shows it there; a tap's sticky `:hover`
@@ -517,7 +519,7 @@ whole site and two layouts invented without it were rejected first:
 | Piece | What it is | Stokt's |
 |---|---|---|
 | `CaseHero` (`features/case-hero`) | **The old site's hero, on our ground** (instructed 2026-09-24, "make hero section exact same like the previous version", with a screenshot of geekinate.com's Fintech SAAS App page). The project `title` centred in display type, one line on a desktop, and below it the tile's clip in a bordered frame with an ink hard shadow, 16:9 unless the media carries a `ratio`, capped at `62svh` of height. The frame plays the project's `cover` when it has one and its tile `media` otherwise; only Elevé has one (below). A `paper` panel starts 42% of the way down the frame and runs to the hero's foot, so the frame straddles the black ground and the white page as the old mockup straddled its green band; the panel's top edge dips in the middle through a radial `mask-image`, the old band's curve | Stokt's Heron hero card ran here for an afternoon and was replaced on this instruction |
-| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Start a project* pill | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
+| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Build something like this* pill | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
 | `Stack` | A thin `ink` strip: the *Tech stack* label beside a `Marquee` of the stack in mono caps with volt squares, the client strip's own component at a 64px gap. The label sits above the marquee below `md` | Heron's *[ TECH STACK ]* strip |
 | `Brief` | `paper`. Requirements and Challenge side by side as two editorial columns, each an eyebrow, a display heading and a hairline-ruled numbered list | |
 | `Solution` | `ink`. The service page's Deliverables list, reused on instruction (2026-09-24, "reuse this or this based on dark or light section"): `Cycle` on a dark band, heading left and list right — it ran mirrored like Deliverables for an hour and was flipped back on instruction ("left section moves to right and right to left"). Each solution point is `{ title, detail }`: a short name set in display type, the sentence beside it. The names were added that day; the sentences are the brief's own, Twinhub's still the old site's except the SEO line, cut to its first sentence because `Cycle` keeps every sentence in the layout and the full line made row 07 visibly taller than the rest | |
@@ -532,7 +534,7 @@ Mechanics worth knowing before editing:
   relative to the nearest positioned ancestor — the hero `Section` here, not the page. It measures right only because the hero
   starts at the top of the document. Put anything above the hero and the nav's surface detection over the panel goes wrong.
 - **The Elevé intro plays once and rests on its last frame**, through `useHoverVideo({ introduce: true })`; the frame is fully on
-  screen at load, so the usual nine-tenths rule passes. A looping clip plays through `InViewVideo` while the frame is in view.
+  screen at load, so the half-on-screen rule passes at once. A looping clip plays through `InViewVideo` while the frame is in view.
 - **The frame crops with `object-cover` to 16:9**: Twinhub's square clip keeps its whole laptop inside that crop and the Shifa
   grid loses only its outer rules. Elevé's 2:1 render carries `ratio: 2`, or its badge on the right would be cut.
 - There is no `CtaBand`: the old page goes straight from View More to the form. The page carries no `#hero` (the hero is `hero-work`), so the particle cloud takes the heroless path the service
@@ -554,6 +556,12 @@ The AR game, Elevé, the VR game and Shifa International were drafted on 2026-09
 clips show: headline, summary, facts, brief and stack alike. Elevé's stack is the one drafted part read off a real
 source, the `../Eleve/development/frontend` package. Tile 5 was named Shifa International by the user the same day. See
 Known gaps.
+
+On 2026-09-25 every page's copy was rewritten into the sales voice (see AGENTS.md, *The copy sells*). Twinhub's brief was
+rephrased from the transcription point for point, with nothing added that the old page did not say. Shifa International was
+reframed as a **marketing** project on the user's word: `disciplines` is `Marketing Systems`, `service` is `marketing`, and
+its facts and brief now describe a campaign instead of a website. Every project carries a `service` slug so the case page's
+`Contact` can ask the matching question.
 
 ## The services section
 
@@ -726,6 +734,11 @@ to `features/contact`, centred under both columns. On 2026-09-17 it became two l
 underline. A single line mixing the small grey sans lead with the larger serif address read as the address pasted into the
 sentence, which is why the two no longer share a baseline. Contact is shared, so this shows on the home page and every service page.
 
+**The contact heading is not shared.** `Contact` takes a `topic` (default `home`) and reads its typed headings and intro from
+`contactContent.pitches[topic]`: `/services/[slug]` passes the slug and `/work/[slug]` passes the project's `service`. Before
+2026-09-25 every page cycled the same four questions, so the marketing page asked "What do you want to automate?" under a
+CtaBand reading "Let's automate it." The steps, the form and the address stay shared.
+
 `InViewVideo` fills the card. It is the third playback mode in the codebase and the only one not driven by hover: an
 `IntersectionObserver` starts a **one-shot** render as the panel arrives and rewinds it on the way out, matching the reference,
 where the clip plays once rather than looping. Autoplay is deliberately not used — a video at the bottom of the page would spend
@@ -880,7 +893,8 @@ day a transitive version moves. Anything this project actually depends on gets i
   message and turn caps and the per-IP throttle — all of which bound size and rate, none of which stop a bill. A hard limit has to
   be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
 - **Four case pages run drafted copy, and it reads as fact.** Since 2026-09-24 `work` holds real project names, but only
-  Twinhub's page is transcribed from the old site. The AR game, Elevé, the VR game and Shifa International carry headlines,
+  Twinhub's page is sourced from the old site (rephrased on 2026-09-25, no claims added). Shifa International is now framed as
+  a marketing campaign on the user's word, but what the campaign was is still unknown. The AR game, Elevé, the VR game and Shifa International carry headlines,
   facts, briefs and stacks drafted from their clips (see **The case pages**) — the games' platforms and engines, Elevé's brand
   work, Shifa's whole brief. Each needs the real copy before it is public, the same standing as the invented testimonials.
   The Guide's prompt still tells it never to present a `projects` entry as a named case study, which stays right while that

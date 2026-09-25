@@ -17,10 +17,11 @@ Geekinate's agency website, rebuilt from scratch. A single Next.js app living at
 **The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
 **Games & Interactive** (`games`), **Marketing Systems** (`marketing`). This file previously named four pillars with Web Products
 as its own — that is no longer true at the service level; Web Products is folded into Development & AI, whose summary reads "Web
-products, platforms, and the agents and pipelines that run inside them." The four-pillar vocabulary survives in exactly one
+apps, platforms and AI agents that take the busywork off your team for good." The four-pillar vocabulary survives in exactly one
 place, as **tags** on the featured work: `work[].disciplines` draws from `AI & Automation`, `Games & Interactive`,
-`Marketing Systems` and `Web Products`. Since 2026-09-17 no tile carries `Marketing Systems`: it sat on a span-3 tile that was
-removed. As of 2026-09-22 the AR game runs tile 1 and the Elevé pair the full-width tile 3, both tags travelling with them.
+`Marketing Systems` and `Web Products`. From 2026-09-17 no tile carried `Marketing Systems` (it sat on a span-3 tile that was
+removed) until 2026-09-25, when the user named tile 5, Shifa International, a marketing project and it was retagged from
+`Web Products`. As of 2026-09-22 the AR game runs tile 1 and the Elevé pair the full-width tile 3, both tags travelling with them.
 Since 2026-09-24 no tile carries `AI & Automation` either: it was a placeholder on the Twinhub website, retagged `Web Products`
 when that tile got its case page. Derive from `services` rather than transcribing a count anywhere.
 
@@ -130,14 +131,25 @@ view, once, and after that the tile answers hover with a different clip — the 
 entry carries both as `media` and `hoverMedia`; `WorkTile` stacks the second over the first and
 fades it in under the pointer. Do not collapse them into one clip, loop the intro, or let hover restart it. The hover clip's
 ground is white, so `hoverMedia.tone: 'light'` turns the caption ink for it; drop that and the title disappears on hover. The
-intro waits for the tile to settle — nine tenths on screen for 600ms, `INTRODUCE` in `constants/video.js` — because starting
-at half on screen ran the whole clip while the tile was still scrolling in ("jb taak pura tile dekhne pohonchta hoon video
-khatam bhi hochuki hoti hai", 2026-09-22). Lowering that back to an instant start is the complaint coming back. And hover
+intro starts the moment half the tile is on screen, with no dwell — `INTRODUCE` in `constants/video.js`. It went there and
+back: half on screen was the first cut, then nine tenths held for 600ms after the clip ran out while the tile was still
+scrolling in ("jb taak pura tile dekhne pohonchta hoon video khatam bhi hochuki hoti hai", 2026-09-22), and on 2026-09-25 the
+dwell was reversed because it made the visitor stop scrolling before anything moved ("video should start as soon as I enter
+to the viewport of the 3 tile, and cross it half"). Both complaints are real; the latest instruction wins. And hover
 does nothing while the intro runs ("jb autoplay wali video chal rahi hai toh hover wali nhi chaly gi", same day): the reveal
 is gated on the intro's `ended` event, in both the handlers and the CSS, and starts on its own if the pointer is already there.
 Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi sirf tb stop
 hogi jb hover hat jaye ga", 2026-09-22); only the intro is one-shot, and it is cut at 1.0s because its export held a still for
 four seconds past the flicker-in, which read as the clip running on with nothing happening.
+
+**The copy sells, and the contact prompt follows the page.** Instructed 2026-09-25: every page but `/partner` was rewritten
+because the old copy read as dry and gave nobody a reason to get in touch ("very boring and completely non-sense"). The voice
+now is the partner page's: second person, the visitor's problem first, short declaratives, a concrete outcome, a direct ask.
+Do not drift back to the wry, understated register ("Games people finish", "How it runs."). **No proof point is invented** —
+no project counts, percentages or client results that nobody supplied; the facts rows keep the claims that were already
+there. The contact heading and intro are `contactContent.pitches[topic]`, keyed `home` or by service slug: a service page
+passes its slug and a case page passes its project's `service`, so the marketing page never asks what you want to automate.
+The CtaBand line is each service's `handoff`, and it follows the same rule.
 
 **The case pages take the old site's content order and Stokt's case-study layout.** Instructed 2026-09-24: `/work/[slug]`
 carries the portfolio page on geekinate.com in order (title, cover, Requirements / Challenge / Solution, technologies, three
@@ -257,7 +269,7 @@ built and turned down ("woh bura lag raha hai"), and option C was picked: `Cycle
 name in the display face, dims the inactive ones to `text-mut/40`, and slides the active step's sentence in beside its name on
 the same line. It starts on step 01 and advances every `PROCESS.dwellMs` once half of it is on screen, with a volt bar filling
 along the top of the active row; hover or focus on the step list holds the step, and leaving resumes. The hold sits on the `ol`, not the
-wrapper: pausing while the pointer rested on "How it runs." read as the section freezing for no reason. The sentence is always in
+wrapper: pausing while the pointer rested on the heading ("How it runs." then) read as the section freezing for no reason. The sentence is always in
 the layout and only its opacity changes, so no row changes height: a row that grew would push the next one under a still
 pointer and the hover would oscillate. Below `md` every sentence is shown under its name.
 

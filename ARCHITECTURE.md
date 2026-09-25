@@ -31,7 +31,7 @@ the archive of the two older sites and holds nothing from this build.
 | `app/` | Routes only | Pages compose components and do nothing else |
 | `app/api/` | Route handlers | `contact/`, `partner/` and `guide/`, all POST-only. The only server code in the project |
 | `lib/ai/` | The Guide's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `tools.js` (`goToSection`, `highlight`), `sections.js` (id lookup), `bus.js` (`runPageActions`) |
-| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer` |
+| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer`, `HydrationSplit` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
@@ -39,7 +39,8 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
-| `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js` |
+| `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js`, and `footprint.js`: the glyph mask and cloud scale the footer automata read, so they never import the three-backed cloud |
+| `lib/media/preload.js` | When a clip may start downloading | `preloadWhenNear` (one shared `IntersectionObserver`, a quarter viewport ahead) and `preloadAfterLoad` (hero clips, from window `load`) |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
 | `lib/content/work.js` | The five projects and every string on `/work/[slug]` | One entry per project feeds its home-page tile and its case page; `href` is derived from `WORK.path` |
 | `lib/content/guide.js` | Every user-facing string for the Guide | `guidedServices` picks the service pages that carry it; `jumps` labels the button under a reply |
@@ -307,8 +308,15 @@ Two sections use it, so the behaviour lives in one place:
 - `useHoverVideo` — owns the ref and the enter/leave handlers. Leave **rewinds to frame 0** rather than pausing in place, which is a
   deliberate deviation from Stokt; resuming mid-motion on re-hover reads as a stall. Playback is skipped entirely under
   `prefers-reduced-motion`.
-- `VideoSurface` — renders the `<video>` (`loop`, `muted`, `playsInline`, `preload="metadata"`, poster) or, when `media.sources` is
+- `VideoSurface` — renders the `<video>` (`loop`, `muted`, `playsInline`, `preload="none"`, poster) or, when `media.sources` is
   empty, a marked *Media pending* panel. Nothing ever points at a missing file. `fit` picks `contain` or `cover`.
+- **No clip downloads during boot.** `VideoSurface` server-renders `preload="none"` and flips its own element to `metadata`
+  through `lib/media/preload.js`: a quarter viewport before it scrolls into view, or, for a hero clip passed `eager`
+  (`features/service-hero/Clip`, `features/case-hero/Cover`), once the window `load` event has fired. `preload="metadata"` in the
+  HTML was the old default, and it started all nine home-page clips (about 1.3MB) at 0.7s, alongside the CSS and fonts: on
+  PageSpeed's mobile throttle the render-blocking stylesheet did not land until 4s. A hover or an intro that calls `play()`
+  before the warm-up still loads the clip. `poster={false}` drops the native poster where `WorkTile` lays its own `next/image`
+  over the clip, so the still is not fetched twice.
 - `useHoverVideo({ introduce: true })` — the clip plays itself once, then answers hover like any other. It starts only after
   `INTRODUCE.ratio` of it (nine tenths, measured against the shorter of the clip and the viewport so a tall clip can still
   qualify) has been on screen for `INTRODUCE.delayMs`; scrolling on before that cancels the timer, so a pass-through does not
@@ -347,6 +355,56 @@ anyway rather than trapping the page behind a black screen. The overlay holds `o
 restores the previous value the moment it starts fading, so the page is scrollable through the fade.
 
 Under `prefers-reduced-motion` the canvas work is skipped entirely — mark, counter and gate stay, the orbit does not.
+
+**The globe stops rendering while the overlay covers it.** Once the canvas has drawn the two frames that call
+`markGlobeReady()`, `TickerLoop` in `cosmos/Scene.jsx` skips `advance` until `lib/boot/gate.js` opens, which the preloader does
+the moment its fade starts. The overlay is opaque black, so nothing visible is lost, and the frames it saves are the heaviest the
+page draws. The hold leans on the same `maxMs` failsafe as everything else here: a gate that never opened would freeze the globe
+as well as hide it.
+
+## Performance
+
+Measured 2026-09-25, against a PageSpeed Insights mobile score of 35 on the staging deploy. The PSI API was over its daily
+quota that day, so the numbers are local Lighthouse 13.5 (mobile preset: simulated 4G, 4x CPU) against `next start`, median of
+three runs. This machine is faster than PSI's: staging scored 54 here the same morning it scored 35 there, so read the table as
+relative, not as the score PSI will print.
+
+| Home page | Score | LCP | TBT | Speed Index | Transfer |
+|---|---|---|---|---|---|
+| Before | 60 | 4.9s | ~800ms | 4.8s | 1,262KB |
+| After | 82 | 3.8s | ~260ms | 4.0s | 702KB |
+
+The service, case and partner pages landed at 78–82 on the same build. What moved it, in the order it was found:
+
+- **The barrel carried the Guide into every page.** See the trap in `AGENTS.md`. `"sideEffects": ["*.css"]` in `package.json`
+  took the AI SDK, `zod`, the referral form and its Radix parts (about 350KB raw) out of the root layout's chunk.
+- **`SubstrateField` imported the three-backed cloud** for its glyph mask, so three.js core, the globe build and the land mask
+  sat in every page's first-load JS. They now reach it through `lib/shape/footprint.js`, and three loads only with `Scene`.
+- **No clip downloads during boot** — see *Hover-to-play video*.
+- **`angleOrder` called `atan2` inside the sort comparator**, about 900,000 calls for 30,000 points. The angles are computed once
+  now; the order it returns is identical, checked element for element against the old comparator.
+- **The scene is built in separate tasks.** `prepareCloud` builds the globe and the cloud one task apart before the `Canvas`
+  mounts, `sampleGlyph` yields between its passes (`nextTask` in `lib/utils.js`), and `gl.compileAsync` compiles the shaders
+  before the first `advance` rather than inside it.
+- **The globe does not render under the overlay** — see *The preload gate*.
+- **`HydrationSplit`** (`components/layout`) wraps each band below a hero in its own `Suspense`, so React 19 hydrates them as
+  separate, time-sliced units instead of one long task. It adds no DOM.
+- **`Scene` is imported one frame after first paint**, so the 245KB three chunk does not compete with the first paint's bytes.
+- `ClientLogo` asked `next/image` for 2048px logos; its intrinsic size is now the displayed size.
+
+Measured and left alone:
+
+- **The preloader.** Opening the gate on mount scored lower — TBT 860ms against 490ms — because the globe then renders from the
+  first frame. Speed Index improved (4.1s to 1.6s) but not by enough. Removing it is a design call in any case.
+- **Fonts.** All five preloaded files are in use.
+- **`experimental.inlineCss`.** It duplicates the stylesheet into the RSC payload for an estimated 50ms.
+
+What is left is the `Scene` chunk (three plus R3F, about 190ms to evaluate on the throttled CPU), hydration, and the
+preloader's frames, which run long under headless Chrome's software GPU — the environment PSI measures in. The work clips are
+the next lever for real phones rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in view on touch.
+
+Attribute before optimising. Build once with `productionBrowserSourceMaps: true` (never commit it) and map chunk bytes and
+CPU-profile samples back to source files; the barrel leak and the sort were both invisible until then.
 
 ## The client marquee
 
@@ -500,7 +558,8 @@ Four cards abreast need width: much under 280px each and the media box is too sm
 them the whole viewport, which is what lets the single row hold at `xl`.
 
 The effect there is entirely the **video content**, not the code: each card holds one `<video>` — `loop`, `muted`, `playsInline`,
-`preload="metadata"`, `autoplay` off, poster shown until playback starts, `object-fit: contain`. Hover plays that card's video only.
+`preload="none"` until it nears the viewport (see *Hover-to-play video*), `autoplay` off, poster shown until playback starts,
+`object-fit: contain`. Hover plays that card's video only.
 
 Two deliberate deviations from the reference:
 
@@ -881,9 +940,9 @@ day a transitive version moves. Anything this project actually depends on gets i
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a
   dark surface instead of dumping light overlay text onto the page background.
-- **Posters exist only for work tiles 2 and 5.** The Elevé, AR and VR tiles and every service card still run with `preload="metadata"`
-  and no `poster`, so a resting card can paint black rather than a first frame — reliably so in Safari. Produce a poster per
-  clip alongside the loops.
+- **Posters exist only for work tiles 2 and 5.** The Elevé, AR and VR tiles and every service card have no `poster`, so a
+  resting card shows nothing until its clip warms to `preload="metadata"` a quarter viewport ahead, and can stay black after
+  that — reliably so in Safari, which does not paint a first frame from metadata. Produce a poster per clip alongside the loops.
 - Services copy in `lib/content/index.js` is placeholder wording pending sign-off. The structure is settled.
 - **The footer clip is `stokt-golf-ball-render.webm` — wearestokt.com's own render, with their wordmark printed on the balls. MUST
   NOT SHIP.** It is also 13MB and WebM-only, so Safari falls through to the black panel and every other browser pays for it on

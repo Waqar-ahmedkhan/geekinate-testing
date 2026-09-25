@@ -455,6 +455,30 @@ the tree. Instrument the counters before optimising the shader.
 cannot shrink below its own padding — so a `max-width: 0` element with `pl-2` still occupies 8px. This silently knocked the nav mark
 4px off centre. Animate the padding alongside the width, or put the spacing on a parent that also collapses.
 
+**A barrel imported by one client component ships everything the barrel re-exports.** `features/cta` is a client component and
+imports `Section` from `@/components`; that barrel re-exports `Footer`, which imports `lib/ui/reusable_components`, which
+re-exports the Guide and the referral form. With no `sideEffects` field, Turbopack could not prove the unused re-exports were
+safe to drop, so the root layout's chunk carried the AI SDK, `zod`, `@ai-sdk/gateway` and the referral form's Radix parts to
+every page — 600KB raw, half of it from a feature that is switched off (found 2026-09-25). `"sideEffects": ["*.css"]` in
+`package.json` is the fix, and it has a cost: a module imported only for what it does on import, with no export used, is now
+dropped. Import such a module where its export is used, or list it in that array. Check the root layout's chunk for `zod`
+after touching either barrel.
+
+**Anything the layout mounts must not import three.** `SubstrateField` read the glyph mask off `getCloud()`, and that one import
+put three.js core, the globe build and the land mask into every page's first-load JS, ahead of the lazy `Scene` it was meant to
+wait for. Data that crosses from the canvas to the rest of the shell goes through a plain singleton — `lib/shape/footprint.js`,
+the same shape as `lib/boot/ready.js`.
+
+**Do not put `preload="metadata"` back into the video markup.** It looks like the cheap setting, and Chrome still fetched every
+clip on the home page at 0.7s — nine of them, about 1.3MB — alongside the stylesheet and the fonts. `VideoSurface` renders
+`preload="none"` and warms each clip itself: near the viewport, or after `load` for a hero clip passed `eager`. See ARCHITECTURE.md
+§Hover-to-play video.
+
+**The globe is paused while the preloader covers it, and the preloader is not what makes the page slow.** After its two ready
+frames the canvas skips rendering until the gate opens, which is invisible behind the black overlay. Opening the gate on mount to
+"speed things up" was measured on 2026-09-25 and scored lower (TBT 860ms against 490ms), because the globe then draws from the
+first frame. See ARCHITECTURE.md §Performance before trying it again.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know

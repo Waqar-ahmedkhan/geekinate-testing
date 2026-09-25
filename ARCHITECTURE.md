@@ -59,7 +59,7 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state. The globe drag takes mouse and touch; `#hero` is `touch-pan-y` so a sideways swipe turns the globe and a vertical one still scrolls (mouse-only until 2026-10-08) |
-| `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
+| `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos`. `pose.js` is the pure half, which runs in `cosmos/shapes.worker.js` |
 | `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js`, and `footprint.js`: the glyph mask and cloud scale the footer automata read, so they never import the three-backed cloud |
 | `lib/media/preload.js` | When a clip may start downloading | `preloadWhenNear` (one shared `IntersectionObserver`, a quarter viewport ahead) and `preloadAfterLoad` (hero clips, from window `load`) |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
@@ -428,6 +428,11 @@ failsafe: if WebGL never initialises, or the tab is throttled so `requestAnimati
 anyway rather than trapping the page behind a black screen. The overlay holds `overflow: hidden` on `html` while it is up and
 restores the previous value the moment it starts fading, so the page is scrollable through the fade.
 
+**The counter eases on real time.** The grain physics caps each frame's step at 50ms so a slow frame cannot fling a particle,
+and the counter used to share that cap. On a phone drawing 200ms frames the count then ran at a quarter speed, and the gate
+opened seconds after everything was ready — about 15s in a 10x profile. It takes its own step now, capped at
+`PRELOADER.countStepCap` (250ms) so a tab returning from the background does not jump straight to 100.
+
 Under `prefers-reduced-motion` the canvas work is skipped entirely — mark, counter and gate stay, the orbit does not.
 
 **The globe stops rendering while the overlay covers it.** Once the canvas has drawn the two frames that call
@@ -473,9 +478,34 @@ Measured and left alone:
 - **Fonts.** All five preloaded files are in use.
 - **`experimental.inlineCss`.** It duplicates the stylesheet into the RSC payload for an estimated 50ms.
 
-What is left is the `Scene` chunk (three plus R3F, about 190ms to evaluate on the throttled CPU), hydration, and the
-preloader's frames, which run long under headless Chrome's software GPU — the environment PSI measures in. The work clips are
-the next lever for real phones rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in view on touch.
+**PSI printed 42 for that build, not 82.** The local 4x profile under-reads PSI's CPU badly. This machine's Lighthouse
+benchmark index is about 2,760, and at `--throttling.cpuSlowdownMultiplier=10` staging scored 47 here against PSI's 42, so
+**profile at 10x** to see what PSI sees. At 10x the main thread had 0.4s idle in 16.7s, and the second round went after what
+that showed:
+
+- **The globe and cloud are built in a Web Worker.** `getGlobe()` alone was one 1.1s task at 10x. `cosmos/shapes.js` holds the
+  pure half — `computeGlobe` (`lib/globe/pose.js`: land pose, anchors, arcs and flares from the seeded random) and the cloud
+  sample — and `shapes.worker.js` runs it and transfers the typed arrays back. `prepareCloud` assembles the three objects from
+  the result, and computes on the main thread instead if the worker cannot start. The seeded sequence is unchanged, so the
+  globe is the same globe.
+- **The CTA arms its tweens a viewport ahead** (`CTA.armAhead`) instead of at hydration, where setting every letter's start
+  transform cost 270ms.
+- **The preloader counter runs on real time** — see *The preload gate*.
+
+Local 10x went from about 60 to 66–69, TBT from about 1.4s to 0.65–0.83s. Measured at 10x and left alone:
+
+| Experiment | Score | TBT | Why it was not taken |
+|---|---|---|---|
+| No 3D scene at all | 78–83 | 150–300ms | The globe is the hero |
+| Preloader grain ring off | 60–61 | ~1.3s | No gain |
+| WebGL canvas at DPR 1 | 68–72 | 560–770ms | Within noise of the shipped build, and softer beads |
+| Half the particles | 66–68 | ~760ms | No gain once the build left the main thread |
+
+What is left is the scene existing during the load window at all: three and R3F evaluate in one task (about 450ms at 10x),
+the renderer and its first compile take another 200ms or so, and every frame after the gate is a 40–130ms task on PSI's
+software GPU. The one lever still worth about fifteen points is not starting the scene until after load on phones, which
+changes what a phone visitor sees first — a design decision, not a tidy-up. The work clips are the next lever for real phones
+rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in view on touch.
 
 Attribute before optimising. Build once with `productionBrowserSourceMaps: true` (never commit it) and map chunk bytes and
 CPU-profile samples back to source files; the barrel leak and the sort were both invisible until then.

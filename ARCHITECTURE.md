@@ -504,7 +504,9 @@ Local 10x went from about 60 to 66–69, TBT from about 1.4s to 0.65–0.83s. Me
 What is left is the scene existing during the load window at all: three and R3F evaluate in one task (about 450ms at 10x),
 the renderer and its first compile take another 200ms or so, and every frame after the gate is a 40–130ms task on PSI's
 software GPU. The one lever still worth about fifteen points is not starting the scene until after load on phones, which
-changes what a phone visitor sees first — a design decision, not a tidy-up. The work clips are the next lever for real phones
+changes what a phone visitor sees first. It was put to the user on 2026-09-25 with three variants — start on first touch or
+scroll, a pre-rendered still on phones, start a few seconds after load — and the answer was **keep the live globe loading on
+every device**. Do not reopen it as an optimisation. The work clips are the next lever for real phones
 rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in view on touch.
 
 Attribute before optimising. Build once with `productionBrowserSourceMaps: true` (never commit it) and map chunk bytes and

@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 const initialsOf = (name) =>
   name
     .split(' ')
+    .filter((word) => /^\p{Lu}/u.test(word))
     .map((word) => word[0])
     .slice(0, 2)
     .join('');

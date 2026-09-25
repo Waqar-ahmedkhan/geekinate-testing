@@ -11,6 +11,7 @@ const SLOW = 0.3;
 const EASE = 3.5;
 
 const wrap = (offset, half) => (half > 0 ? ((offset % half) + half) % half : 0);
+const anchorOf = (index, count) => ANCHOR_CLASS[ANCHORS[(index % count) % ANCHORS.length]];
 
 export default function TestimonialMarquee({ items }) {
   const trackRef = useRef(null);
@@ -97,7 +98,7 @@ export default function TestimonialMarquee({ items }) {
         {loop.map((item, index) => (
           <div
             key={`${item.name}-${index}`}
-            className={`flex h-[420px] w-[280px] shrink-0 sm:h-[520px] sm:w-[370px] ${ANCHOR_CLASS[ANCHORS[index % ANCHORS.length]]}`}
+            className={`flex h-[420px] w-[280px] shrink-0 sm:h-[520px] sm:w-[370px] ${anchorOf(index, items.length)}`}
             aria-hidden={index >= items.length}
           >
             <TestimonialCard quote={item.quote} name={item.name} role={item.role} />

@@ -8,6 +8,7 @@ export { default as HydrationSplit } from './layout/HydrationSplit';
 export { default as JsonLd } from './layout/JsonLd';
 export { default as LiftCard } from './layout/LiftCard';
 export { default as PageHero } from './layout/PageHero';
+export { default as RollDie } from './layout/RollDie';
 export { default as RollIndex } from './layout/RollIndex';
 export { default as Section } from './layout/Section';
 export { default as SectionHead } from './layout/SectionHead';

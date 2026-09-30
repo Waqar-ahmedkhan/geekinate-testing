@@ -31,7 +31,7 @@ the archive of the two older sites and holds nothing from this build.
 | `app/` | Routes only | Pages compose components and do nothing else |
 | `app/api/` | Route handlers | `contact/`, `partner/` and `guide/`, all POST-only. The only server code in the project |
 | `lib/ai/` | The Guide's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `tools.js` (`goToSection`, `highlight`), `sections.js` (id lookup), `bus.js` (`runPageActions`) |
-| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer`, `HydrationSplit` |
+| `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `RollDie`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer`, `HydrationSplit` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
@@ -97,6 +97,14 @@ with no transition, so the roll only ever plays forward. The group is `group/lif
 slides out from under the pointer. It is CSS only: Tailwind's `hover` variants already require a hover-capable pointer, so
 touch screens see still cards, and `motion-reduce` drops the movement. `DeckCard`, the shipped tip-and-sheet hover, is unused
 but kept until the trial is decided; see `AGENTS.md`. Card titles are white and turn volt on the same hover (2026-09-16).
+A slug in `DICE_SCOPES` (`constants/dice.js`; `games` only, since 2026-09-30) swaps `RollIndex` for `RollDie`: a CSS cube,
+volt faces with ink pips and a 1.5px ink edge, sized by `--die` on its stage, whose front face is the card's number and whose
+other faces keep opposite sides summing to seven. On hover it tumbles one whole turn on each of two axes (`DIE.rolls`, the
+directions varying per face value) over 1.3s on an ease-out, and so lands on the number it started from; it shares
+`RollIndex`'s snap-back on leave, which is invisible because the landed orientation is the resting one. The first cut rolled
+two turns in 900ms and was called too fast (2026-09-30). The cube is pushed back half its depth (`translateZ(calc(var(--die)/-2))`
+ahead of the rotations) so the resting face sits on the page plane; see the trap in `AGENTS.md`. The stage and cube are
+`block` spans: an inline span ignores `size-*`, and the die collapses to nothing.
 `Process` and `Deliverables` are both thin server components over `Cycle` (`lib/ui/reusable_components/Cycle.jsx` since 2026-09-24,
 when the case page's Solution became its third user and it left the dossier so sections would not import each other): it draws the
 sticky header and the numbered list, and owns the active row, an `IntersectionObserver` that starts the autoplay once half of the
@@ -107,7 +115,7 @@ list is on screen, and the hold on hover or focus over the list only. `Deliverab
 
 **Four layout primitives are shared between `/partner` and `/services/[slug]`**, exported from `@/components`: `PageHero` (the
 `clear` `min-h-svh` masthead — eyebrow, italic display `h1`, support copy, actions, an optional right-hand `aside`, then a
-`Separator` over a mono proof strip), `Actions` (the pill pair), `Card` (the glass panel with `ring-edge` and `shadow-brutal`) and
+`Separator` over a mono proof strip, dropped with its rule when `proof` is empty — Games has no facts row since 2026-09-30), `Actions` (the pill pair), `Card` (the glass panel with `ring-edge` and `shadow-brutal`) and
 `CtaBand` (the centred italic closing band). `PageHero` renders the split grid when an `aside` is passed and a single centred
 column when it is not — `/partner` passes `FlowRail`, and every `/services/[slug]` whose slug is in `SERVICE_CLIPS` (all three since
 2026-09-22) passes `Clip`, the square that runs the service's own `media` through `VideoSurface` and

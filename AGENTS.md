@@ -259,7 +259,10 @@ unused until the call is made, so reverting is a two-line import swap in `Scope.
 ("the hover every site already has") is why the roll is not optional here. The titles are white at rest and turn volt on the
 same hover, a plain colour transition (2026-09-16): a volt marker that wiped across the title while the type flipped to ink was
 rejected ("green highlighter na aye"), so do not put a background behind the title. The cursor stays an arrow and there is no
-arrow icon: these cards link nowhere.
+arrow icon: these cards link nowhere. On the Games page the index is a die (instructed 2026-09-30: "replace that simple
+counter with dice ... each card stops at that specific dice number"): `RollDie` is drawn in CSS rather than reusing the hero's
+3D model, rolls on the same hover and lands on the card's number. Only slugs in `DICE_SCOPES` get it; the other services keep
+the rolling digits.
 
 **The Process steps are big type that runs itself, and a row never changes height.** It went through three shapes on
 2026-09-16. All four steps open was the original. A hover accordion (the step under the cursor opens, the rest close) was
@@ -462,6 +465,12 @@ writes — a forced layout several times a frame. Two of the loops (both marquee
 called `setState` every frame, which re-rendered the whole nav twice per frame because `ProgressRing` answered with a `setState` of
 its own. Continuous scroll values belong in a ref written straight to the DOM; React state is for the booleans that actually change
 the tree. Instrument the counters before optimising the shader.
+
+**A CSS cube's front face is magnified by its own perspective, and that is what blurs it.** `RollDie` first placed each face
+at `translateZ(half)` around the cube's centre, the textbook layout — which puts the resting face half a die *towards* the
+viewer, so `perspective` scales it: 28px drew at 30.68px on a fractional pixel, and the dice read as blurred on sight
+(2026-09-30). Pushing the whole cube back by half its depth, ahead of the rotations, puts the resting face on the page plane at
+scale 1 on whole pixels. Measure the face's `getBoundingClientRect` against its box before trusting a 3D element's sharpness.
 
 **`max-width: 0` does not collapse a box that has padding.** Everything here is `box-sizing: border-box`, and a border-box element
 cannot shrink below its own padding — so a `max-width: 0` element with `pl-2` still occupies 8px. This silently knocked the nav mark

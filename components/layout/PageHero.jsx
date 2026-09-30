@@ -23,6 +23,12 @@ export default function PageHero({ id, eyebrow, headline, measure = 'max-w-[16ch
       {item}
     </span>
   ));
+  const proofEl = proof.length ? (
+    <div className='flex flex-col gap-5'>
+      <Separator />
+      <p className={cn(PROOF, centred && 'justify-center')}>{proofEls}</p>
+    </div>
+  ) : null;
   return (
     <Section id={id} variant='clear' className={SHELL}>
       <div className='mx-auto flex w-full max-w-6xl flex-col gap-14'>
@@ -35,10 +41,7 @@ export default function PageHero({ id, eyebrow, headline, measure = 'max-w-[16ch
           </div>
           {aside}
         </div>
-        <div className='flex flex-col gap-5'>
-          <Separator />
-          <p className={cn(PROOF, centred && 'justify-center')}>{proofEls}</p>
-        </div>
+        {proofEl}
       </div>
     </Section>
   );

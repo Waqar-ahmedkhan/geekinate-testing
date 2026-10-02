@@ -15,15 +15,13 @@ Geekinate's agency website, rebuilt from scratch. A single Next.js app living at
 `next start` behind a reverse proxy. See `ARCHITECTURE.md` §Shape for what that changes.
 
 **The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
-**Games & Interactive** (`games`), **Marketing Systems** (`marketing`). This file previously named four pillars with Web Products
-as its own — that is no longer true at the service level; Web Products is folded into Development & AI, whose summary reads "Web
-apps, platforms and AI agents that take the busywork off your team for good." The four-pillar vocabulary survives in exactly one
-place, as **tags** on the featured work: `work[].disciplines` draws from `AI & Automation`, `Games & Interactive`,
-`Marketing Systems` and `Web Products`. From 2026-09-17 no tile carried `Marketing Systems` (it sat on a span-3 tile that was
-removed) until 2026-09-25, when the user named tile 5, Shifa International, a marketing project and it was retagged from
-`Web Products`. As of 2026-09-22 the AR game runs tile 1 and the Elevé pair the full-width tile 3, both tags travelling with them.
-Since 2026-09-24 no tile carries `AI & Automation` either: it was a placeholder on the Twinhub website, retagged `Web Products`
-when that tile got its case page. Derive from `services` rather than transcribing a count anywhere.
+**Games & Interactive** (`games`), **Marketing** (`marketing`). The last was **Marketing Systems** until 2026-10-02, when the
+client's handoff (`../docs/geekinate-copy-and-ui-handoff.md`) renamed it sitewide — nav, cards, footer, page titles, `/partner` and
+the work tags alike — and kept every URL. The site once named four pillars with Web Products as its own; Web Products is folded into
+Development & AI. The pillar vocabulary used to survive as **tags** on the featured work, and since the same handoff it does not:
+`work[].disciplines` draws from the three service names only (`Web Products` became `Development & AI`, `Marketing Systems` became
+`Marketing`). Shifa International, tile 5, is the one `Marketing` tile, on the user's word (2026-09-25). The hero's eyebrow is
+derived from `services` too. Derive from `services` rather than transcribing a count anywhere.
 
 Design direction is not open to invention: it is decided in the Asana thread *Revamp Web Design to a modern design*, with
 `wearestokt.com` as the agreed base, `denqid.com` for the hero, and `landing.love/categories/agency` for further reference. It is
@@ -113,6 +111,14 @@ putting `{ development: 'circuit' }` back in that map restores it. See ARCHITECT
 The camera is the other load-bearing pair: 7.1 degrees at a distance of 60. It is a long lens on purpose, and changing either number
 without the other rescales the entire scene. See the note at the top of `constants/cosmos.js`.
 
+**On a portrait screen the globe sits below the hero's buttons.** The globe's top is `GLOBE.apex`, a fixed fraction of the viewport
+(about 55% down), while the hero copy is a fixed pixel height — so once the hero gained its body sentence (2026-10-02) the copy ran
+into the globe on every phone shorter than about 800px, and on a 664px iPhone with Safari's bars the sentence and buttons sat on
+the dots. Asked the same day, the user picked lowering the globe over letting it overlap. The hero marks its button row
+`data-globe-floor`; `measureLayout` records that row's bottom as `stage.floor`, and `fitGlobe` drops the apex to `GLOBE.floorGap`
+below it whenever the aspect is under 1. Landscape framing, desktop included, is untouched. PR #21's phone recording was made at the
+old framing, so it has to be re-recorded when that branch lands or the handoff to the live globe jumps.
+
 **The client marquee's numbers are transcribed, not chosen.** `constants/marquee.js` holds values read off `wearestokt.com` on
 2026-08-25 — the live Framer `Ticker`'s own props plus its computed styles, not an eyeballed reconstruction: `speed: 40` px/s
 leftward, `gap: 150`, `padding: 10`, `fadeWidth: 46` (so the `mask-image` stops land at 23% and 77%). Stokt has no hover slowdown
@@ -149,7 +155,23 @@ Do not drift back to the wry, understated register ("Games people finish", "How 
 no project counts, percentages or client results that nobody supplied; the facts rows keep the claims that were already
 there. The contact heading and intro are `contactContent.pitches[topic]`, keyed `home` or by service slug: a service page
 passes its slug and a case page passes its project's `service`, so the marketing page never asks what you want to automate.
-The CtaBand line is each service's `handoff`, and it follows the same rule.
+The service pages carried a `CtaBand` before the contact section, its line each service's `handoff`, until 2026-10-02: the client's
+handoff called it a repeat of the contact and work buttons right before the form, and the user had it removed from all three
+service pages. `/partner` keeps its own band.
+
+**The client's copy handoff outranks the sales voice where they disagree.** On 2026-10-02 the client sent
+`../docs/geekinate-copy-and-ui-handoff.md` and the user said to proceed with it. It asks for plain, conversational copy that says
+what the visitor can do and what Geekinate does, with no unsupported promise — so "free traffic", "growth never stalls", "every
+lead traced" and a universal "4 to 6 weeks" are out wherever they still stand. Applied so far: the naming above, the home page's
+copy (hero, clients, work, services, contact), and the CTA convention — every button that opens an enquiry reads **Let's talk**,
+every button to the work grid reads **See our work** (`/#work`), and the form submits with **Send enquiry**. **There is one
+contact form and every page shows it**, interest chips included: the handoff drew those six options for Marketing, and the user
+put them on the shared form instead ("all pages will show the same contact us form") — do not fork the form per service. The nav CTA goes to the
+current page's own `#contact` on `/services/*` and `/work/*` (`CONTACT_ROUTES`) and to `/#contact` everywhere else. The home page's
+`Process` link was removed because the home page has no `#process` to land on. The Marketing page carries the handoff's copy
+section by section: its own Scope and Process eyebrows and headings through `service.sections` (merged over the shared
+`servicePageContent.blocks`), a small label on each scope card, an intro line under the Deliverables and Process headings, no facts
+strip, and a single fixed contact heading under a *Let's talk* eyebrow. Development & AI and Games keep their own copy.
 
 **The case pages take the old site's content order and Stokt's case-study layout.** Instructed 2026-09-24: `/work/[slug]`
 carries the portfolio page on geekinate.com in order (title, cover, Requirements / Challenge / Solution, technologies, three
@@ -177,7 +199,8 @@ approved, so the site now carried two unrelated marketing layouts. The instructi
 `/partner` **and to share the code rather than build a second design**.
 
 It now runs: `PageHero` (`clear`, `min-h-svh`), then Scope as a `paper` band of `Card`s, Deliverables as a full-height `ink` section of four statement cards, Process
-as a `paper` band of `StepIndex` steps against a sticky header, then `CtaBand`, then the reused `Contact` — every section
+as a `paper` band of `StepIndex` steps against a sticky header, then the reused `Contact` (a `CtaBand` sat before it until
+2026-10-02) — every section
 `mx-auto max-w-6xl`, alternating paper and ink, exactly as `/partner` does. The dossier's own devices are gone: no index rail, no
 ledger grid, no gsap timeline, no full-bleed. `Contact` no longer takes a `className` because nothing needs to override its width
 any more.
@@ -269,12 +292,20 @@ the rolling digits.
 instructed from a reference and then rejected the same day as reading empty ("khali khali"): four single words carrying half a
 full-screen section, with step 01 already open on arrival. Three layouts were prototyped; a list beside a black stage card was
 built and turned down ("woh bura lag raha hai"), and option C was picked: `Cycle` (in `lib/ui/reusable_components` since 2026-09-24) sets each step
-name in the display face, dims the inactive ones to `text-mut/40`, and slides the active step's sentence in beside its name on
-the same line. It starts on step 01 and advances every `PROCESS.dwellMs` once half of it is on screen, with a volt bar filling
-along the top of the active row; hover or focus on the step list holds the step, and leaving resumes. The hold sits on the `ol`, not the
-wrapper: pausing while the pointer rested on the heading ("How it runs." then) read as the section freezing for no reason. The sentence is always in
-the layout and only its opacity changes, so no row changes height: a row that grew would push the next one under a still
-pointer and the hover would oscillate. Below `md` every sentence is shown under its name.
+name in the display face, dims the inactive ones, and lights the active step. It starts on step 01 and advances every
+`PROCESS.dwellMs` once half of it is on screen, with a volt bar filling along the top of the active row; hover or focus on the
+step list holds the step, and leaving resumes. The hold sits on the `ol`, not the
+wrapper: pausing while the pointer rested on the heading ("How it runs." then) read as the section freezing for no reason.
+
+**Every sentence in a `Cycle` is on screen all the time** (2026-10-02). Until then only the active row showed its sentence on
+desktop and the inactive names sat at `text-mut/40`, so a visitor read one sentence per 4.2 seconds and the faded names measured
+about 1.9:1 against paper. The client's handoff asked for every row readable without hover or a timer, and the user picked keeping
+the moving highlight with the text always shown: inactive names are `text-mut/70` (about 3:1, the floor for type this large),
+inactive sentences full `text-mut`, and the active row turns both to `text-foreground`. The `ol` is a grid and each row a
+`subgrid`, so the name column is as wide as the widest name and every sentence starts on the same line; with independent row
+grids the sentences started wherever their own name ended. Only colour changes between states, so no row changes height: a
+row that grew would push the next one under a still pointer and the hover would oscillate. Below `md` every sentence sits under
+its name.
 
 **Deliverables runs the same list, mirrored.** Instructed 2026-09-18 ("same design uper waly section may bhi kardo ... but flip
 karky"): the four statement cards on the black band were replaced by the Process list, so `Cycle` serves both — and since 2026-09-24 the case page's Solution band too, on black but *not* mirrored (heading left, list right, instructed after a mirrored first cut) — and the section

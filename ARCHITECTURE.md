@@ -314,6 +314,9 @@ Mechanics worth knowing before editing:
   depends on viewport height, so the observer is rebuilt on resize.
 - Stokt does fire on plain viewport entry — its navbar leaves a full screen early — and that was rejected here on sight
   (2026-08-07). The retreat itself is theirs: translate the whole bar by its own height, ease it back on the way out.
+- **The CTA follows the page.** `Nav` derives `ctaHref` from the pathname and hands it to `MenuPill` and `MobileMenu`: a route
+  under `CONTACT_ROUTES` (`/services/`, `/work/`) carries its own `Contact`, so the CTA is `NAV_CTA.local` (`#contact`); anywhere
+  else it is `/#contact`. A new route with its own contact section joins that list or its CTA leaves the page.
 
 ## Hover-to-play video
 
@@ -527,7 +530,7 @@ whole site and two layouts invented without it were rejected first:
 | Piece | What it is | Stokt's |
 |---|---|---|
 | `CaseHero` (`features/case-hero`) | **The old site's hero, on our ground** (instructed 2026-09-24, "make hero section exact same like the previous version", with a screenshot of geekinate.com's Fintech SAAS App page). The project `title` centred in display type, one line on a desktop, and below it the tile's clip in a bordered frame with an ink hard shadow, 16:9 unless the media carries a `ratio`, capped at `62svh` of height. The frame plays the project's `cover` when it has one and its tile `media` otherwise; only Elevé has one (below). A `paper` panel starts 42% of the way down the frame and runs to the hero's foot, so the frame straddles the black ground and the white page as the old mockup straddled its green band; the panel's top edge dips in the middle through a radial `mask-image`, the old band's curve | Stokt's Heron hero card ran here for an afternoon and was replaced on this instruction |
-| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Build something like this* pill | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
+| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Let’s talk* pill (*Build something like this* until 2026-10-02) | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
 | `Stack` | A thin `ink` strip: the *Tech stack* label beside a `Marquee` of the stack in mono caps with volt squares, the client strip's own component at a 64px gap. The label sits above the marquee below `md` | Heron's *[ TECH STACK ]* strip |
 | `Brief` | `paper`. Requirements and Challenge side by side as two editorial columns, each an eyebrow, a display heading and a hairline-ruled numbered list | |
 | `Solution` | `ink`. The service page's Deliverables list, reused on instruction (2026-09-24, "reuse this or this based on dark or light section"): `Cycle` on a dark band, heading left and list right — it ran mirrored like Deliverables for an hour and was flipped back on instruction ("left section moves to right and right to left"). Each solution point is `{ title, detail }`: a short name set in display type, the sentence beside it. The names were added that day; the sentences are the brief's own, Twinhub's still the old site's except the SEO line, cut to its first sentence because `Cycle` keeps every sentence in the layout and the full line made row 07 visibly taller than the rest | |
@@ -575,7 +578,8 @@ Known gaps.
 
 On 2026-09-25 every page's copy was rewritten into the sales voice (see AGENTS.md, *The copy sells*). Twinhub's brief was
 rephrased from the transcription point for point, with nothing added that the old page did not say. Shifa International was
-reframed as a **marketing** project on the user's word: `disciplines` is `Marketing Systems`, `service` is `marketing`, and
+reframed as a **marketing** project on the user's word: `disciplines` is `Marketing` (`Marketing Systems` until the 2026-10-02
+rename), `service` is `marketing`, and
 its facts and brief now describe a campaign instead of a website. Every project carries a `service` slug so the case page's
 `Contact` can ask the matching question.
 
@@ -755,6 +759,28 @@ sentence, which is why the two no longer share a baseline. Contact is shared, so
 2026-09-25 every page cycled the same four questions, so the marketing page asked "What do you want to automate?" under a
 CtaBand reading "Let's automate it." The steps, the form and the address stay shared.
 
+**The enquiry carries the service.** `Contact` resolves its `topic` against `services` and passes the title to `ContactForm`, which
+posts it as `topic`; `/api/contact` writes it into the enquiry as a `Service:` line. The home page has no topic and sends none.
+Every field has a visible label above it (2026-10-02, from the client's handoff: placeholders were the only labels before), in the
+referral form's style — mono caps, a red `*` on required fields and `(optional)` on the rest.
+
+**A page's pitch can carry its own eyebrow, and one heading stays still.** `pitches[topic].eyebrow` replaces *Contact* (Marketing
+reads *Let's talk*), and `TypedHeading` does not animate a single phrase, which is how the Marketing page gets the handoff's static
+heading. `Cycle` takes `block.intro` as a line under its heading, and when any title has a space it sets the titles smaller with the
+sentence underneath instead of beside, because Marketing's steps are sentences ("Then, we agree on what to fix.") that no
+max-content column could hold at display size. `Scope` renders a card's optional `label` as an `Eyebrow` above its title.
+
+**Every contact form asks what the visitor wants help with** (2026-10-02). The handoff drew six options for the Marketing page; the
+user had them put on the one shared form instead, so the home page, every service page and every case page carry the same chips:
+`contactContent.interests`. They are optional, any number can be picked, and each is a toggle button with `aria-pressed` that
+turns volt, styled like `/partner`'s pills. The chosen labels post as `interests`; `/api/contact` keeps only labels from that same
+list, once each, and writes them into the enquiry as an `Interested in:` line. The message box below them is labelled *Tell us a
+little more*, because the chips now ask the handoff's *What would you like help with?*. The old `topics` list (*Closest to*),
+which nothing rendered, went with it. The typed heading holds each complete
+question for `TYPED.holdMs` (4000, the handoff's minimum), reserves the longest question's height so nothing below moves, stops
+under reduced motion, and gives screen readers the first phrase only — which is why the home list starts with "What are we
+building together?", the handoff's fallback, and runs the client's order from there.
+
 `InViewVideo` fills the card. It is the third playback mode in the codebase and the only one not driven by hover: an
 `IntersectionObserver` starts a **one-shot** render as the panel arrives and rewinds it on the way out, matching the reference,
 where the clip plays once rather than looping. Autoplay is deliberately not used — a video at the bottom of the page would spend
@@ -820,7 +846,7 @@ run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under th
 |---|---|
 | Stage | The hero, `relative z-10`, and from `lg` `sticky` with `top: min(0px, 100svh - var(--hero-h))`. A `ResizeObserver` writes `--hero-h` and refreshes ScrollTrigger |
 | Spacer | `h-svh`, after the stage inside the same plain wrapper — the stage's containing block — so the hero is held for one small viewport of scroll |
-| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). `Deliverables` was compact too until 2026-09-17, when two short black bands on one page read as two banners; it now fills the screen by carrying its four items as large display-type cards in a 2x2 grid, 615px of content on a 900px viewport, rather than by being stretched A child that is not a `<section>` gets none of it |
+| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). `Deliverables` was compact too until 2026-09-17, when two short black bands on one page read as two banners; it now fills the screen by carrying its four items as large display-type cards in a 2x2 grid, 615px of content on a 900px viewport, rather than by being stretched. `Process` has been compact since 2026-10-02, with no bottom padding: once the `CtaBand` after it was removed it sat paper against the paper `Contact`, and two full-screen bands with centred content left about 360px of empty white between the last step and the contact eyebrow on a 900px viewport; it is 140px now, the list's own bottom rule closing the section. A child that is not a `<section>` gets none of it |
 | Recede | One scrubbed timeline over the sheet's `top bottom → top top`: the hero scales to `SHEET.recede.scale` while a black shade rises to `SHEET.recede.dim` |
 | Cover signal | An `IntersectionObserver` on the sheet with `SHEET.coverMargin`: `markSheet(true)` once its top edge passes mid-viewport |
 
@@ -931,7 +957,7 @@ day a transitive version moves. Anything this project actually depends on gets i
 - **Placeholder media, two kinds — check the filename prefix.** `stokt-*` was taken from wearestokt.com to exercise the layouts and
   **must not ship**; one services clip carries their wordmark on a keycap. `pexels-*` is Pexels stock, free for commercial use with
   no attribution, so it is safe to ship but says nothing about Geekinate. Replace both with real work. **No tile is on the
-  *Media pending* panel any more** — Services' Marketing Systems card took a Pexels clip on 2026-08-07, since Stokt runs three
+  *Media pending* panel any more** — Services' Marketing card took a Pexels clip on 2026-08-07, since Stokt runs three
   service cards and there was no fourth render to transcribe.
 - **The first real work clips were `geekinate-*`.** Supplied on 2026-09-17 from `../VideoClips/work`: the AR game runs the
   full-width tile (as instructed, "the biggest one on the screen") and the VR game ran the Games & Interactive tile below it
@@ -968,7 +994,8 @@ day a transitive version moves. Anything this project actually depends on gets i
   number the tiles and mark the bottom band as the text zone the clips keep clear; the logo clip's ground is white, which is why
   it carries `tone: 'light'`. The render's own logo sits in its left third, outside the sheet's centred mobile safe area, so
   the intro carries `focus: '0% 50%'`: the square crop below `sm` shows the logo over the office rather than an empty desk. The
-  discipline tags travelled with the clips, so tile 1 reads Games & Interactive and tile 3 Web Products. On its case page
+  discipline tags travelled with the clips, so tile 1 reads Games & Interactive and tile 3 Web Products (Development & AI since
+  2026-10-02). On its case page
   the intro is the cover and plays once; the logo reveal appears only on the tile.
 - **Encode clips as H.264 (`avc1`) in MP4 or VP9 in WebM.** A clip that was H.265/HEVC (`hvc1`) rendered as a blank tile in Chrome on
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
@@ -995,9 +1022,12 @@ day a transitive version moves. Anything this project actually depends on gets i
   `PARTNER_WEBHOOK_URL`/`CONTACT_WEBHOOK_URL`, or `RESEND_API_KEY` + `PARTNER_TO`/`CONTACT_TO` + `CONTACT_FROM`, are set. Until then
   every real submit shows the failure panel with the mailto fallback.
 - No analytics provider is installed. `lib/analytics.js` queues events on `window.dataLayer` for whichever provider lands.
-- `NAV_LINKS` points at anchors no section defines yet.
-- **The hero has no copy.** No H1, no CTA, no eyebrow — the mark alone. The brief requires those to be real DOM above the canvas,
-  and they wait on wording rather than being invented. Nothing in `lib/content/index.js` covers section 01 yet.
+- **The client's copy handoff is applied** (`../docs/geekinate-copy-and-ui-handoff.md`, 2026-10-02): naming, CTA convention,
+  home copy, the shared form with its interest chips, the Marketing page, and the doc's one-line contact questions for
+  Development & AI and Games, which no longer rotate. Two of its release checks failed and are fixed: over a paper band the nav
+  pills turn `bg-void/80` (the links measured about 2.4:1 on the 50% glass, about 5.3:1 now), and `.on-paper :focus-visible`
+  draws a solid 2px ink outline, because the volt-at-50% ring all but vanished on white. The closing `CtaBand` is gone from all three service pages on the
+  user's word. The reply time stays at two working days on the user's word, although the handoff also says one.
 - **The 3D mark stops at Phase 2.** No camera rig, no length gradient, no taper, no post-processing, no mobile downgrade. Phases 3
   to 5 in `docs/geekinate-hero-3d-prompt.md` are unbuilt.
 - **The journey is invisible.** Every section below the hero is opaque and sits above the canvas, so the mark only shows through

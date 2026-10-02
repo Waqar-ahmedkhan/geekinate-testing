@@ -5,6 +5,7 @@ import { Check, CircleAlert, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import { contactContent } from '@/lib/content';
@@ -15,6 +16,11 @@ const FIELD =
 const AREA =
   'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
+const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
+const CHIP =
+  'cursor-pointer rounded-full border-[1.5px] border-ink px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink transition-colors duration-200 ease-brutal disabled:cursor-default';
+const CHIP_ON = 'bg-volt shadow-brutal-sm';
+const CHIP_OFF = 'bg-paper hover:bg-wash';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
 const FORM = 'rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
 const SUBMIT =
@@ -35,10 +41,10 @@ const validate = ({ name, email, message }) => {
   return found;
 };
 
-const EMPTY = { name: '', email: '', company: '', message: '' };
+const EMPTY = { name: '', email: '', company: '', message: '', interests: [] };
 
-export default function ContactForm() {
-  const { fields, submit, success, failure } = contactContent;
+export default function ContactForm({ topic }) {
+  const { fields, interests, submit, success, failure } = contactContent;
   const [values, setValues] = useState(EMPTY);
   const [errors, setErrors] = useState({});
   const [touched, setTouched] = useState({});
@@ -52,6 +58,11 @@ export default function ContactForm() {
     if (!touched[field]) return;
     setErrors((current) => ({ ...current, [field]: validate(merged)[field] }));
   };
+  const toggle = (option) => () =>
+    setValues((current) => ({
+      ...current,
+      interests: current.interests.includes(option) ? current.interests.filter((item) => item !== option) : [...current.interests, option],
+    }));
   const blur = (field) => () => {
     setTouched((current) => ({ ...current, [field]: true }));
     const found = validate(values);
@@ -72,7 +83,7 @@ export default function ContactForm() {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, trap: trapRef.current?.value || '' }),
+        body: JSON.stringify({ ...values, topic, trap: trapRef.current?.value || '' }),
       });
       if (!response.ok) throw new Error(String(response.status));
       setStatus('sent');
@@ -95,7 +106,6 @@ export default function ContactForm() {
     onChange: change(field),
     onBlur: blur(field),
     placeholder: fields[field].placeholder,
-    'aria-label': fields[field].label,
     'aria-invalid': Boolean(errors[field]),
     'aria-describedby': errors[field] ? `${field}-error` : undefined,
     disabled: pending,
@@ -106,6 +116,31 @@ export default function ContactForm() {
         {errors[field]}
       </p>
     ) : null;
+  const labelFor = (field) => {
+    const { label, optional } = fields[field];
+    const markEl = optional ? <span className='text-grey'> ({optional})</span> : <span className='text-destructive'>*</span>;
+    return (
+      <Label htmlFor={field} className={LABEL}>
+        {label}
+        {markEl}
+      </Label>
+    );
+  };
+  const interestEls = interests.options.map((option) => {
+    const picked = values.interests.includes(option);
+    return (
+      <button
+        key={option}
+        type='button'
+        aria-pressed={picked}
+        disabled={pending}
+        onClick={toggle(option)}
+        className={cn(CHIP, picked ? CHIP_ON : CHIP_OFF)}
+      >
+        {option}
+      </button>
+    );
+  });
   if (status === 'sent')
     return (
       <div className={PANEL} role='status'>
@@ -122,26 +157,47 @@ export default function ContactForm() {
   return (
     <form ref={formRef} noValidate onSubmit={send} className={FORM}>
       <div className='flex flex-col gap-4'>
-        <Textarea {...fieldProps('message')} rows={6} className={cn(AREA, errors.message && FIELD_BAD)} />
-        {errorFor('message')}
-        <div className='grid gap-4 md:grid-cols-2'>
-          <Input
-            {...fieldProps('name')}
-            type='text'
-            autoComplete={fields.name.autoComplete}
-            className={cn(FIELD, errors.name && FIELD_BAD)}
-          />
-          {errorFor('name')}
-          <Input
-            {...fieldProps('email')}
-            type='email'
-            inputMode='email'
-            autoComplete={fields.email.autoComplete}
-            className={cn(FIELD, errors.email && FIELD_BAD)}
-          />
-          {errorFor('email')}
+        <div className='flex flex-col gap-3'>
+          <span id='interests-label' className={LABEL}>
+            {interests.label}
+            <span className='text-grey'> ({interests.optional})</span>
+          </span>
+          <div role='group' aria-labelledby='interests-label' className='flex flex-wrap gap-2'>
+            {interestEls}
+          </div>
         </div>
-        <Input {...fieldProps('company')} type='text' autoComplete={fields.company.autoComplete} className={FIELD} />
+        <div className='flex flex-col gap-2'>
+          {labelFor('message')}
+          <Textarea {...fieldProps('message')} rows={6} className={cn(AREA, errors.message && FIELD_BAD)} />
+          {errorFor('message')}
+        </div>
+        <div className='grid gap-4 md:grid-cols-2'>
+          <div className='flex flex-col gap-2'>
+            {labelFor('name')}
+            <Input
+              {...fieldProps('name')}
+              type='text'
+              autoComplete={fields.name.autoComplete}
+              className={cn(FIELD, errors.name && FIELD_BAD)}
+            />
+            {errorFor('name')}
+          </div>
+          <div className='flex flex-col gap-2'>
+            {labelFor('email')}
+            <Input
+              {...fieldProps('email')}
+              type='email'
+              inputMode='email'
+              autoComplete={fields.email.autoComplete}
+              className={cn(FIELD, errors.email && FIELD_BAD)}
+            />
+            {errorFor('email')}
+          </div>
+        </div>
+        <div className='flex flex-col gap-2'>
+          {labelFor('company')}
+          <Input {...fieldProps('company')} type='text' autoComplete={fields.company.autoComplete} className={FIELD} />
+        </div>
         <Button type='submit' disabled={pending} className={SUBMIT}>
           {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
           {pending ? submit.pending : submit.idle}

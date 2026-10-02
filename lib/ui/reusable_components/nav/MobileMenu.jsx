@@ -26,7 +26,7 @@ const CTA =
   'border-brutal flex items-center justify-center rounded-full bg-volt px-5 py-3 text-sm font-semibold text-ink ' +
   'shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85';
 
-export default function MobileMenu({ className }) {
+export default function MobileMenu({ ctaHref, onPaper, className }) {
   const linkEls = NAV_LINKS.map(({ label, href }) => (
     <Dialog.Close key={href} asChild>
       <Link href={href} className={ITEM}>
@@ -37,7 +37,12 @@ export default function MobileMenu({ className }) {
   return (
     <Dialog.Root onOpenChange={holdScroll}>
       <Dialog.Trigger asChild>
-        <GlassPill as='button' type='button' aria-label='Open menu' className={cn('size-10 justify-center text-mut', className)}>
+        <GlassPill
+          as='button'
+          type='button'
+          aria-label='Open menu'
+          className={cn('size-10 justify-center text-mut transition-colors duration-300', onPaper && 'bg-void/80', className)}
+        >
           <EllipsisVertical className='size-5' aria-hidden='true' />
         </GlassPill>
       </Dialog.Trigger>
@@ -61,7 +66,7 @@ export default function MobileMenu({ className }) {
           </nav>
           <div className='flex flex-col px-5 pb-5 pt-6'>
             <Dialog.Close asChild>
-              <Link href={NAV_CTA.href} className={CTA}>
+              <Link href={ctaHref} className={CTA}>
                 {NAV_CTA.label}
               </Link>
             </Dialog.Close>

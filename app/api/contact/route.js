@@ -1,8 +1,12 @@
+import { contactContent } from '@/lib/content';
+
 const LIMITS = { name: 120, email: 200, company: 160, message: 4000, topic: 40 };
+const INTERESTS = new Set(contactContent.interests.options);
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 12;
 
 const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
+const pickInterests = (value) => (Array.isArray(value) ? [...new Set(value.filter((item) => INTERESTS.has(item)))] : []);
 
 const invalid = (body) => {
   const found = {};
@@ -17,7 +21,8 @@ const compose = (body) =>
   [
     `From: ${body.name} <${body.email}>`,
     body.company ? `Company: ${body.company}` : null,
-    body.topic ? `Closest to: ${body.topic}` : null,
+    body.topic ? `Service: ${body.topic}` : null,
+    body.interests.length ? `Interested in: ${body.interests.join(', ')}` : null,
     '',
     body.message,
   ]
@@ -62,6 +67,7 @@ export async function POST(request) {
     company: clean(payload?.company, LIMITS.company),
     message: clean(payload?.message, LIMITS.message),
     topic: clean(payload?.topic, LIMITS.topic),
+    interests: pickInterests(payload?.interests),
   };
   const fields = invalid(body);
   if (fields) return Response.json({ error: 'invalid', fields }, { status: 400 });

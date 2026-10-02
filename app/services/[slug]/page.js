@@ -1,11 +1,11 @@
 import { notFound } from 'next/navigation';
-import { CtaBand, HydrationSplit, JsonLd } from '@/components';
+import { HydrationSplit, JsonLd } from '@/components';
 import ServiceHero from '@/features/service-hero';
 import ServiceDossier from '@/features/service-dossier';
 import Contact from '@/features/contact';
 import { HeroSheet } from '@/lib/ui/reusable_components';
 import { buildMetadata, buildServiceJsonLd } from '@/lib/seo';
-import { servicePageContent, services } from '@/lib/content';
+import { services } from '@/lib/content';
 
 export const dynamicParams = false;
 
@@ -26,14 +26,12 @@ export default async function ServicePage({ params }) {
   const { slug } = await params;
   const service = findService(slug);
   if (!service) notFound();
-  const { actions } = servicePageContent;
   return (
     <main className='flex-1'>
       <JsonLd id={`json-ld-service-${slug}`} nodes={[buildServiceJsonLd(service)]} />
       <HeroSheet hero={<ServiceHero service={service} />}>
         <HydrationSplit>
           <ServiceDossier service={service} />
-          <CtaBand headline={service.handoff} actions={actions} />
           <Contact topic={slug} />
         </HydrationSplit>
       </HeroSheet>

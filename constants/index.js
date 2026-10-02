@@ -19,7 +19,7 @@ export * from './work';
 export const SITE = {
   name: 'Geekinate',
   description:
-    'Geekinate builds AI products, games and marketing systems that win customers. One team from first idea to launch, and long after it.',
+    'Geekinate builds websites, software and games, uses AI to take repetitive work off your team, and helps customers find you through search, ads and content.',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   locale: 'en_US',
   ogImage: '/images/openGraph.png',
@@ -28,16 +28,17 @@ export const SITE = {
 
 export const LAYOUT = { container: 1440 };
 
-export const TYPED = { startMs: 2600, typeMs: 55, eraseMs: 28, holdMs: 3400, restMs: 700 };
+export const TYPED = { startMs: 2600, typeMs: 55, eraseMs: 28, holdMs: 4000, restMs: 700 };
 
 export const NAV_LINKS = [
   { label: 'Services', href: '/#services' },
   { label: 'Work', href: '/#work' },
-  { label: 'Process', href: '/#process' },
   { label: 'Contact', href: '/#contact' },
 ];
 
-export const NAV_CTA = { label: 'Start a project', href: '/#contact' };
+export const NAV_CTA = { label: 'Let’s talk', href: '/#contact', local: '#contact' };
+
+export const CONTACT_ROUTES = ['/services/', '/work/'];
 
 export const SOCIALS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/geekinate' },

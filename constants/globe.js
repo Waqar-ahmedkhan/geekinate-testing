@@ -1,5 +1,6 @@
 export const GLOBE = {
   apex: -0.1,
+  floorGap: 0.08,
   drop: 0.78,
   aspectRange: [0.85, 1.75],
   tilt: 0.14,
@@ -8,7 +9,7 @@ export const GLOBE = {
   oceanRadius: 0.994,
   anchorCount: 56,
   anchorSpacing: 0.42,
-  groups: 4,
+  groups: 3,
   arcCount: 26,
   arcSegments: 56,
   arcSpan: [0.3, 0.85],

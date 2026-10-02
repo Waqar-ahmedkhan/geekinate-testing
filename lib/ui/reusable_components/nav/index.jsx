@@ -11,7 +11,7 @@ import ProgressRing from './ProgressRing';
 import useScrollProgress from './useScrollProgress';
 import { scrollToTop as glideToTop } from '@/lib/scroll/controller';
 import { cn } from '@/lib/utils';
-import { LAYOUT, NAV_CTA, NAV_LINKS, SITE } from '@/constants';
+import { CONTACT_ROUTES, LAYOUT, NAV_CTA, NAV_LINKS, SITE } from '@/constants';
 
 const PILL_HEIGHT = 40;
 const PILL_COLLAPSED = 56;
@@ -26,17 +26,19 @@ const RETREAT_LEAD = 24;
 const RETREAT_TRANSITION = `transform ${RETREAT_MS}ms ${EASE}`;
 const SPREAD_MS = 720;
 const SPREAD_TRANSITION = `max-width ${SPREAD_MS}ms ${EASE}`;
+const PAPER_GLASS = 'bg-void/80';
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
+const contactHref = (pathname) => (CONTACT_ROUTES.some((route) => pathname.startsWith(route)) ? NAV_CTA.local : NAV_CTA.href);
 
-const MenuPill = () => (
-  <GlassPill className='h-[45px] gap-1.5 px-1.5 sm:gap-2'>
+const MenuPill = ({ ctaHref, onPaper }) => (
+  <GlassPill className={cn('h-[45px] gap-1.5 px-1.5 transition-colors duration-300 sm:gap-2', onPaper && PAPER_GLASS)}>
     <NavLinks
       items={NAV_LINKS}
       className='min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
     />
     <Link
-      href={NAV_CTA.href}
+      href={ctaHref}
       className='border-brutal shrink-0 rounded-full bg-volt px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-ink shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85 sm:px-5 sm:text-sm'
     >
       {NAV_CTA.label}
@@ -46,6 +48,7 @@ const MenuPill = () => (
 
 export default function Nav() {
   const pathname = usePathname();
+  const ctaHref = contactHref(pathname);
   const pillRef = useRef(null);
   const railRef = useRef(null);
   const ringRef = useRef(null);
@@ -155,9 +158,9 @@ export default function Nav() {
             </GlassPill>
           </div>
           <div className='absolute right-0 top-0 hidden lg:block'>
-            <MenuPill />
+            <MenuPill ctaHref={ctaHref} onPaper={onPaper} />
           </div>
-          <MobileMenu className='absolute right-0 top-0 lg:hidden' />
+          <MobileMenu ctaHref={ctaHref} onPaper={onPaper} className='absolute right-0 top-0 lg:hidden' />
         </div>
       </div>
     </nav>

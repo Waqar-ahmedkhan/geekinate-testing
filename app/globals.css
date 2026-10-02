@@ -255,6 +255,11 @@
   }
 }
 
+.on-paper :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+}
+
 [data-marked] {
   outline: 1.5px solid var(--volt);
   outline-offset: -1.5px;

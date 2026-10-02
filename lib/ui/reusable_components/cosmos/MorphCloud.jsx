@@ -120,7 +120,7 @@ export default function MorphCloud({ onFirstFrame }) {
     values.uFaceYaw.value = Math.atan2(anchor, COSMOS.cameraZ) * stage.form;
     values.uSpin.value = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle * (1 - stage.form);
 
-    const fit = fitGlobe(aspect);
+    const fit = fitGlobe(aspect, 1 - (2 * stage.floor) / state.size.height);
     const radius = fit.radius * HALF_HEIGHT;
     coastGlobe(delta);
     const spin = state.clock.elapsedTime * GLOBE.spin + globe.angle + clamp01(stage.heroOut) * COSMOS.scrollSpin;

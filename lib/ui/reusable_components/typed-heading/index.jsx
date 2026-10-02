@@ -14,7 +14,7 @@ export default function TypedHeading({ phrases, as: Heading = 'h2', className })
   const [shown, setShown] = useState(first);
   const [typing, setTyping] = useState(false);
   useEffect(() => {
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
+    if (phrases.length < 2 || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
     let index = 0,
       at = phrases[0].length,
       erasing = true,

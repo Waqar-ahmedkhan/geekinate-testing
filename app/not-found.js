@@ -12,7 +12,7 @@ export default function NotFound() {
       <Section>
         <div className='flex flex-col items-start gap-6'>
           <SectionHead as='h1' eyebrow={eyebrow} heading={heading} className='mb-0' />
-          <Button asChild size='lg' className='rounded-full shadow-brutal'>
+          <Button asChild variant='volt' size='pill'>
             <Link href='/'>{action}</Link>
           </Button>
         </div>

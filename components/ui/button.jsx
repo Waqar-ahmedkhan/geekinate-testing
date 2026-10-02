@@ -18,6 +18,8 @@ const buttonVariants = cva(
         destructive:
           'bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40',
         link: 'text-primary underline-offset-4 hover:underline',
+        volt: 'cursor-pointer border-[1.5px] border-ink bg-volt font-semibold tracking-[-0.01em] text-ink shadow-brutal-sm duration-200 ease-brutal hover:-translate-x-px hover:-translate-y-px hover:shadow-brutal',
+        line: 'cursor-pointer border-[1.5px] border-foreground/30 bg-transparent font-semibold tracking-[-0.01em] text-foreground duration-200 ease-brutal hover:border-foreground hover:bg-foreground/[0.06]',
       },
       size: {
         default: 'h-8 gap-1.5 px-2.5 has-data-[icon=inline-end]:pr-2 has-data-[icon=inline-start]:pl-2',
@@ -29,6 +31,8 @@ const buttonVariants = cva(
           "size-6 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-lg [&_svg:not([class*='size-'])]:size-3",
         'icon-sm': 'size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg',
         'icon-lg': 'size-9',
+        pill: 'h-12 gap-2 rounded-full px-6 text-[15px]',
+        'pill-sm': 'h-9 gap-1.5 rounded-full px-4 text-sm',
       },
     },
     defaultVariants: {

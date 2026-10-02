@@ -174,6 +174,14 @@ two blocks that do different jobs:
 Palette and geometry are transcribed from `geekinate new logo/geekinate-homepage-v2.html`; see AGENTS.md for the token table and the
 rule against inventing values.
 
+**Every text button is one of two variants on the shadcn `Button`** (2026-10-02, after the user found the volt buttons' type too
+thin). `volt` is the call to action: volt fill, 1.5px ink border, Red Hat Display 600, the `brutal-sm` hard shadow that lifts a
+pixel to `brutal` on hover. `line` is the secondary: a 30% foreground border that firms up on hover, so it reads on black and on
+paper alike. Sizes `pill` (48px, 15px type) and `pill-sm` (36px, the nav). There is no arrow icon: one was added after Stokt's
+buttons and removed on sight the same day ("remove these Arrows"). Links use `cn(buttonVariants(...))` rather than `Button asChild` where they are not
+already a `Button`, and `Actions` is the one place a page's button row is built — the home hero used to carry its own copy of
+those classes. Before this the site had five separately styled volt buttons in two weights.
+
 ## SEO
 
 - `lib/seo.js` is the only place the metadata shape is defined. `buildMetadata({ title, description, path, image })` returns title,

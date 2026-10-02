@@ -1,13 +1,12 @@
 import Link from 'next/link';
+import { buttonVariants } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const ACTION = 'border-brutal rounded-full px-6 py-3 text-sm transition-colors duration-200 ease-brutal';
-const ACCENT = 'bg-volt text-ink shadow-brutal-sm hover:bg-volt/85';
-const PLAIN = 'text-paper hover:bg-lift';
+const actionClass = (accent) => cn(buttonVariants({ variant: accent ? 'volt' : 'line', size: 'pill' }));
 
 export default function Actions({ items, link: Anchor = Link, meta = () => null, className }) {
   const actionEls = items.map((item) => (
-    <Anchor key={item.label} href={item.href} {...meta(item)} className={cn(ACTION, item.accent ? ACCENT : PLAIN)}>
+    <Anchor key={item.label} href={item.href} {...meta(item)} className={actionClass(item.accent)}>
       {item.label}
     </Anchor>
   ));

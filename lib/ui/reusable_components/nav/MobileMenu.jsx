@@ -5,6 +5,7 @@ import { Dialog } from 'radix-ui';
 import { EllipsisVertical, X } from 'lucide-react';
 import BrandMark from '../BrandMark';
 import GlassPill from './GlassPill';
+import { buttonVariants } from '@/components/ui/button';
 import { holdScroll } from '@/lib/scroll/lock';
 import { cn } from '@/lib/utils';
 import { NAV_CTA, NAV_LINKS, SITE } from '@/constants';
@@ -22,9 +23,7 @@ const ICON_BUTTON =
 const ITEM =
   'flex items-center justify-between border-b-[1.5px] border-line py-4 text-[1.375rem] leading-none tracking-[-0.02em] ' +
   'text-mut transition-colors duration-200 hover:text-paper';
-const CTA =
-  'border-brutal flex items-center justify-center rounded-full bg-volt px-5 py-3 text-sm font-semibold text-ink ' +
-  'shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85';
+const CTA = cn(buttonVariants({ variant: 'volt', size: 'pill' }), 'w-full');
 
 export default function MobileMenu({ ctaHref, onPaper, className }) {
   const linkEls = NAV_LINKS.map(({ label, href }) => (

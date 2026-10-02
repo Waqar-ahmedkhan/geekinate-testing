@@ -23,9 +23,6 @@ const CHIP_ON = 'bg-volt shadow-brutal-sm';
 const CHIP_OFF = 'bg-paper hover:bg-wash';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
 const FORM = 'rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
-const SUBMIT =
-  'mt-2 h-12 cursor-pointer self-center rounded-full border-[1.5px] border-ink bg-volt px-8 text-base text-ink shadow-brutal hover:bg-volt/85';
-const AGAIN = 'mt-2 h-11 cursor-pointer rounded-full border-[1.5px] border-ink bg-paper px-6 text-ink hover:bg-wash';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 12;
@@ -149,7 +146,7 @@ export default function ContactForm({ topic }) {
         </span>
         <h3 className='font-display text-3xl leading-none tracking-[-0.01em] text-ink'>{success.title}</h3>
         <p className='text-base leading-[1.6] text-mut'>{success.body}</p>
-        <Button type='button' onClick={reset} variant='outline' className={AGAIN}>
+        <Button type='button' onClick={reset} variant='line' size='pill-sm' className='mt-2'>
           {success.again}
         </Button>
       </div>
@@ -198,7 +195,7 @@ export default function ContactForm({ topic }) {
           {labelFor('company')}
           <Input {...fieldProps('company')} type='text' autoComplete={fields.company.autoComplete} className={FIELD} />
         </div>
-        <Button type='submit' disabled={pending} className={SUBMIT}>
+        <Button type='submit' disabled={pending} variant='volt' size='pill' className='mt-2 self-center px-8'>
           {pending ? <LoaderCircle aria-hidden='true' className='size-4 animate-spin' /> : null}
           {pending ? submit.pending : submit.idle}
         </Button>

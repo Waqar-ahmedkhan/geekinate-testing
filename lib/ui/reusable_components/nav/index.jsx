@@ -9,6 +9,7 @@ import MobileMenu from './MobileMenu';
 import NavLinks from './NavLinks';
 import ProgressRing from './ProgressRing';
 import useScrollProgress from './useScrollProgress';
+import { buttonVariants } from '@/components/ui/button';
 import { scrollToTop as glideToTop } from '@/lib/scroll/controller';
 import { cn } from '@/lib/utils';
 import { CONTACT_ROUTES, LAYOUT, NAV_CTA, NAV_LINKS, SITE } from '@/constants';
@@ -27,6 +28,7 @@ const RETREAT_TRANSITION = `transform ${RETREAT_MS}ms ${EASE}`;
 const SPREAD_MS = 720;
 const SPREAD_TRANSITION = `max-width ${SPREAD_MS}ms ${EASE}`;
 const PAPER_GLASS = 'bg-void/80';
+const CTA_CLASS = cn(buttonVariants({ variant: 'volt', size: 'pill-sm' }));
 
 const clamp = (value) => Math.min(1, Math.max(0, value));
 const contactHref = (pathname) => (CONTACT_ROUTES.some((route) => pathname.startsWith(route)) ? NAV_CTA.local : NAV_CTA.href);
@@ -37,10 +39,7 @@ const MenuPill = ({ ctaHref, onPaper }) => (
       items={NAV_LINKS}
       className='min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
     />
-    <Link
-      href={ctaHref}
-      className='border-brutal shrink-0 rounded-full bg-volt px-3.5 py-1.5 text-[13px] font-semibold whitespace-nowrap text-ink shadow-brutal-sm transition-colors duration-200 hover:bg-volt/85 sm:px-5 sm:text-sm'
-    >
+    <Link href={ctaHref} className={CTA_CLASS}>
       {NAV_CTA.label}
     </Link>
   </GlassPill>

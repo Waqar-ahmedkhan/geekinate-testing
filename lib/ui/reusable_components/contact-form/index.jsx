@@ -1,8 +1,9 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { Check, CircleAlert, LoaderCircle } from 'lucide-react';
+import { Check, ChevronDown, CircleAlert, LoaderCircle } from 'lucide-react';
 import { toast } from 'sonner';
+import { Select } from 'radix-ui';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,10 +18,12 @@ const AREA =
   'min-h-40 rounded-lg border-[1.5px] border-ink bg-paper px-4 py-3 text-base text-ink shadow-brutal-sm placeholder:text-grey md:text-base';
 const FIELD_BAD = 'border-destructive';
 const LABEL = 'font-mono text-[11px] uppercase tracking-[0.14em] text-grey';
-const CHIP =
-  'cursor-pointer rounded-full border-[1.5px] border-ink px-4 py-2 font-mono text-[11px] uppercase tracking-[0.14em] text-ink transition-colors duration-200 ease-brutal disabled:cursor-default';
-const CHIP_ON = 'bg-volt shadow-brutal-sm';
-const CHIP_OFF = 'bg-paper hover:bg-wash';
+const TRIGGER = `group ${FIELD} flex w-full cursor-pointer items-center justify-between gap-3 text-left transition-colors duration-200 hover:bg-wash disabled:cursor-default data-[placeholder]:text-grey data-[state=open]:bg-wash`;
+const CHEVRON = 'size-4 shrink-0 text-ink transition-transform duration-200 ease-brutal group-data-[state=open]:rotate-180';
+const MENU =
+  'on-paper z-[60] max-h-(--radix-select-content-available-height) w-(--radix-select-trigger-width) overflow-hidden rounded-lg border-[1.5px] border-ink bg-paper p-1.5 text-ink shadow-brutal data-[state=open]:animate-in data-[state=open]:fade-in-0 data-[state=open]:slide-in-from-top-2';
+const OPTION =
+  'relative flex cursor-pointer select-none items-center rounded-md py-2.5 pl-3 pr-10 text-base leading-tight text-ink outline-none! transition-colors duration-150 data-[highlighted]:bg-wash data-[state=checked]:bg-volt data-[state=checked]:data-[highlighted]:bg-volt';
 const PANEL = 'flex flex-col items-start gap-3 rounded-lg border-[1.5px] border-ink bg-paper p-6 shadow-brutal md:p-8';
 const FORM = 'rounded-lg border-[1.5px] border-ink bg-lift p-6 shadow-brutal md:p-8';
 
@@ -38,7 +41,8 @@ const validate = ({ name, email, message }) => {
   return found;
 };
 
-const EMPTY = { name: '', email: '', company: '', message: '', interests: [] };
+const EMPTY = { name: '', email: '', company: '', message: '', interest: '' };
+const toPayload = ({ interest, ...rest }) => ({ ...rest, interests: interest ? [interest] : [] });
 
 export default function ContactForm({ topic }) {
   const { fields, interests, submit, success, failure } = contactContent;
@@ -55,11 +59,6 @@ export default function ContactForm({ topic }) {
     if (!touched[field]) return;
     setErrors((current) => ({ ...current, [field]: validate(merged)[field] }));
   };
-  const toggle = (option) => () =>
-    setValues((current) => ({
-      ...current,
-      interests: current.interests.includes(option) ? current.interests.filter((item) => item !== option) : [...current.interests, option],
-    }));
   const blur = (field) => () => {
     setTouched((current) => ({ ...current, [field]: true }));
     const found = validate(values);
@@ -80,7 +79,7 @@ export default function ContactForm({ topic }) {
       const response = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...values, topic, trap: trapRef.current?.value || '' }),
+        body: JSON.stringify({ ...toPayload(values), topic, trap: trapRef.current?.value || '' }),
       });
       if (!response.ok) throw new Error(String(response.status));
       setStatus('sent');
@@ -123,21 +122,15 @@ export default function ContactForm({ topic }) {
       </Label>
     );
   };
-  const interestEls = interests.options.map((option) => {
-    const picked = values.interests.includes(option);
-    return (
-      <button
-        key={option}
-        type='button'
-        aria-pressed={picked}
-        disabled={pending}
-        onClick={toggle(option)}
-        className={cn(CHIP, picked ? CHIP_ON : CHIP_OFF)}
-      >
-        {option}
-      </button>
-    );
-  });
+  const pickInterest = (interest) => setValues((current) => ({ ...current, interest }));
+  const interestEls = interests.options.map((option) => (
+    <Select.Item key={option} value={option} className={OPTION}>
+      <Select.ItemText>{option}</Select.ItemText>
+      <Select.ItemIndicator className='absolute right-3 flex items-center'>
+        <Check aria-hidden='true' className='size-4' />
+      </Select.ItemIndicator>
+    </Select.Item>
+  ));
   if (status === 'sent')
     return (
       <div className={PANEL} role='status'>
@@ -154,14 +147,24 @@ export default function ContactForm({ topic }) {
   return (
     <form ref={formRef} noValidate onSubmit={send} className={FORM}>
       <div className='flex flex-col gap-4'>
-        <div className='flex flex-col gap-3'>
-          <span id='interests-label' className={LABEL}>
+        <div className='flex flex-col gap-2'>
+          <Label htmlFor='interest' className={LABEL}>
             {interests.label}
             <span className='text-grey'> ({interests.optional})</span>
-          </span>
-          <div role='group' aria-labelledby='interests-label' className='flex flex-wrap gap-2'>
-            {interestEls}
-          </div>
+          </Label>
+          <Select.Root value={values.interest} onValueChange={pickInterest} disabled={pending}>
+            <Select.Trigger id='interest' className={TRIGGER}>
+              <Select.Value placeholder={interests.placeholder} />
+              <Select.Icon asChild>
+                <ChevronDown aria-hidden='true' className={CHEVRON} />
+              </Select.Icon>
+            </Select.Trigger>
+            <Select.Portal>
+              <Select.Content position='popper' sideOffset={8} className={MENU}>
+                <Select.Viewport>{interestEls}</Select.Viewport>
+              </Select.Content>
+            </Select.Portal>
+          </Select.Root>
         </div>
         <div className='flex flex-col gap-2'>
           {labelFor('message')}

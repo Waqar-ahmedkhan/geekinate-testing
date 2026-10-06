@@ -5,7 +5,7 @@ import { useFrame } from '@react-three/fiber';
 import { Euler, Matrix4, Quaternion, Vector3 } from 'three';
 import { getCloud, wearShape } from './cloud';
 import { createGovernor } from './quality';
-import { fitGlobe, getGlobe } from '@/lib/globe/scene';
+import { fitGlobe, getGlobe, globeApex } from '@/lib/globe/scene';
 import { coastGlobe, globe } from '@/lib/input/globe';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
@@ -120,7 +120,7 @@ export default function MorphCloud({ onFirstFrame }) {
     values.uFaceYaw.value = Math.atan2(anchor, COSMOS.cameraZ) * stage.form;
     values.uSpin.value = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle * (1 - stage.form);
 
-    const fit = fitGlobe(aspect, 1 - (2 * stage.floor) / state.size.height);
+    const fit = fitGlobe(aspect, globeApex(stage.floor, state.size.height));
     const radius = fit.radius * HALF_HEIGHT;
     coastGlobe(delta);
     const spin = state.clock.elapsedTime * GLOBE.spin + globe.angle + clamp01(stage.heroOut) * COSMOS.scrollSpin;

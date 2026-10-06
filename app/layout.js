@@ -16,7 +16,7 @@ const display = Instrument_Serif({
 const sans = Red_Hat_Display({ subsets: ['latin'], display: 'swap', variable: '--font-red-hat-display' });
 const mono = IBM_Plex_Mono({ subsets: ['latin'], display: 'swap', weight: ['400', '500'], variable: '--font-ibm-plex-mono' });
 const rootMetadata = buildMetadata({
-  title: `${SITE.name} | Development & AI, Games & Marketing`,
+  title: `${SITE.name} | AI Development, Games & Marketing`,
   description: SITE.description,
 });
 const fontVariables = `${sans.variable} ${display.variable} ${mono.variable}`;

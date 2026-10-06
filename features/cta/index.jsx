@@ -71,7 +71,7 @@ export default function Cta() {
     </span>
   ));
   return (
-    <Section variant='ink' className='px-0 py-0 md:px-0 md:py-0'>
+    <Section variant='ink' compact className='px-0 py-0 md:px-0 md:py-0'>
       <div ref={frame} className='h-[105svh] lg:h-[160svh]'>
         <div ref={stage} className='sticky top-0 flex h-[35svh] items-start overflow-hidden lg:h-svh'>
           <h2

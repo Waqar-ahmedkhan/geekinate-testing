@@ -40,6 +40,8 @@ export const NAV_CTA = { label: 'Let’s talk', href: '/#contact', local: '#cont
 
 export const CONTACT_ROUTES = ['/services/', '/work/'];
 
+export const LEGAL = { privacy: '/privacy-policy', terms: '/terms-and-conditions' };
+
 export const SOCIALS = [
   { label: 'LinkedIn', href: 'https://www.linkedin.com/company/geekinate' },
   { label: 'GitHub', href: 'https://github.com/geekinate' },

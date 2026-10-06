@@ -14,14 +14,20 @@ Geekinate's agency website, rebuilt from scratch. A single Next.js app living at
 `frontend/` wrapper. The repo is the application. It is **not deployed on Vercel**: production is a Node server we control,
 `next start` behind a reverse proxy. See `ARCHITECTURE.md` §Shape for what that changes.
 
-**The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
-**Games & Interactive** (`games`), **Marketing** (`marketing`). The last was **Marketing Systems** until 2026-10-02, when the
+**The site sells three services**, and `services` in `lib/content/index.js` is the list: **AI Development** (`development`),
+**Games & Interactive** (`games`), **Marketing** (`marketing`). The first was **Development & AI** until 2026-10-06, when the user
+renamed it sitewide over the client handoff's normalisation (URL unchanged). The last was **Marketing Systems** until 2026-10-02, when the
 client's handoff (`../docs/geekinate-copy-and-ui-handoff.md`) renamed it sitewide — nav, cards, footer, page titles, `/partner` and
 the work tags alike — and kept every URL. The site once named four pillars with Web Products as its own; Web Products is folded into
-Development & AI. The pillar vocabulary used to survive as **tags** on the featured work, and since the same handoff it does not:
-`work[].disciplines` draws from the three service names only (`Web Products` became `Development & AI`, `Marketing Systems` became
-`Marketing`). Shifa International, tile 5, is the one `Marketing` tile, on the user's word (2026-09-25). The hero's eyebrow is
-derived from `services` too. Derive from `services` rather than transcribing a count anywhere.
+AI Development. The pillar vocabulary used to survive as **tags** on the featured work, and since the same handoff it does not:
+`work[].disciplines` draws from the three service names only (`Web Products` became `AI Development`, `Marketing Systems` became
+`Marketing`). Shifa International, tile 5, is the one `Marketing` tile, on the user's word (2026-09-25). Derive from `services`
+rather than transcribing a count anywhere.
+
+**The home hero has no eyebrow.** The three service names sat above the `h1` in mono caps with dot separators, each lighting its
+arc group on the globe under hover; on 2026-10-06 the user said the strip gave the hero an "AI vibe" and it was removed, along with
+most of the body sentence ("need to reduce this line"), which now fits one line on desktop. Nothing sets `globe.pillar` any more,
+so the globe's pillar highlight is dormant — putting the strip back restores it. Do not reintroduce a mono-caps label row there.
 
 Design direction is not open to invention: it is decided in the Asana thread *Revamp Web Design to a modern design*, with
 `wearestokt.com` as the agreed base, `denqid.com` for the hero, and `landing.love/categories/agency` for further reference. It is
@@ -111,13 +117,14 @@ putting `{ development: 'circuit' }` back in that map restores it. See ARCHITECT
 The camera is the other load-bearing pair: 7.1 degrees at a distance of 60. It is a long lens on purpose, and changing either number
 without the other rescales the entire scene. See the note at the top of `constants/cosmos.js`.
 
-**On a portrait screen the globe sits below the hero's buttons.** The globe's top is `GLOBE.apex`, a fixed fraction of the viewport
-(about 55% down), while the hero copy is a fixed pixel height — so once the hero gained its body sentence (2026-10-02) the copy ran
-into the globe on every phone shorter than about 800px, and on a 664px iPhone with Safari's bars the sentence and buttons sat on
-the dots. Asked the same day, the user picked lowering the globe over letting it overlap. The hero marks its button row
-`data-globe-floor`; `measureLayout` records that row's bottom as `stage.floor`, and `fitGlobe` drops the apex to `GLOBE.floorGap`
-below it whenever the aspect is under 1. Landscape framing, desktop included, is untouched. PR #21's phone recording was made at the
-old framing, so it has to be re-recorded when that branch lands or the handoff to the live globe jumps.
+**The globe's top sits a fixed gap below the hero's buttons, on every screen.** The globe's top was `GLOBE.apex`, a fixed fraction
+of the viewport (about 55% down), while the hero copy is a fixed pixel height — so the copy ran into the globe on any viewport short
+enough: phones first (fixed for portrait only on 2026-10-02), then laptops, where at 125% display scaling the buttons sat on the
+rim while a 1080p monitor showed a clean gap. On 2026-10-06 the user asked for the same gap on every screen size. The hero marks its
+button row `data-globe-floor`; `measureLayout` records that row's bottom as `stage.floor`, and `globeApex` puts the apex
+`GLOBE.floorGap` CSS pixels (40) below it at every aspect, so the globe rises on tall screens and drops on short ones. `GLOBE.apex`
+is only the fallback for a page with no floor. PR #21's phone recording was made at the old framing, so it has to be re-recorded
+when that branch lands or the handoff to the live globe jumps.
 
 **The client marquee's numbers are transcribed, not chosen.** `constants/marquee.js` holds values read off `wearestokt.com` on
 2026-08-25 — the live Framer `Ticker`'s own props plus its computed styles, not an eyeballed reconstruction: `speed: 40` px/s
@@ -165,13 +172,17 @@ what the visitor can do and what Geekinate does, with no unsupported promise —
 lead traced" and a universal "4 to 6 weeks" are out wherever they still stand. Applied so far: the naming above, the home page's
 copy (hero, clients, work, services, contact), and the CTA convention — every button that opens an enquiry reads **Let's talk**,
 every button to the work grid reads **See our work** (`/#work`), and the form submits with **Send enquiry**. **There is one
-contact form and every page shows it**, interest chips included: the handoff drew those six options for Marketing, and the user
-put them on the shared form instead ("all pages will show the same contact us form") — do not fork the form per service. The nav CTA goes to the
+contact form and every page shows it**, interest question included: the handoff drew those six options for Marketing, and the user
+put them on the shared form instead ("all pages will show the same contact us form") — do not fork the form per service. Since
+2026-10-06 the options are a single-choice dropdown, not chips (instructed) — a Radix `Select` from the already-installed `radix-ui`
+package, because the native `select`'s option list cannot be styled and was called "very bad" on sight. **The *Ready to Geekinate?* line sits above every
+contact form**: `Contact` renders `features/cta` itself (2026-10-06, "should be default and always top on the contact us form"),
+so no page adds it separately. The nav CTA goes to the
 current page's own `#contact` on `/services/*` and `/work/*` (`CONTACT_ROUTES`) and to `/#contact` everywhere else. The home page's
 `Process` link was removed because the home page has no `#process` to land on. The Marketing page carries the handoff's copy
 section by section: its own Scope and Process eyebrows and headings through `service.sections` (merged over the shared
 `servicePageContent.blocks`), a small label on each scope card, an intro line under the Deliverables and Process headings, no facts
-strip, and a single fixed contact heading under a *Let's talk* eyebrow. Development & AI and Games keep their own copy.
+strip, and a single fixed contact heading under a *Let's talk* eyebrow. AI Development and Games keep their own copy.
 
 **The case pages take the old site's content order and Stokt's case-study layout.** Instructed 2026-09-24: `/work/[slug]`
 carries the portfolio page on geekinate.com in order (title, cover, Requirements / Challenge / Solution, technologies, three
@@ -433,6 +444,12 @@ three generated components; check any new shadcn output for these two tokens bef
 throughout `checkbox.jsx` and `radio-group.jsx`, so every checked-state style in them is dead on arrival — a selected radio simply
 renders as unselected. Retarget to `data-[state=checked]:`. Safer still for anything load-bearing: derive the class from React
 state, the way `contact-form` styles its chips.
+
+**A portalled popover leaves `.on-paper` behind, and the paper focus outline beats Tailwind.** Radix renders a `Select`'s list in a
+portal on `body`, outside the paper section, so `shadow-brutal` resolved to the root's faint volt shadow until the list itself was
+given `on-paper`. Inside it, `.on-paper :focus-visible` drew a 2px ink ring around whichever option the pointer was on, and
+`outline-none` could not remove it: that rule is unlayered CSS in `globals.css`, and unlayered declarations beat everything in
+Tailwind's `@layer utilities` whatever the specificity. The options carry `outline-none!`; their highlight colour is the focus cue.
 
 **`npx shadcn add` installs a junk npm package called `cn`.** It writes `import { cn } from "cn"` instead of the configured
 `@/lib/utils` alias and then installs a real, unrelated package of that name to satisfy it. Both times it has run here it did this.

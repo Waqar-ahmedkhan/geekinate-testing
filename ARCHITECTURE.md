@@ -85,9 +85,10 @@ Shape inherited from `../Eleve/development/frontend`:
 - `app/` pages compose sections and do nothing else.
 
 Built so far, in page order: `features/hero` (01), `features/clients`, `features/work` (02), `features/services` (03),
-`features/testimonials` (04), `features/cta`, `features/contact`. The service detail route adds `features/service-hero` and
+`features/testimonials` (04), `features/contact` (which renders `features/cta` above itself). The service detail route adds `features/service-hero` and
 `features/service-dossier` (which owns `Scope.jsx`, `Process.jsx` and `Deliverables.jsx`), and reuses `features/contact`.
-`features/partner` holds `/partner`'s fourteen sections; `features/lab` is the `/lab` prototype and is not part of the site.
+`features/partner` holds `/partner`'s fourteen sections; `features/legal` renders both legal pages; `features/lab` is the `/lab`
+prototype and is not part of the site.
 The case route adds `features/case-hero` (which owns the hero's `Cover.jsx`) and `features/case-study` (which owns
 `Intro.jsx`, `Stack.jsx`, `Brief.jsx`, `Solution.jsx` and `More.jsx`), and reuses `features/contact`.
 `Scope`'s cards are `LiftCard`s with a `RollIndex`, on trial since 2026-09-17: on hover the card lifts 3px on the `ease-spring`
@@ -671,7 +672,7 @@ is given.
 
 ## The pre-contact CTA
 
-`features/cta` — the giant scroll-scrubbed line between Testimonials and Contact, on `ink` (black, paper type — built dark,
+`features/cta` — the giant scroll-scrubbed line above every contact form, on `ink` (black, paper type — built dark,
 flipped light on 2026-08-27, flipped back to dark on 2026-08-28; both calls were the user's, so treat the surface as taste
 still settling, not a derivable rule). A
 measured reconstruction of riseatseven.com's "Ready to Rise at Seven?" section, taken live at 1905×911 on 2026-08-27. Set in
@@ -687,7 +688,7 @@ in `constants/cta.js`:
 | Type | One line, `16vw` desktop / `30vw` mobile, weight 600 (the reference's 500 read thin at our sizes), `tracking -0.035em`, `leading-tight`, letters split into individual spans |
 | Sweep | `x` from `+1.07 × viewport width` — the whole line starts off-screen right — to the **last word centred in the viewport** (measured off the word's own span, so the copy can change), `ease: none`, from `top 70%` |
 | Drift | `y` from `dip` 0.16 to `drop` 0.44 × stage height across the same range — the reference starts at 0, ours starts one dip low so the line rises as it crosses — with the line anchored to the stage's **top**, not its centre |
-| Letters | `yPercent -60, rotate 10` settling to 0 with `back.inOut(4)` — the reference ran duration 2.5 / stagger 0.35 from `top 77%`, ours runs 1 / 0.5 from `top 70%` to the unpin, because the centred rest pose lengthened the sweep and the reference timing finished every wave before its letter scrolled into view (2026-08-27) |
+| Letters | `yPercent -60, rotate 10` settling to 0 with `back.inOut(4)` — the reference ran duration 2.5 / stagger 0.35 from `top 77%`, ours runs 1 / 0.5 from `top 70%` to the unpin, because the centred rest pose lengthened the sweep and the reference timing finished every wave before its letter scrolled into view (2026-08-27). Ending the wave at `top top` instead, so the pinned frame always showed a whole line, was tried on 2026-10-06 and rejected outright — keep the wave running through the pin |
 
 The three of those together are what make the motion read as the reference's: the line enters the frame at the bottom-right corner
 already mid-wave, crosses the section diagonally — leftward from the sweep, upward because the page scrolls faster than the drift —
@@ -753,8 +754,19 @@ was reserved for this surface long before the surface did.
 
 The top row splits 50/50 — the lockup on the left, four columns spread with `justify-between` on the right. Those
 columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
-`services` array in the same file** so the pillar list cannot drift from the section that renders it. Legal has no pages yet;
-an empty `href` renders as plain text rather than a dead link, the same rule `WorkTile` follows.
+`services` array in the same file** so the pillar list cannot drift from the section that renders it. An empty `href` renders as
+plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Partner with Us*, *Privacy Policy* and
+*Terms & Conditions* (2026-10-06).
+
+## The legal pages
+
+`/privacy-policy` and `/terms-and-conditions` (paths in `LEGAL`, `constants/index.js`) render `features/legal` from
+`legalPages` in `lib/content/legal.js`: a dark title band (eyebrow, italic display `h1`, last-updated line) over a `paper` band of
+ruled sections in a `max-w-3xl` column, after Stokt's own `/policies/privacy-policy` (title, date, plain `h2` sections, no index).
+The copy was drafted on 2026-10-06 from what the site actually does — no analytics or cookies (the `dataLayer` pushes reach no
+tag), self-hosted fonts and media, the contact and referral form fields, the referral throttle's in-memory IP — and **needs the
+client's or a lawyer's review**: it names no legal entity, address or governing law because none was supplied. Change the
+policy's wording before adding analytics. Both pages are in the sitemap.
 
 **The direct email address is not in the footer.** It sat under the lockup for part of 2026-09-16 and was moved on instruction
 to `features/contact`, centred under both columns. On 2026-09-17 it became two lines, picked from a four-option prototype: a mono
@@ -779,11 +791,17 @@ sentence underneath instead of beside, because Marketing's steps are sentences (
 max-content column could hold at display size. `Scope` renders a card's optional `label` as an `Eyebrow` above its title.
 
 **Every contact form asks what the visitor wants help with** (2026-10-02). The handoff drew six options for the Marketing page; the
-user had them put on the one shared form instead, so the home page, every service page and every case page carry the same chips:
-`contactContent.interests`. They are optional, any number can be picked, and each is a toggle button with `aria-pressed` that
-turns volt, styled like `/partner`'s pills. The chosen labels post as `interests`; `/api/contact` keeps only labels from that same
-list, once each, and writes them into the enquiry as an `Interested in:` line. The message box below them is labelled *Tell us a
-little more*, because the chips now ask the handoff's *What would you like help with?*. The old `topics` list (*Closest to*),
+user had them put on the one shared form instead, so the home page, every service page and every case page carry the same
+question: `contactContent.interests`. It began as six toggle chips; since 2026-10-06 it is one optional dropdown (instructed:
+"instead of these chips can we place dropdown or select here?"). A native `select` shipped first and was rejected the same day
+("looking very bad") because its option list is the browser's own; it is now Radix `Select` from the `radix-ui` package that was
+already installed. The trigger is styled like the text fields with *Choose one* as the placeholder and a chevron that turns over
+when open; the list opens 8px below at the trigger's width (flipping above near the bottom of the screen), in the form's own
+geometry — ink border, 20px-scale radius, hard ink shadow — with hovered options on `wash` and the chosen one on `volt` with a
+check. The form still posts `interests` as an array — `toPayload` wraps the one
+choice — so `/api/contact` and any webhook reading it are unchanged; the route keeps only labels from that same list and writes
+them into the enquiry as an `Interested in:` line. The message box below is labelled *Tell us a
+little more*, because the select now asks the handoff's *What would you like help with?*. The old `topics` list (*Closest to*),
 which nothing rendered, went with it. The typed heading holds each complete
 question for `TYPED.holdMs` (4000, the handoff's minimum), reserves the longest question's height so nothing below moves, stops
 under reduced motion, and gives screen readers the first phrase only — which is why the home list starts with "What are we
@@ -854,7 +872,7 @@ run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under th
 |---|---|
 | Stage | The hero, `relative z-10`, and from `lg` `sticky` with `top: min(0px, 100svh - var(--hero-h))`. A `ResizeObserver` writes `--hero-h` and refreshes ScrollTrigger |
 | Spacer | `h-svh`, after the stage inside the same plain wrapper — the stage's containing block — so the hero is held for one small viewport of scroll |
-| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). `Deliverables` was compact too until 2026-09-17, when two short black bands on one page read as two banners; it now fills the screen by carrying its four items as large display-type cards in a 2x2 grid, 615px of content on a 900px viewport, rather than by being stretched. `Process` has been compact since 2026-10-02, with no bottom padding: once the `CtaBand` after it was removed it sat paper against the paper `Contact`, and two full-screen bands with centred content left about 360px of empty white between the last step and the contact eyebrow on a 900px viewport; it is 140px now, the list's own bottom rule closing the section. A child that is not a `<section>` gets none of it |
+| Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). `Deliverables` was compact too until 2026-09-17, when two short black bands on one page read as two banners; it now fills the screen by carrying its four items as large display-type cards in a 2x2 grid, 615px of content on a 900px viewport, rather than by being stretched. `Process` was compact from 2026-10-02 to 2026-10-06, with no bottom padding, because it sat paper against the paper `Contact` and two full-screen paper bands left a wide white gap; since `Contact` brings the black *Ready to Geekinate?* band with it, the user asked for Process at full height again ("this section must be full height") and it is no longer compact. `Cta`'s own section is compact, so the sheet never restyles its scroll stage. A child that is not a `<section>` gets none of it |
 | Recede | One scrubbed timeline over the sheet's `top bottom → top top`: the hero scales to `SHEET.recede.scale` while a black shade rises to `SHEET.recede.dim` |
 | Cover signal | An `IntersectionObserver` on the sheet with `SHEET.coverMargin`: `markSheet(true)` once its top edge passes mid-viewport |
 

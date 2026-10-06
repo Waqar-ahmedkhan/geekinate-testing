@@ -138,22 +138,17 @@ the supplied originals that stay beside them in `public/media/clients/`: ink-on-
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
 flipping `src` values in `lib/content/index.js` is the whole change either way.
 
-**The Elevé tile plays its intro once, and hover runs a second clip.** Instructed 2026-09-22: the Elevé render — tile 1
-that morning, the full-width tile 3 since the afternoon's swap with the AR game — plays itself when the tile scrolls into
-view, once, and after that the tile answers hover with a different clip — the logo colouring in — not a replay. Its `work`
-entry carries both as `media` and `hoverMedia`; `WorkTile` stacks the second over the first and
-fades it in under the pointer. Do not collapse them into one clip, loop the intro, or let hover restart it. The hover clip's
-ground is white, so `hoverMedia.tone: 'light'` turns the caption ink for it; drop that and the title disappears on hover. The
-intro starts the moment half the tile is on screen, with no dwell — `INTRODUCE` in `constants/video.js`. It went there and
-back: half on screen was the first cut, then nine tenths held for 600ms after the clip ran out while the tile was still
-scrolling in ("jb taak pura tile dekhne pohonchta hoon video khatam bhi hochuki hoti hai", 2026-09-22), and on 2026-09-25 the
-dwell was reversed because it made the visitor stop scrolling before anything moved ("video should start as soon as I enter
-to the viewport of the 3 tile, and cross it half"). Both complaints are real; the latest instruction wins. And hover
-does nothing while the intro runs ("jb autoplay wali video chal rahi hai toh hover wali nhi chaly gi", same day): the reveal
-is gated on the intro's `ended` event, in both the handlers and the CSS, and starts on its own if the pointer is already there.
-Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi sirf tb stop
-hogi jb hover hat jaye ga", 2026-09-22); only the intro is one-shot, and it is cut at 1.0s because its export held a still for
-four seconds past the flicker-in, which read as the clip running on with nothing happening.
+**The Elevé tile rests on a still, and hover runs the logo clip.** The full-width tile 3 shows the brand render's settled
+frame (`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip — the logo colouring
+in on white — fading it in under the pointer. From 2026-09-22 to 2026-10-06 the render itself played as a one-shot intro when
+half the tile came on screen, with hover gated on its `ended` event; on 2026-10-06 the user had the intro removed because of
+its flicker-in ("jb yeh tile view port may ata hai toh video start hoti hai jis may flicker hai ... flicker na ho bs screen asi
+ho, or hover par woh video chaly"). So a tile with `hoverMedia` now renders `media.poster` as its base and no base video, and
+hover works from the first moment. `eleve-mockup.mp4` stays in `public/media/work/` unused; restoring the intro means giving
+`media` its sources back and the gating `WorkTile` had. Do not put the autoplay back. The hover clip's ground is white, so
+`hoverMedia.tone: 'light'` turns the caption ink on hover; drop that and the title disappears. Every hover clip on every tile
+loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi sirf tb stop hogi jb hover hat jaye ga",
+2026-09-22).
 
 **The copy sells, and the contact prompt follows the page.** Instructed 2026-09-25: every page but `/partner` was rewritten
 because the old copy read as dry and gave nobody a reason to get in touch ("very boring and completely non-sense"). The voice

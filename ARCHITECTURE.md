@@ -494,18 +494,14 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   height. **The rhythm needs exactly five projects** — `span` values in `lib/content/work.js` change with the count.
 - Tiles are `WorkTile`: black fill, 1.5px ink border and hard shadow, with the title and discipline chips overlaid on the media
   and no scrim. A project with no `href` renders a `div` rather than a dead link.
-- **A tile with `hoverMedia` runs two clips.** Instructed 2026-09-22 for the Elevé tile (tile 1 that morning, the
-  full-width tile 3 since the afternoon's swap): `media` is the intro, which plays once when half
-  the tile has settled on screen (`introduce`) and holds its last frame, never replaying on hover; `hoverMedia` sits over it at
-  `opacity-0` and fades in under the pointer (`REVEAL`), restarted from frame 0 on every enter, looping for as long as the
-  pointer stays, and paused in place on leave so the fade-out shows the frame it reached. **Hover is inert
-  until the intro has ended**: the tile holds an `introduced` boolean set from the intro's `ended` event, and until it flips
-  the tile carries no hover handlers and the reveal has no `group-hover` class, so neither playback nor the fade can start
-  mid-intro (instructed 2026-09-22). If the pointer is already resting on the tile when the intro ends, `settle` checks
-  `:hover` and starts the reveal then, rather than waiting for a re-enter that would leave a static first frame fading in
-  under a still pointer. `hoverMedia.tone: 'light'` flips the caption to ink for a clip with a white ground, where the paper
-  title and chips would vanish; it is gated on `introduced` too, or the title would go ink over the dark intro. On touch the
-  intro replays while in view, as every tile does, and a tap reveals the hover clip through the sticky `:hover`.
+- **A tile with `hoverMedia` rests on a still and reveals a second clip.** The Elevé tile (the full-width tile 3): `media`
+  is only a `poster` (the brand render's last frame) plus its `focus`, so the tile renders no base video at all;
+  `hoverMedia` sits over the still at `opacity-0` and fades in under the pointer (`REVEAL`), restarted from frame 0 on every
+  enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
+  `hoverMedia.tone: 'light'` flips the caption to ink on hover for a clip with a white ground, where the paper title and chips
+  would vanish. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on screen, with hover
+  gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating went with it. On touch
+  the still stays put, and a tap reveals the hover clip through the sticky `:hover`.
 - **A tile with `media.poster` shows the poster whenever its clip is not playing.** The native `poster` attribute only covers
   the time before first playback; once a hover has run the clip, a rewound `<video>` shows its own frame 0, and for the laptop
   clips that frame is a different render of the screen than the still the designer supplied. So `WorkTile` also lays the poster
@@ -1008,6 +1004,7 @@ day a transitive version moves. Anything this project actually depends on gets i
 - **The Elevé pair (2026-09-22) opened on tile 1 and moved to the full-width tile 3 the same day**, swapping with the AR game,
   which now runs tile 1 with its 16:9 frame cover-cropped to 2:1 ("3 tile ki video 1 tile may ly jao or 1st tile ki video
   3rd tile may"). `eleve-mockup.mp4` (the brand render, intro) and `eleve-logo.mp4` (the logo colouring in on white, hover)
+  (unused since 2026-10-06; the tile shows `eleve-mockup.webp`, its last frame, exported with ffmpeg at WebP quality 82, 82KB)
   were re-encoded from `../VideoClips/work-specs/tile-1.mp4` and `tile-1-1.mp4`, 4072×2036 sources, at 1920×960
   — the 2:1 tile never shows more — with audio stripped, `+faststart` and CRF 22, which lands the static renders at 266KB and
   67KB. The mockup export carries its own ink frame, `#101615` about 60px down each side and 80px top and bottom, which read as

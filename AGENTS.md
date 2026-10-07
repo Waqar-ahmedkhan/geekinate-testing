@@ -176,8 +176,10 @@ so no page adds it separately. The nav CTA goes to the
 current page's own `#contact` on `/services/*` and `/work/*` (`CONTACT_ROUTES`) and to `/#contact` everywhere else. The home page's
 `Process` link was removed because the home page has no `#process` to land on. The Marketing page carries the handoff's copy
 section by section: its own Scope and Process eyebrows and headings through `service.sections` (merged over the shared
-`servicePageContent.blocks`), a small label on each scope card, an intro line under the Deliverables and Process headings, no facts
-strip, and a single fixed contact heading under a *Let's talk* eyebrow. AI Development and Games keep their own copy.
+`servicePageContent.blocks`), an intro line under the Deliverables and Process headings, no facts strip, and a single fixed contact
+heading under a *Let's talk* eyebrow. AI Development and Games keep their own copy. Its scope cards carried a small label over a
+sentence title until 2026-10-07, when the client's revised copy made the service name the sole heading over one paragraph — the
+same number, heading, paragraph shape the other two service pages run — so `Scope` no longer takes a `label`.
 
 **The case pages take the old site's content order and Stokt's case-study layout.** Instructed 2026-09-24: `/work/[slug]`
 carries the portfolio page on geekinate.com in order (title, cover, Requirements / Challenge / Solution, technologies, three

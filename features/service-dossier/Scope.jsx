@@ -1,4 +1,4 @@
-import { Eyebrow, LiftCard, RollDie, RollIndex, Section, SectionHead } from '@/components';
+import { LiftCard, RollDie, RollIndex, Section, SectionHead } from '@/components';
 import { orderLabel } from '@/lib/utils';
 
 const RISE = 'transition-[color,translate] duration-[460ms] ease-brutal group-hover/lift:-translate-y-0.5 motion-reduce:transition-none';
@@ -8,13 +8,11 @@ const DETAIL = `text-sm leading-[1.6] text-mut group-hover/lift:delay-[80ms] ${R
 const indexMark = (dice, index) => (dice ? <RollDie value={index + 1} /> : <RollIndex value={orderLabel(index)} />);
 
 export default function Scope({ block, intro, items, dice }) {
-  const cardEls = items.map(({ label, title, detail }, index) => {
+  const cardEls = items.map(({ title, detail }, index) => {
     const markEl = indexMark(dice, index);
-    const labelEl = label ? <Eyebrow>{label}</Eyebrow> : null;
     return (
       <LiftCard key={title} onPaper>
         {markEl}
-        {labelEl}
         <h3 className={TITLE}>{title}</h3>
         <p className={DETAIL}>{detail}</p>
       </LiftCard>

@@ -784,7 +784,8 @@ referral form's style — mono caps, a red `*` on required fields and `(optional
 reads *Let's talk*), and `TypedHeading` does not animate a single phrase, which is how the Marketing page gets the handoff's static
 heading. `Cycle` takes `block.intro` as a line under its heading, and when any title has a space it sets the titles smaller with the
 sentence underneath instead of beside, because Marketing's steps are sentences ("Then, we agree on what to fix.") that no
-max-content column could hold at display size. `Scope` renders a card's optional `label` as an `Eyebrow` above its title.
+max-content column could hold at display size. `Scope` cards are number, title, paragraph on every service page; the Marketing
+page's optional `label` eyebrow went with the client's revised copy on 2026-10-07.
 
 **Every contact form asks what the visitor wants help with** (2026-10-02). The handoff drew six options for the Marketing page; the
 user had them put on the one shared form instead, so the home page, every service page and every case page carry the same

@@ -16,7 +16,7 @@ export default function Cta() {
   const line = useRef(null);
   useLayoutEffect(() => {
     if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    const view = () => window.innerHeight;
+    const release = (hold) => `bottom ${stage.current.offsetHeight + Math.round(window.innerHeight * hold)}px`;
     const context = gsap.context(() => {
       const letters = line.current.querySelectorAll('[data-letter]');
       gsap.fromTo(
@@ -31,7 +31,7 @@ export default function Cta() {
           scrollTrigger: {
             trigger: frame.current,
             start: `top ${CTA.letter.lead * 100}%`,
-            end: () => `bottom bottom+=${Math.round(view() * CTA.letter.hold)}`,
+            end: () => release(CTA.letter.hold),
             scrub: true,
           },
         }
@@ -52,7 +52,7 @@ export default function Cta() {
           scrollTrigger: {
             trigger: frame.current,
             start: `top ${CTA.sweep.lead * 100}%`,
-            end: () => `bottom bottom+=${Math.round(view() * CTA.sweep.hold)}`,
+            end: () => release(CTA.sweep.hold),
             scrub: true,
             invalidateOnRefresh: true,
           },
@@ -72,8 +72,8 @@ export default function Cta() {
   ));
   return (
     <Section variant='ink' compact className='px-0 py-0 md:px-0 md:py-0'>
-      <div ref={frame} className='h-[160svh]'>
-        <div ref={stage} className='sticky top-0 flex h-svh items-start overflow-hidden'>
+      <div ref={frame} className='h-[90svh] lg:h-[160svh]'>
+        <div ref={stage} className='sticky top-0 flex h-[50svh] items-start overflow-hidden lg:h-svh'>
           <h2
             ref={line}
             aria-label={heading}

@@ -6,6 +6,7 @@ import Link from 'next/link';
 import VideoSurface from './VideoSurface';
 import useHoverVideo from './useHoverVideo';
 import { cn } from '@/lib/utils';
+import { WORK } from '@/constants';
 
 const SPANS = {
   2: 'lg:col-span-2 aspect-square',
@@ -30,8 +31,8 @@ export default function WorkTile({ title, disciplines = [], span = 2, href, medi
   const paired = Boolean(hoverMedia);
   const poster = media?.poster;
   const [playing, setPlaying] = useState(false);
-  const { videoRef: baseRef, hoverHandlers: baseHandlers } = useHoverVideo();
-  const { videoRef: revealRef, hoverHandlers: revealHandlers } = useHoverVideo({ hoverOnly: true });
+  const { videoRef: baseRef, hoverHandlers: baseHandlers } = useHoverVideo({ line: WORK.playLine });
+  const { videoRef: revealRef, hoverHandlers: revealHandlers } = useHoverVideo({ hoverOnly: true, line: WORK.playLine });
   const watchedRef = paired ? revealRef : baseRef;
   useEffect(() => {
     const video = watchedRef.current;

@@ -9,7 +9,7 @@ export default function InViewVideo({ media, fit = 'cover', loop = false, eager 
   useEffect(() => {
     const video = videoRef.current;
     if (!video || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return undefined;
-    return playWhileShown(video, threshold);
+    return playWhileShown(video, { share: threshold });
   }, [threshold]);
   return <VideoSurface ref={videoRef} media={media} fit={fit} loop={loop} eager={eager} className={className} />;
 }

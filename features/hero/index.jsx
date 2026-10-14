@@ -11,7 +11,7 @@ export default function Hero() {
     <Section
       id='hero'
       variant='clear'
-      className='-mt-[var(--nav-rail)] flex min-h-svh flex-col items-center px-6 pb-0 pt-[calc(var(--nav-rail)+2rem)] sm:pt-[calc(var(--nav-rail)+3.5rem)] md:px-10'
+      className='-mt-[var(--nav-rail)] flex min-h-svh touch-pan-y touch-pinch-zoom flex-col items-center px-6 pb-0 pt-[calc(var(--nav-rail)+2rem)] sm:pt-[calc(var(--nav-rail)+3.5rem)] md:px-10'
     >
       <div className='relative flex w-full flex-col items-center text-center' style={{ maxWidth: LAYOUT.container }}>
         <h1 className={HEADLINE}>

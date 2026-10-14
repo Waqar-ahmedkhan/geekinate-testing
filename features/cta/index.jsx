@@ -72,12 +72,12 @@ export default function Cta() {
   ));
   return (
     <Section variant='ink' compact className='px-0 py-0 md:px-0 md:py-0'>
-      <div ref={frame} className='h-[105svh] lg:h-[160svh]'>
-        <div ref={stage} className='sticky top-0 flex h-[35svh] items-start overflow-hidden lg:h-svh'>
+      <div ref={frame} className='h-[160svh]'>
+        <div ref={stage} className='sticky top-0 flex h-svh items-start overflow-hidden'>
           <h2
             ref={line}
             aria-label={heading}
-            className='w-max font-sans text-[30vw] font-semibold leading-tight tracking-[-0.035em] text-paper will-change-transform lg:text-[16vw]'
+            className='w-max font-sans text-[16vw] font-semibold leading-tight tracking-[-0.035em] text-paper will-change-transform'
           >
             <span aria-hidden='true' className='flex gap-[0.24em]'>
               {wordEls}

@@ -49,6 +49,7 @@ export const COSMOS = {
   scrollSink: 0.42,
   globeLerp: 2.2,
   footerSplit: 1024,
+  footerMarkFill: 0.75,
   globeRoutes: ['/'],
   herolessFade: 2.6,
   shapeSpan: 0.55,

@@ -50,7 +50,7 @@ export default function Footer() {
   return (
     <footer className='relative z-50 p-4'>
       <div className='border-brutal relative flex min-h-[calc(100svh-2rem)] flex-col justify-between overflow-hidden rounded-[12px] bg-void/20 p-6'>
-        <div className='relative flex flex-1 flex-col gap-8 lg:w-1/2'>
+        <div className='relative flex flex-col gap-8 lg:w-1/2 lg:flex-1'>
           <div className='flex flex-col items-start gap-3'>
             <Link
               href='/'
@@ -61,13 +61,14 @@ export default function Footer() {
               {SITE.name}
             </Link>
           </div>
-          <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:my-auto md:w-fit md:gap-x-30 md:gap-y-12'>
+          <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:w-fit md:gap-x-30 md:gap-y-12 lg:my-auto'>
             {footerColumns.map(({ title, links }) => (
               <FooterColumn key={title} title={title} links={links} />
             ))}
           </div>
         </div>
-        <div className='relative mt-16 flex flex-col gap-6 md:flex-row md:items-end md:justify-between'>
+        <div data-footer-mark='' aria-hidden='true' className='min-h-64 flex-1 lg:hidden' />
+        <div className='relative flex flex-col gap-6 md:flex-row md:items-end md:justify-between lg:mt-16'>
           <nav aria-label='Geekinate on social platforms' className='flex flex-wrap items-center gap-x-6 gap-y-2'>
             {SOCIALS.map((social) => (
               <SocialLink key={social.label} {...social} />

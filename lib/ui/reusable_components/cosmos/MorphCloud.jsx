@@ -9,7 +9,7 @@ import { fitGlobe, getGlobe, globeApex } from '@/lib/globe/scene';
 import { coastGlobe, globe } from '@/lib/input/globe';
 import { pointer } from '@/lib/input/pointer';
 import { scrollProgress } from '@/lib/scroll/progress';
-import { measureStage, shapeAnchor, stage } from '@/lib/scroll/stage';
+import { footerMark, measureStage, shapeAnchor, stage } from '@/lib/scroll/stage';
 import { footprint } from '@/lib/shape/footprint';
 import { CIRCUIT, COSMOS, GLOBE } from '@/constants';
 
@@ -20,6 +20,7 @@ const FOCUS_REACH = 1.5;
 
 const clamp01 = (value) => Math.min(1, Math.max(0, value));
 const fitScale = (aspect) => Math.min(1, (VISIBLE_HEIGHT * aspect * 0.4) / COSMOS.glyphRadius);
+const dockScale = (unit) => (footerMark.size * unit * COSMOS.footerMarkFill) / (2 * COSMOS.glyphRadius);
 
 const PANEL_RAIL = 40;
 const rightHalfCentre = (width, viewHalf) => (width < COSMOS.footerSplit ? 0 : (0.5 - PANEL_RAIL / width) * viewHalf);
@@ -77,7 +78,10 @@ export default function MorphCloud({ onFirstFrame }) {
     const shell = getGlobe();
     const step = Math.min(1, delta * 60);
     const aspect = state.size.width / state.size.height;
-    const scale = fitScale(aspect);
+    const unit = VISIBLE_HEIGHT / state.size.height;
+    const free = fitScale(aspect);
+    const docked = footerMark.size > 0;
+    const scale = docked ? free + (Math.min(free, dockScale(unit)) - free) * stage.form : free;
     const viewHalf = (VISIBLE_HEIGHT * aspect) / 2;
     values.uTime.value = state.clock.elapsedTime;
     values.uPixelRatio.value = state.gl.getPixelRatio();
@@ -103,7 +107,6 @@ export default function MorphCloud({ onFirstFrame }) {
     values.uShapeSolo.value = shaping && stage.shapeIn > 0 ? 1 : 0;
     values.uOpacity.value = stage.hero ? 1 : Math.max(clamp01(stage.footerIn * COSMOS.herolessFade), stage.shapeMix ** 2 * stage.shapeGlow);
     if (shaping) {
-      const unit = VISIBLE_HEIGHT / state.size.height;
       const [pitch, yaw, roll] = CIRCUIT.pose;
       const lean = values.uTilt.value;
       shapeSpot.current.set((shapeAnchor.x - state.size.width / 2) * unit, -(shapeAnchor.y - state.size.height / 2) * unit, 0);
@@ -117,6 +120,7 @@ export default function MorphCloud({ onFirstFrame }) {
     footprint.scale = scale;
     const anchor = rightHalfCentre(state.size.width, viewHalf);
     values.uOffsetX.value = anchor * stage.form;
+    values.uOffsetY.value = docked ? (state.size.height / 2 - footerMark.y) * unit * stage.form : 0;
     values.uFaceYaw.value = Math.atan2(anchor, COSMOS.cameraZ) * stage.form;
     values.uSpin.value = Math.sin(state.clock.elapsedTime * COSMOS.spinIdleSpeed) * COSMOS.spinIdle * (1 - stage.form);
 

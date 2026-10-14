@@ -4,7 +4,7 @@ import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { createLife } from '../cosmos/automata';
 import { scrollProgress } from '@/lib/scroll/progress';
-import { stage } from '@/lib/scroll/stage';
+import { footerMark, stage } from '@/lib/scroll/stage';
 import { footprint } from '@/lib/shape/footprint';
 import { SUBSTRATE } from '@/constants';
 
@@ -28,12 +28,13 @@ const readBox = (panel, height) => {
 const stampGlyph = (life, mask, posed, headroom) => {
   if (!mask) return;
   const half = (life.rows * posed) / 2;
+  const middle = life.rows * (footerMark.size ? footerMark.share : 0.5);
   const chance = SUBSTRATE.seedChance * headroom;
   for (let y = 0; y < mask.size; y += 1) {
     for (let x = 0; x < mask.size; x += 1) {
       if (!mask.data[y * mask.size + x] || Math.random() > chance) continue;
       const col = life.cols / 2 + (((x + 0.5) / mask.size) * 2 - 1) * half;
-      const row = life.rows / 2 + (((y + 0.5) / mask.size) * 2 - 1) * half;
+      const row = middle + (((y + 0.5) / mask.size) * 2 - 1) * half;
       life.seed(Math.round(col), Math.round(row));
     }
   }

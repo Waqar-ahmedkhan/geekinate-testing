@@ -146,8 +146,10 @@ its flicker-in ("jb yeh tile view port may ata hai toh video start hoti hai jis 
 ho, or hover par woh video chaly"). So a tile with `hoverMedia` now renders `media.poster` as its base and no base video, and
 hover works from the first moment. `eleve-mockup.mp4` stays in `public/media/work/` unused; restoring the intro means giving
 `media` its sources back and the gating `WorkTile` had. Do not put the intro's autoplay back. A touch screen is the one
-exception, and it plays the logo clip, not the intro: a phone has no hover, so since 2026-10-12 the logo clip plays when half
-the tile is on screen, like every other clip there, after the user reported it as the one tile that never moved on a phone.
+exception, and it plays the logo clip, not the intro: a phone has no hover, so since 2026-10-12 the logo clip plays in view,
+like every other clip there, after the user reported it as the one tile that never moved on a phone. Since 2026-10-14 every
+work tile waits for its centre to cross 70% of the screen height (`WORK.playLine`) before its clip starts, because at half on
+screen the clip covered the still before anyone saw it ("on mobile the thumbnail image doesn't show up at all").
 The hover clip's ground is white, so `hoverMedia.tone: 'light'` turns the caption ink while it shows; drop that and the title
 disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
 sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).

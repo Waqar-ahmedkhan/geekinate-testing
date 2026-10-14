@@ -335,7 +335,11 @@ Two sections use it, so the behaviour lives in one place:
   deliberate deviation from Stokt; resuming mid-motion on re-hover reads as a stall. Playback is skipped entirely under
   `prefers-reduced-motion`.
 - **A touch screen plays each clip when half of it is on screen** and pauses and rewinds it when it leaves, since nothing can
-  hover there. A touch screen is `TOUCH_SCREEN` in `constants/video.js`, `(hover: none), (pointer: coarse)`: the second half
+  hover there. A work tile waits longer: `useHoverVideo({ line })` shrinks the arrival observer's root to the top `line` of the
+  viewport, and `WorkTile` passes `WORK.playLine` (0.7), so its clip starts when the tile's centre crosses 70% of the screen
+  height and the still is on screen first (2026-10-14). Leaving is a second observer on the full viewport, so a tile scrolled
+  back below the line keeps playing until it is off screen, and a clip that has started is not restarted by small scrolls —
+  without that guard a `loop: false` clip that had ended replayed at every threshold step. A touch screen is `TOUCH_SCREEN` in `constants/video.js`, `(hover: none), (pointer: coarse)`: the second half
   catches phones that report a hover-capable primary pointer. The hook follows that query's `change` event instead of reading
   it once at mount. Reading it once is what made every clip sit still in the 2026-10-12 recording: Chrome's device toolbar
   switched on after the page had loaded flips the query, and nothing was listening.
@@ -738,15 +742,26 @@ whole figure collapses into an ordinary marquee; that misread shipped once (2026
 lengths the tail was gone before it could be read — rejected on sight (2026-08-27), with the instruction to hold the section until
 the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`160svh` — tuned
 three times on 2026-08-27 against the live page: `280svh` too slow, `200svh` too fast, `240svh` still too slow once the rest pose
-changed) with a sticky `100svh` stage pinned to its top; the stage owns the `overflow-hidden`.
+changed) with a sticky `100svh` stage pinned to its top; the stage owns the `overflow-hidden`. Those are the `lg` values; below
+`lg` the frame is `90svh` around a `50svh` stage (see below).
 
 **Phones run the desktop figure, not a variant of it** (2026-10-08). Below `lg` the line was `30vw` in a `35svh` stage inside a
 `105svh` frame. At that size *Geekinate?* is wider than a phone, so the rest pose centred a word that could not fit and parked
 "eekinate" cropped at both edges, and the 65svh of frame under the short stage read as an empty black screen. Since the rest pose
 centres the last word, the type size is bounded by that word: at `16vw` it fits with margin at every width.
+
+**Phones get a shorter passage, with the same type and the same motion** (2026-10-14). At `16vw` in a full-height stage a phone
+showed one thin line on a black screen for 2.6 screens of scrolling, and the user found it too long ("mobile par ... kafi lamba
+feel hota hai ... scroll karty raho bs"): the sweep's travel is measured in screen widths and the passage in screen heights, so a
+tall narrow screen scrolls far for little movement. Below `lg` the stage is `50svh` inside a `90svh` frame, so the band takes
+1.9 screens to pass, fills half the screen while pinned, and Contact rises under it. The 2026-10-08 objection to a short stage
+was the frozen line over 65svh of black after the wave had ended; that came from ending at `bottom bottom`, which on a short
+stage arrives well before the unpin, and the end now follows the stage.
 The rest pose centres the line's **last word** — the brand name — not the line's tail; the earlier tail-at-50vw pose parked the
 question mark at centre and was rejected for exactly that. Both tweens end at
-`bottom bottom+=hold` before the frame unpins, so the sweep's length adapts to any viewport from the frame's own height. Retuning
+`bottom <stage height + hold>px` — the frame's bottom meeting the stage's bottom, which is the unpin — so the sweep's length
+adapts to any viewport from the frame's own height, and a stage shorter than the screen still ends its wave at the unpin. With
+a full-height stage that is the same point as `bottom bottom`, which is what it read until 2026-10-14. Retuning
 the passage length means changing the frame heights *and* knowing the sweep stretches with them.
 
 **The sweep's `hold` is 0, and that is the second user correction on this section.** The first cut held the settled tail for a

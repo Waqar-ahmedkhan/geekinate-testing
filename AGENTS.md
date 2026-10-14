@@ -145,10 +145,12 @@ half the tile came on screen, with hover gated on its `ended` event; on 2026-10-
 its flicker-in ("jb yeh tile view port may ata hai toh video start hoti hai jis may flicker hai ... flicker na ho bs screen asi
 ho, or hover par woh video chaly"). So a tile with `hoverMedia` now renders `media.poster` as its base and no base video, and
 hover works from the first moment. `eleve-mockup.mp4` stays in `public/media/work/` unused; restoring the intro means giving
-`media` its sources back and the gating `WorkTile` had. Do not put the autoplay back. The hover clip's ground is white, so
-`hoverMedia.tone: 'light'` turns the caption ink on hover; drop that and the title disappears. Every hover clip on every tile
-loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi sirf tb stop hogi jb hover hat jaye ga",
-2026-09-22).
+`media` its sources back and the gating `WorkTile` had. Do not put the intro's autoplay back. A touch screen is the one
+exception, and it plays the logo clip, not the intro: a phone has no hover, so since 2026-10-12 the logo clip plays when half
+the tile is on screen, like every other clip there, after the user reported it as the one tile that never moved on a phone.
+The hover clip's ground is white, so `hoverMedia.tone: 'light'` turns the caption ink while it shows; drop that and the title
+disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
+sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).
 
 **The copy sells, and the contact prompt follows the page.** Instructed 2026-09-25: every page but `/partner` was rewritten
 because the old copy read as dry and gave nobody a reason to get in touch ("very boring and completely non-sense"). The voice
@@ -396,6 +398,21 @@ is load-bearing — `background-attachment: fixed` re-anchors to the transformed
 puts a whole viewport's gradient inside a 453px square and reads as a bright box mid-scroll. Feathered, the mismatch is a soft
 glow instead of an edge: the worst inside/outside difference across three viewports and three scroll positions measures two
 levels. Measure that difference before and after any change here; five levels is enough to see.
+
+**An iPhone does not blend a `<video>`.** iOS Safari hands video to its own hardware layer, and a blend mode on that layer is
+not applied, so a black-cut clip with `mix-blend-screen` paints its own black square. Chrome on every platform blends it, which
+is why the services cards looked right everywhere but on the iPhone (reported 2026-10-12, not reproducible off-device). The
+cards no longer blend: their gradient lies over the clip as a plain translucent layer, which is the same arithmetic as a screen
+blend onto white at low alpha (ARCHITECTURE.md §The services section). The service hero's `Clip` still uses
+`mix-blend-screen` over `ground-patch`, whose ground carries volt, so it cannot take the same trick and has not been checked
+on an iPhone. Do not reach for a blend mode on video for anything new.
+
+**An iPhone can refuse every `play()` until a tap, and the tap unlocks only the elements that act on it.** Low Power Mode,
+thermal throttling and the *Auto-Play Video Previews* setting each make WebKit refuse a muted inline `play()` with
+`NotAllowedError`. The restriction is per element and comes off only when that element calls `play()` or `load()` inside a
+gesture. It presents as "clips play sometimes, mostly not" (2026-10-12) — whatever arrived within a few seconds of a tap
+played — and desktop Chrome cannot show it without patching `play()`. Any new autoplaying video goes through
+`playWhileShown` in `lib/media/autoplay.js`, or it stands still on those phones. See ARCHITECTURE.md §Hover-to-play video.
 
 **A positioned ancestor with a z-index traps a fixed child's z-index.** `Section` carries `relative z-10`, which opens a stacking
 context. The 3D canvas was rendered inside the hero's `Section` with `fixed inset-0 z-40`, and that 40 is scoped to the hero's own

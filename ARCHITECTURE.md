@@ -37,7 +37,7 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
-| `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state |
+| `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state. The globe drag takes mouse and touch; `#hero` is `touch-pan-y` so a sideways swipe turns the globe and a vertical one still scrolls (mouse-only until 2026-10-08) |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos` |
 | `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js`, and `footprint.js`: the glyph mask and cloud scale the footer automata read, so they never import the three-backed cloud |
 | `lib/media/preload.js` | When a clip may start downloading | `preloadWhenNear` (one shared `IntersectionObserver`, a quarter viewport ahead) and `preloadAfterLoad` (hero clips, from window `load`) |
@@ -334,10 +334,29 @@ Two sections use it, so the behaviour lives in one place:
 - `useHoverVideo` — owns the ref and the enter/leave handlers. Leave **rewinds to frame 0** rather than pausing in place, which is a
   deliberate deviation from Stokt; resuming mid-motion on re-hover reads as a stall. Playback is skipped entirely under
   `prefers-reduced-motion`.
+- **A touch screen plays each clip when half of it is on screen** and pauses and rewinds it when it leaves, since nothing can
+  hover there. A touch screen is `TOUCH_SCREEN` in `constants/video.js`, `(hover: none), (pointer: coarse)`: the second half
+  catches phones that report a hover-capable primary pointer. The hook follows that query's `change` event instead of reading
+  it once at mount. Reading it once is what made every clip sit still in the 2026-10-12 recording: Chrome's device toolbar
+  switched on after the page had loaded flips the query, and nothing was listening.
+- **A refused `play()` unlocks every clip on the next tap.** `playWhileShown` in `lib/media/autoplay.js` runs the in-view rule
+  for the hook and for `InViewVideo`. iOS refuses a `play()` made without a gesture in Low Power Mode, under thermal throttling
+  and with *Auto-Play Video Previews* switched off. WebKit adds those restrictions to each element when it is created and lifts
+  them for good from an element that calls `play()` or `load()` while a gesture is being handled (`HTMLMediaElement.cpp`). The
+  first fix (2026-10-12) retried only the clips on screen at the next `touchend`, so a clip that arrived during a flick waited
+  for another touch, and the iPhone played "sometimes, mostly not". Now the first refusal marks the page as restricted, and the
+  next `touchend` or `click` that carries user activation (`navigator.userActivation.isActive`, or a `click` alone where that
+  API is missing) plays the clips in view and calls `load()` on every clip that has not played yet. Each later clip then plays
+  as it arrives with no further gesture, and a clip leaves the list the first time it plays. A page that never sees a refusal
+  never reloads anything. Measured in Chrome with `play()` and `load()` patched to model WebKit's per-element unlock: two
+  refusals in view, one tap in the gutter, then every clip on the page played on arrival with no further refusal; unpatched, no
+  `load()` ran. Whether the end of a scroll counts as a gesture on iOS is not known, because that dispatch code is not public,
+  so a restricted iPhone shows posters until its first tap.
 - `VideoSurface` — renders the `<video>` (`loop`, `muted`, `playsInline`, `preload="none"`, poster) or, when `media.sources` is
   empty, a marked *Media pending* panel. Nothing ever points at a missing file. `fit` picks `contain` or `cover`.
 - **No clip downloads during boot.** `VideoSurface` server-renders `preload="none"` and flips its own element to `metadata`
-  through `lib/media/preload.js`: a quarter viewport before it scrolls into view, or, for a hero clip passed `eager`
+  (`auto` on a touch screen, where the clip is about to play by itself) through `lib/media/preload.js`: a quarter viewport
+  before it scrolls into view, or, for a hero clip passed `eager`
   (`features/service-hero/Clip`, `features/case-hero/Cover`), once the window `load` event has fired. `preload="metadata"` in the
   HTML was the old default, and it started all nine home-page clips (about 1.3MB) at 0.7s, alongside the CSS and fonts: on
   PageSpeed's mobile throttle the render-blocking stylesheet did not land until 4s. A hover or an intro that calls `play()`
@@ -353,8 +372,9 @@ Two sections use it, so the behaviour lives in one place:
   `constants/video.js` holds the ratio.
 - `useHoverVideo({ hoverOnly: true })` — for a clip that exists only under the pointer, stacked over another and faded in by CSS.
   Enter restarts it from frame 0 and leave **pauses it in place**: the layer is fading out at that moment, and a rewind on leave
-  would snap it to its first frame mid-fade. It never autoplays on touch, since nothing shows it there; a tap's sticky `:hover`
-  does. `WorkTile` uses it for a tile that carries `hoverMedia`.
+  would snap it to its first frame mid-fade. On a touch screen it plays in view like any other clip. `WorkTile` uses it for a
+  tile that carries `hoverMedia`, and shows the layer while that clip is actually playing (its `playing` and `pause` events),
+  not on `:hover`, so the fade waits for frames on desktop and the layer appears at all on a phone.
 
 The pending panel is black even on light sections, because tiles overlay light text on their media and a pale placeholder would make
 that text unreadable.
@@ -496,12 +516,14 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   and no scrim. A project with no `href` renders a `div` rather than a dead link.
 - **A tile with `hoverMedia` rests on a still and reveals a second clip.** The Elevé tile (the full-width tile 3): `media`
   is only a `poster` (the brand render's last frame) plus its `focus`, so the tile renders no base video at all;
-  `hoverMedia` sits over the still at `opacity-0` and fades in under the pointer (`REVEAL`), restarted from frame 0 on every
+  `hoverMedia` sits over the still at `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
-  `hoverMedia.tone: 'light'` flips the caption to ink on hover for a clip with a white ground, where the paper title and chips
-  would vanish. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on screen, with hover
-  gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating went with it. On touch
-  the still stays put, and a tap reveals the hover clip through the sticky `:hover`.
+  `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
+  title and chips would vanish. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
+  screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating
+  went with it. On a touch screen the hover clip plays in view and fades out on scroll-out, instructed 2026-10-12 when the
+  tile was the one clip on the page that never moved on a phone. Below `sm` the 2:1 clip is cropped square and its
+  *Elevate Your Space* line sits under the caption.
 - **A tile with `media.poster` shows the poster whenever its clip is not playing.** The native `poster` attribute only covers
   the time before first playback; once a hover has run the clip, a rewound `<video>` shows its own frame 0, and for the laptop
   clips that frame is a different render of the screen than the still the designer supplied. So `WorkTile` also lays the poster
@@ -597,18 +619,23 @@ Four cards abreast need width: much under 280px each and the media box is too sm
 them the whole viewport, which is what lets the single row hold at `xl`.
 
 The effect there is entirely the **video content**, not the code: each card holds one `<video>` — `loop`, `muted`, `playsInline`,
-`preload="none"` until it nears the viewport (see *Hover-to-play video*), `autoplay` off, poster shown until playback starts,
+`preload="none"` until it nears the viewport (see *Hover-to-play video*), `autoplay` off, a frame-0 poster shown until playback starts,
 `object-fit: contain`. Hover plays that card's video only.
 
 Two deliberate deviations from the reference:
 
 - **Mouse-leave rewinds to frame 0**, where Stokt pauses in place. Resuming mid-motion on re-hover reads as a stall.
 - Cards carry a **1px gradient ring** (`linear-gradient(126deg, …)` behind an inset fill) rather than a flat border. Stokt does the
-  same trick; it is what stops a large dark card reading as a plain rectangle. On our black section the ring is paper at low alpha.
+  same trick; it is what stops a large dark card reading as a plain rectangle. On our black section the ring is paper at low alpha,
+  and the same gradient at half strength lies across the black fill as a sheen.
 
 The clips are cut on black, so the media box **bleeds to the card's edges** — `-mx-5` cancels the card's own padding, the card
-clips it, and the video carries `mix-blend-screen` so its ground drops out into the card fill instead of reading as a rectangle
-sitting inside it. A clip on any other ground will not survive that blend. The box is `aspect-square`; it was `9/10` until the
+clips it, and the card's sheen (`ring-edge` at `opacity-50`) is a layer **over** the clip rather than a fill under it, so the
+clip's black takes exactly the colour of the card around it instead of reading as a rectangle. That is the screen blend done
+without a blend mode: screening a clip onto white at alpha *a* over black gives `V(1 - a) + a`, which is white at alpha *a* laid
+over the clip. Until 2026-10-12 the clip carried `mix-blend-screen` over a `glass` fill, which showed every iPhone a black square
+in each card (see the iOS trap in `AGENTS.md`). Measured at 390px wide, the media box and the fill below it read the same value
+(15 at the bottom-left corner), three levels darker than the old glass tint. A clip on any other ground will not survive this. The box is `aspect-square`; it was `9/10` until the
 cards read too tall (2026-09-02). Both clips are listed with `loop: false`: each plays once per hover and holds its last frame
 instead of rewinding.
 
@@ -653,6 +680,22 @@ flat strip. Equal-length quotes flatten it too; the real ones vary enough on the
   stale id and never schedules again.
 - Pointer drag moves the same offset directly, with pointer capture so a drag that leaves the element still tracks. Hover pauses
   the drift.
+- **The track is `touch-pan-y`.** Without it a phone claims every touch for page scrolling and fires `pointercancel` a few pixels
+  in, so a 200px swipe moved the cards 33px and the row read as undraggable (2026-10-08). Horizontal swipes now reach the drag
+  and vertical ones still scroll the page. The hover slowdown and the **DRAG** badge answer mouse pointers only.
+- **A touch drag runs on touch events, not pointer events.** `touch-pan-y` was enough for Android and not for the iPhone
+  (2026-10-12). Safari's direction lock on a `pan-y` element is unreliable (WebKit bug 232545), and the first fix only added a
+  non-passive `touchmove` that called `preventDefault()` on a sideways swipe while the drag itself stayed on pointer events —
+  and a pointer Safari cancels mid-swipe (`pointercancel`, then `pointerleave`) ended the drag through either handler. Measured
+  in Chrome by firing those two events four moves into a swipe: the shipped code moved the row 6px of a 150px swipe, the
+  touch-event version followed it exactly. The frame's own `touchstart` / `touchmove` / `touchend` now drive a touch drag:
+  the axis locks after `SLOP` pixels, a sideways swipe calls `preventDefault()` and moves the offset, and a vertical or
+  two-finger gesture is let go. The pointer handlers ignore `pointerType: 'touch'`, so mouse and pen keep pointer capture.
+  React's `onTouchMove` cannot do this, because React registers touch listeners as passive.
+- **The card under the finger lights like a hovered one.** Tailwind's `hover:` only applies under `(hover: hover)`, so on a phone
+  no card ever turned volt (2026-10-08). The marquee records the pressed card's index until release or cancel and the card
+  carries `data-held`; its colours use the `lit` / `group-lit` variants in `globals.css`, which match hover on hover-capable
+  devices and `[data-held]` everywhere, so each colour is written once for both.
 - The cursor is hidden over the track and replaced by the reference's circular **DRAG** badge, positioned at the pointer.
 - `prefers-reduced-motion` skips the loop entirely: the drift is the whole effect and there is no meaningful reduced version.
 
@@ -681,7 +724,7 @@ in `constants/cta.js`:
 
 | Measured | Value |
 |---|---|
-| Type | One line, `16vw` desktop / `30vw` mobile, weight 600 (the reference's 500 read thin at our sizes), `tracking -0.035em`, `leading-tight`, letters split into individual spans |
+| Type | One line, `16vw` at every width, weight 600 (the reference's 500 read thin at our sizes), `tracking -0.035em`, `leading-tight`, letters split into individual spans |
 | Sweep | `x` from `+1.07 × viewport width` — the whole line starts off-screen right — to the **last word centred in the viewport** (measured off the word's own span, so the copy can change), `ease: none`, from `top 70%` |
 | Drift | `y` from `dip` 0.16 to `drop` 0.44 × stage height across the same range — the reference starts at 0, ours starts one dip low so the line rises as it crosses — with the line anchored to the stage's **top**, not its centre |
 | Letters | `yPercent -60, rotate 10` settling to 0 with `back.inOut(4)` — the reference ran duration 2.5 / stagger 0.35 from `top 77%`, ours runs 1 / 0.5 from `top 70%` to the unpin, because the centred rest pose lengthened the sweep and the reference timing finished every wave before its letter scrolled into view (2026-08-27). Ending the wave at `top top` instead, so the pinned frame always showed a whole line, was tried on 2026-10-06 and rejected outright — keep the wave running through the pin |
@@ -693,9 +736,14 @@ whole figure collapses into an ordinary marquee; that misread shipped once (2026
 
 **The section pins, and that is ours, not the reference's.** Rise at Seven gives the line one viewport of passage, and at our line
 lengths the tail was gone before it could be read — rejected on sight (2026-08-27), with the instruction to hold the section until
-the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`105svh`, `160svh`
-from `lg` — tuned three times on 2026-08-27 against the live page: `280svh` too slow, `200svh` too fast, `240svh` still too slow
-once the rest pose changed) with a sticky stage (`35svh` / `100svh`) pinned to its top; the stage owns the `overflow-hidden`.
+the whole line has been seen and only then hand over to Contact. So the `Section` wraps a tall scroll frame (`160svh` — tuned
+three times on 2026-08-27 against the live page: `280svh` too slow, `200svh` too fast, `240svh` still too slow once the rest pose
+changed) with a sticky `100svh` stage pinned to its top; the stage owns the `overflow-hidden`.
+
+**Phones run the desktop figure, not a variant of it** (2026-10-08). Below `lg` the line was `30vw` in a `35svh` stage inside a
+`105svh` frame. At that size *Geekinate?* is wider than a phone, so the rest pose centred a word that could not fit and parked
+"eekinate" cropped at both edges, and the 65svh of frame under the short stage read as an empty black screen. Since the rest pose
+centres the last word, the type size is bounded by that word: at `16vw` it fits with margin at every width.
 The rest pose centres the line's **last word** — the brand name — not the line's tail; the earlier tail-at-50vw pose parked the
 question mark at centre and was rejected for exactly that. Both tweens end at
 `bottom bottom+=hold` before the frame unpins, so the sweep's length adapts to any viewport from the frame's own height. Retuning
@@ -713,8 +761,7 @@ Mechanics worth knowing before editing:
   line's head `headVw` of a viewport past the right edge, and the rest pose reads the last word's own box and centres that. Both
   recompute on refresh through GSAP's function-based values plus `invalidateOnRefresh`.
 - **The drift is a fraction of the trigger's height, not the viewport's.** The reference tuned `y: 400` against a `100vh` desktop
-  trigger and hides the section below `lg`; ours renders at every width, and 0.44 × a `35svh` mobile trigger is what keeps the line
-  inside the section there.
+  trigger and hides the section below `lg`; ours renders at every width on the same `100svh` stage.
 - The reference splits words into per-letter `div`s with no accessible text. Ours keeps the split spans `aria-hidden` behind an
   `aria-label` on the `h2`.
 - ScrollTrigger is already registered and driven by Lenis in `smooth-scroll/index.jsx`; the section registers it again only because
@@ -753,6 +800,16 @@ columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Soc
 `services` array in the same file** so the pillar list cannot drift from the section that renders it. An empty `href` renders as
 plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Partner with Us*, *Privacy Policy* and
 *Terms & Conditions* (2026-10-06).
+
+**Below `lg` the particle letterform has a slot of its own.** From `lg` the mark forms in the card's right half beside the links.
+Below it there is no right half, and the mark used to form at the viewport's centre — straight over the link columns on every
+phone and tablet (2026-10-08). The footer now renders an empty `data-footer-mark` box (`flex-1`, `min-h-64`, `lg:hidden`) between
+the links and the social row. `measureLayout` reads it into `footerMark` in `lib/scroll/stage.js`: the box's centre in viewport
+pixels at the page's final scroll, its smaller side, and its centre as a share of the card's height. `MorphCloud` lowers the mark
+onto that centre through `uOffsetY` and shrinks it to `COSMOS.footerMarkFill` of the box, both mixed by `stage.form` so the
+scattered field mid-page is untouched; `SubstrateField` seeds its automata at the same share. A hidden box measures `0`, which is
+how desktop falls back to the old pose. On a short phone the `min-h-64` makes the card taller than the viewport rather than letting
+the mark overlap the links again.
 
 ## The legal pages
 
@@ -808,7 +865,8 @@ building together?", the handoff's fallback, and runs the client's order from th
 `IntersectionObserver` starts a **one-shot** render as the panel arrives and rewinds it on the way out, matching the reference,
 where the clip plays once rather than looping. Autoplay is deliberately not used — a video at the bottom of the page would spend
 bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained a `loop` prop for this; it still defaults to
-`true`, so the hover surfaces are untouched. Playback is skipped entirely under `prefers-reduced-motion`.
+`true`, so the hover surfaces are untouched. Playback is skipped entirely under `prefers-reduced-motion`. The in-view rule is
+`playWhileShown`, shared with the hook's touch path, so the tap that unlocks a restricted iPhone unlocks this clip too.
 
 **The navbar retreats over the footer** — the reference's behaviour, described under the navbar below. `Footer` carries
 `relative z-50` to match `Nav`'s own so nothing shows through during the 420ms retreat.
@@ -1025,9 +1083,11 @@ day a transitive version moves. Anything this project actually depends on gets i
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a
   dark surface instead of dumping light overlay text onto the page background.
-- **Posters exist only for work tiles 2 and 5.** The Elevé, AR and VR tiles and every service card have no `poster`, so a
-  resting card shows nothing until its clip warms to `preload="metadata"` a quarter viewport ahead, and can stay black after
-  that — reliably so in Safari, which does not paint a first frame from metadata. Produce a poster per clip alongside the loops.
+- **Every clip that rests on screen has a poster.** Until 2026-10-12 only work tiles 2 and 5 did, so the AR and VR tiles and
+  every service card showed black until the clip had loaded, which on a phone was a black tile for a second or two on every
+  scroll, and on Safari, which does not paint a first frame from metadata, black until it played. The AR, VR and three service
+  posters are each clip's own frame 0 as WebP (`ffmpeg -frames:v 1 -c:v libwebp`), so the hand-off to the playing clip does
+  not jump. A new clip ships with one.
 - Services copy in `lib/content/index.js` is placeholder wording pending sign-off. The structure is settled.
 - **The footer clip is `stokt-golf-ball-render.webm` — wearestokt.com's own render, with their wordmark printed on the balls. MUST
   NOT SHIP.** It is also 13MB and WebM-only, so Safari falls through to the black panel and every other browser pays for it on

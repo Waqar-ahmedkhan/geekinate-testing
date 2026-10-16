@@ -1,6 +1,8 @@
 import { legalPages, services, work } from '@/lib/content';
 import { PARTNER, SITE } from '@/constants';
 
+export const dynamic = 'force-static';
+
 const toAbsolute = (path) => new URL(path, SITE.url).toString();
 
 export default function sitemap() {

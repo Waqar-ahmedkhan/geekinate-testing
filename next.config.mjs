@@ -1,13 +1,6 @@
 const nextConfig = {
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        has: [{ type: 'host', value: '(?<stagingHost>.*[.]vercel[.]app)' }],
-        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
-      },
-    ];
-  },
+  output: 'export',
+  images: { unoptimized: true },
 };
 
 export default nextConfig;

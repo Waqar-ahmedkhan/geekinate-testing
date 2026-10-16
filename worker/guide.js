@@ -22,7 +22,7 @@ const throttled = (key) => {
 };
 
 const visitor = (request) => {
-  const address = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'local';
+  const address = request.headers.get('cf-connecting-ip') || 'local';
   return digest(`${process.env.AI_USER_SALT || ''}${address}`).slice(0, 32);
 };
 

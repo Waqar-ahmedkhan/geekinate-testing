@@ -7,8 +7,9 @@
   ],
   "scripts": {
     "dev": "next dev -p 3008",
-    "build": "next build",
-    "start": "next start -p 3007",
+    "build": "next build && node scripts/flatten-segments.mjs",
+    "preview": "npx wrangler@4.151.0 dev --port 3007",
+    "deploy": "npx wrangler@4.151.0 deploy",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "format": "prettier --write ."

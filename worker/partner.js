@@ -94,7 +94,7 @@ export async function POST(request) {
   if (clean(payload?.trap, 8)) return Response.json({ ok: true });
   const intent = picked(payload?.intent, Object.values(PARTNER.modes));
   if (!intent) return Response.json({ error: 'invalid' }, { status: 400 });
-  const key = request.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'local';
+  const key = request.headers.get('cf-connecting-ip') || 'local';
   if (throttled(key)) return Response.json({ error: 'throttled' }, { status: 429 });
   const body = {
     intent,

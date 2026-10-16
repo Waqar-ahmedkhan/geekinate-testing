@@ -6,12 +6,30 @@ search.
 ## Shape
 
 One Next.js application at the repo root. There is no separate backend service and no database. Every page renders statically; the
-only server code is the route handlers under `app/api/`, which exist to deliver form submissions.
+only server code is the three POST handlers in `worker/`, which exist to deliver form submissions.
 
-It is **not deployed on Vercel.** Production runs as a Node server we control — `next start` behind a reverse proxy. That matters
-in three places: anything reading `x-forwarded-for` depends on the proxy setting it, module-scope state in a route handler is
-shared across requests (one process, not one instance per request), and `NEXT_PUBLIC_APP_URL` has to be set in the environment
-because nothing defaults it.
+**It runs on Cloudflare's free Workers plan** (since 2026-10-16). Before that, the plan was a Node server running `next start`
+behind a reverse proxy, with a Vercel project as staging. The free plan caps a Worker at 10ms of CPU per request and 100,000
+requests a day, while static asset requests are free and unmetered. So the site is built to keep pages off the Worker entirely:
+
+| Piece | File | What it does |
+|---|---|---|
+| Static export | `next.config.mjs` | `output: 'export'` writes every route to `out/` as HTML plus RSC `.txt` payloads. `images.unoptimized`, because the export has no image server and every image here is already a small webp |
+| Segment copy | `scripts/flatten-segments.mjs` | Runs after `next build`; works around the export's prefetch file names (AGENTS.md §Traps) |
+| Worker config | `wrangler.jsonc` | Worker `geekinate`, `nodejs_compat`, assets from `./out`. `run_worker_first: ["/api/*"]` is the only route the Worker sees before the assets; `404-page` serves `out/404.html`; `auto-trailing-slash` maps `/partner` to `partner.html` |
+| Worker | `worker/index.js` | Routes `/api/contact`, `/api/partner` and `/api/guide` to their handlers, answers 405 to anything but POST, and hands every other path back to `env.ASSETS` |
+| Handlers | `worker/{contact,partner,guide}.js` | The former `app/api/*/route.js` files, moved unchanged apart from the visitor key. Each exports `POST(request)` and reads secrets from `process.env` |
+| Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, and a year's immutable cache on `/_next/static/*`. Cloudflare applies it to static responses only, never to the Worker's |
+
+Deploys are Cloudflare **Workers Builds**, connected to `github.com/geekinate/geekinate`: build command `npm run build`, deploy
+command `npx wrangler deploy`. `wrangler` is not a dependency; `npm run preview` and `npm run deploy` pin it through `npx` instead.
+Three consequences follow from the platform:
+
+- **Module-scope state is per isolate.** A counter in a handler is shared only by the requests one isolate happens to serve, so
+  the throttles in `worker/partner.js` and `worker/guide.js` are best-effort.
+- **The visitor's address is `cf-connecting-ip`.** Cloudflare sets it, so nothing depends on a proxy.
+- **`NEXT_PUBLIC_APP_URL` is a build variable.** It is baked into every page at `next build`, so it is set in the Worker's build
+  settings, not with its runtime secrets. See AGENTS.md §Boundaries.
 
 ```
 geekinate/                   the repo, and the application
@@ -29,7 +47,7 @@ the archive of the two older sites and holds nothing from this build.
 | Path | Holds | Notes |
 |---|---|---|
 | `app/` | Routes only | Pages compose components and do nothing else |
-| `app/api/` | Route handlers | `contact/`, `partner/` and `guide/`, all POST-only. The only server code in the project |
+| `worker/` | The Cloudflare Worker | `index.js` routes `/api/*`; `contact.js`, `partner.js` and `guide.js` are the POST handlers. The only server code in the project, and outside Next: `next dev` does not run it |
 | `lib/ai/` | The Guide's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `tools.js` (`goToSection`, `highlight`), `sections.js` (id lookup), `bus.js` (`runPageActions`) |
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `RollDie`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer`, `HydrationSplit` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
@@ -140,12 +158,12 @@ so it has no entry there.
 | `/work/[slug]` | `app/work/[slug]/page.js` | SSG. One case page per entry in `work` (`lib/content/work.js`), `dynamicParams` `false`. See **The case pages** |
 | `/partner` | `app/partner/page.js` | Static. Referral Partner Program — 13 sections from `features/partner`, plus `FAQPage` JSON-LD |
 | `/lab` | `app/lab/page.js` | Static, `noindex`. Background prototype — not part of the site |
-| `/api/contact` | `app/api/contact/route.js` | Dynamic. Contact form endpoint |
-| `/api/partner` | `app/api/partner/route.js` | Dynamic. Dual-intent referral endpoint — see **The referral form** |
-| `/api/guide` | `app/api/guide/route.js` | Dynamic. Streams the Guide's replies — see **The Guide** |
+| `/api/contact` | `worker/contact.js` | Worker. Contact form endpoint |
+| `/api/partner` | `worker/partner.js` | Worker. Dual-intent referral endpoint — see **The referral form** |
+| `/api/guide` | `worker/guide.js` | Worker. Streams the Guide's replies — see **The Guide** |
 | 404 | `app/not-found.js` | Static |
-| `/sitemap.xml` | `app/sitemap.js` | Static. Home is listed by hand; the service and work routes are derived from `services` and `work` |
-| `/robots.txt` | `app/robots.js` | Static |
+| `/sitemap.xml` | `app/sitemap.js` | Static, `force-static` (the export requires it). Home is listed by hand; the service and work routes are derived from `services` and `work` |
+| `/robots.txt` | `app/robots.js` | Static, `force-static` |
 
 `app/layout.js` owns fonts, metadata, the site JSON-LD graph, `Preloader`, `Nav`, `Footer`, and the toaster.
 
@@ -192,12 +210,13 @@ those classes. Before this the site had five separately styled volt buttons in t
   Geekinate*, 2026-09-25), and every page carries it; `buildMetadata`'s `image` is the per-page override. It must stay 1200×630
   because the metadata declares those dimensions. Replacing it is a file swap: export from Canva rather than screenshot the editor,
   which captures at the zoom level and bleeds the editor's grey into the edge. Its URL is made absolute from `SITE.url`, and every page is
-  prerendered, so `NEXT_PUBLIC_APP_URL` has to be set when `next build` runs, not only at `next start`. Without it the HTML ships
+  prerendered, so `NEXT_PUBLIC_APP_URL` has to be set when `next build` runs — a build variable on Cloudflare. Without it the HTML ships
   `http://localhost:3000/images/openGraph.png`, which no crawler can fetch.
 - JSON-LD is one `@graph` per page through `components/layout/JsonLd.jsx`. Organization is the anchor; `WebSite` and `Service`
   reference it by `@id`. Preserve that linkage when adding node types.
-- `next.config.mjs` sends `X-Robots-Tag: noindex, nofollow` on any `*.vercel.app` host so previews cannot outrank production.
-  **That host pattern predates the move off Vercel** — see Known gaps.
+- `public/_headers` sends `X-Robots-Tag: noindex, nofollow` on any `*.workers.dev` host so the Cloudflare URL cannot outrank
+  production. It replaced a `*.vercel.app` rule in `next.config.mjs`, which a static export cannot carry — see Known gaps for the
+  Vercel staging project that rule used to cover.
 
 ## The 3D mark — the retired `snake` build
 
@@ -900,7 +919,7 @@ derived from the site's own content, streams through `/api/guide`, and can point
 | `guide/index.jsx` | Dock, floating launcher, greeting, nudges, the request and the stream loop |
 | `guide/Chat.jsx` | The log, the starters, the button under a reply, the field |
 | `guide/stream.js` | Reads the UI message stream: `textOf`, `actionsOf`, `jumpOf` |
-| `app/api/guide/route.js` | Cross-origin check, turn cap, credential check, throttle, then `streamText` |
+| `worker/guide.js` | Cross-origin check, turn cap, credential check, throttle, then `streamText` |
 | `lib/ai/prompts.js` + `lib/ai/tools.js` | The system prompt, and the two tools the model may call |
 | `lib/ai/bus.js` | `runPageActions`: `goToSection` scrolls, `highlight` outlines |
 
@@ -926,7 +945,7 @@ Limits and nothing in this repo can set it.
 
 **"The guide is not running right now." means the route has no key.** Without `OPENAI_API_KEY` the route answers 503
 `not-configured` and the chat shows `guideContent.unavailable`. Every `.env*` file but the example is gitignored, so a host that
-builds from the repo — the Vercel staging project included — needs the key in its own environment settings, then a redeploy.
+builds from the repo needs the key in its own settings — on Cloudflare a Worker secret, which takes effect without a rebuild.
 
 The Blueprint, a generated Today-vs-automated block that sat under Deliverables with `/api/blueprint` and `/api/blueprint/email`
 behind it, was removed on 2026-09-14 at the user's instruction. Its code is in git history before that date.
@@ -1037,18 +1056,15 @@ day a transitive version moves. Anything this project actually depends on gets i
   work, Shifa's whole brief. Each needs the real copy before it is public, the same standing as the invented testimonials.
   The Guide's prompt still tells it never to present a `projects` entry as a named case study, which stays right while that
   copy is unconfirmed; revisit that line once it is.
-- **`OPENAI_API_KEY` was not reaching the Vercel staging deploy on 2026-09-14** — the guide there read "The guide is not running
-  right now." while the same page answered locally. Setting the variable and redeploying happens in the Vercel dashboard; nothing
-  in the repo can do it.
 - **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their
   own; `AGENTS.md` §Boundaries is currently the only prose describing them, and *The 3D mark* below documents the retired build
   it replaced. Anyone working on the canvas has to read the code. This is the largest gap in this document.
-- **`next.config.mjs`'s `X-Robots-Tag` rule only matches `*.vercel.app` hosts.** Production is not on Vercel, so if staging has
-  moved off a `vercel.app` domain that rule protects nothing and the staging host is indexable. Confirm the real staging hostname
-  and widen the rule, or the preview outranks production.
-- **The in-memory rate limiter in `app/api/partner/route.js` assumes one process and a proxy that sets `x-forwarded-for`.** With
-  no such header every visitor keys to `'local'` and one submitter throttles the whole site; under pm2 cluster mode or multiple
-  containers each worker keeps its own counter and the limit silently multiplies. Neither has been verified on the real host.
+- **The Vercel staging project is unprotected once this branch lands.** Its `*.vercel.app` noindex rule lived in `next.config.mjs`,
+  which a static export cannot carry, and its forms have no `/api` any more. Retire that project, or it serves an indexable copy
+  of the site with broken forms.
+- **The in-memory rate limiters in `worker/partner.js` and `worker/guide.js` are per isolate.** Cloudflare spreads requests over
+  many isolates, so the limits are best-effort. A real one is Cloudflare rate limiting, and it should exist before the Guide is
+  switched back on.
 - `constants/index.js` carries `// PLACEHOLDER` contact and social values.
 - **Placeholder media, two kinds — check the filename prefix.** `stokt-*` was taken from wearestokt.com to exercise the layouts and
   **must not ship**; one services clip carries their wordmark on a keycap. `pexels-*` is Pexels stock, free for commercial use with
@@ -1117,7 +1133,7 @@ day a transitive version moves. Anything this project actually depends on gets i
 - The footer's Legal column links nowhere — no privacy or terms page exists. `/partner`'s consent checkboxes therefore state the
   Privacy Policy as plain text with no link, and section 10 omits the `Read referral terms →` link entirely rather than pointing at
   a placeholder. Both need wiring when those pages exist, along with the `partner_terms_click` event.
-- **`/partner` cannot actually deliver a submission yet.** `app/api/partner/route.js` returns `503 not-configured` unless
+- **`/partner` cannot actually deliver a submission yet.** `worker/partner.js` returns `503 not-configured` unless
   `PARTNER_WEBHOOK_URL`/`CONTACT_WEBHOOK_URL`, or `RESEND_API_KEY` + `PARTNER_TO`/`CONTACT_TO` + `CONTACT_FROM`, are set. Until then
   every real submit shows the failure panel with the mailto fallback.
 - No analytics provider is installed. `lib/analytics.js` queues events on `window.dataLayer` for whichever provider lands.

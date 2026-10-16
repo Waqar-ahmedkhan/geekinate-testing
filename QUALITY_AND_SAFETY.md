@@ -65,9 +65,10 @@ deliberately rather than by accident.
 - `dangerouslySetInnerHTML` is used in exactly one place — `JsonLd`, over `JSON.stringify` of values we control. Any other use needs
   justification, and never over user-supplied or fetched content.
 - External links use `rel='noreferrer'` with `target='_blank'`.
-- Preview deployments are held out of the index by the `X-Robots-Tag` rule in `next.config.mjs`. Preserve it.
+- The `*.workers.dev` hosts are held out of the index by the `X-Robots-Tag` rule in `public/_headers`. Preserve it, and add the
+  staging host to it if staging ever moves to a custom domain.
 
-**When server-side code arrives** — the spec anticipates route handlers that fetch user-supplied URLs — that is the point to add
+**When more server-side code arrives** — it goes in `worker/`, and the spec anticipates handlers that fetch user-supplied URLs — that is the point to add
 input validation, SSRF protection on outbound fetches, and rate limiting. Do not add a route that fetches an arbitrary URL without
 them.
 

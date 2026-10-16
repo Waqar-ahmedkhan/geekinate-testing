@@ -11,8 +11,10 @@ Repository guidance and coding boundaries for Geekinate v2. Start here.
 ## The project
 
 Geekinate's agency website, rebuilt from scratch. A single Next.js app living at the repo root — no backend, no database, no
-`frontend/` wrapper. The repo is the application. It is **not deployed on Vercel**: production is a Node server we control,
-`next start` behind a reverse proxy. See `ARCHITECTURE.md` §Shape for what that changes.
+`frontend/` wrapper. The repo is the application. It is **deployed on Cloudflare's free Workers plan** (decided 2026-10-16, in
+the account the team was invited to, not the user's own): `next build` writes a static export to `out/`, Cloudflare serves those
+files as static assets, and one small Worker in `worker/` answers `/api/*` — the form endpoints. There is no `next start` any
+more. See `ARCHITECTURE.md` §Shape for what that changes.
 
 **The site sells three services**, and `services` in `lib/content/index.js` is the list: **AI Development** (`development`),
 **Games & Interactive** (`games`), **Marketing** (`marketing`). The first was **Development & AI** until 2026-10-06, when the user
@@ -43,7 +45,9 @@ Run everything from the repo root:
 | Command | Notes |
 |---|---|
 | `npm run dev` | Turbopack dev server. **Port 3008**, pinned in the script so it never collides with a sibling project (Eleve holds 3006) |
-| `npm run build` | A failure here is usually a prerender error, not a compile error |
+| `npm run build` | Static export to `out/`, then `scripts/flatten-segments.mjs`. A failure here is usually a prerender error, not a compile error |
+| `npm run preview` | `wrangler dev` on **port 3007**: serves `out/` and runs the Worker, so this is the only local way to submit a form. Build first |
+| `npm run deploy` | `wrangler deploy` from this machine. Normally unused: Cloudflare builds and deploys from GitHub on push |
 | `npm run lint` | Warnings ship as errors. Clear them, do not suppress |
 | `npm run format` | Prettier across the repo |
 
@@ -246,17 +250,21 @@ The Blueprint section, its form and its `/api/blueprint` routes were removed the
 them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so never describe this feature as
 spend-capped.
 
-**The in-process throttle assumes exactly one Node process.** `app/api/{partner,guide}` keep their counters in a module-scope
-`Map`. That is real on a single `next start`, resets on restart, and **silently multiplies by the worker count** under pm2 cluster
-mode or two containers. It also depends on the reverse proxy setting `x-forwarded-for`: without it every visitor keys to `'local'`
-and one submitter throttles the site. Neither has been verified on the real host. In dev, editing a route hot-reloads the module
-and wipes the counter, which reads as the limiter not working — it is.
+**The in-process throttle is per isolate, so on Cloudflare it is a speed bump, not a limit.** `worker/{partner,guide}.js` keep
+their counters in a module-scope `Map`. Cloudflare runs the Worker in many isolates across many machines and recycles them
+freely, so a visitor whose requests land on different isolates gets a fresh count on each, and nothing survives a redeploy. The
+visitor key is `cf-connecting-ip`, which Cloudflare sets on every request and a client cannot forge; it was `x-forwarded-for`
+while the site ran behind its own proxy. A real limit needs Cloudflare's own rate limiting (a Worker binding or a WAF rule) — raise
+it before the Guide is switched back on, because the Guide's 20-a-day cap is what stands between a script and the OpenAI bill.
 
-**A host that builds from the repo has to be given `OPENAI_API_KEY` itself.** Every `.env*` file except `.env.example` is
-gitignored, so a Vercel deploy has no key unless it is set in the project's environment settings, and a variable added after a
-deploy only takes effect on the next one. Without it `/api/guide` answers 503 `not-configured` and the chat reads "The guide is
-not running right now." — which is exactly what staging showed on 2026-09-14 while the same page answered locally. A Vercel
-deploy also runs more than one instance, so the throttle above is per instance there.
+**Secrets live in the Worker's settings, and `NEXT_PUBLIC_APP_URL` lives in the build's.** Every `.env*` file except `.env.example`
+is gitignored, so Cloudflare sees none of them. The form and Guide keys (`CONTACT_*`, `RESEND_API_KEY`, `PARTNER_*`,
+`OPENAI_API_KEY`, `AI_USER_SALT`) are **runtime** secrets, set under the Worker's *Settings → Variables and Secrets*; the routes
+read them through `process.env`, which `nodejs_compat` fills from the Worker's environment. `NEXT_PUBLIC_APP_URL` is read by
+`next build` and baked into every page, so it goes under *Settings → Build → Variables* instead, and a change to it only shows after
+a rebuild. Without a form key `/api/contact` answers 503 and the form shows its fallback panel; without `OPENAI_API_KEY`
+`/api/guide` answers 503 and the chat reads "The guide is not running right now." — which is exactly what the Vercel staging
+showed on 2026-09-14 while the same page answered locally.
 
 **Read `node_modules/ai/docs/` before touching the AI SDK, the same way you would for Next.** It is v7 and the surface moves.
 Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Schema and **not yup**, so the model's shape goes
@@ -354,7 +362,24 @@ The global guidelines in `~/.claude/CLAUDE.md` apply in full. Project-specific a
 Without it, `import { Section } from '@/components'` resolves to the **`components.json` shadcn config file**, because resolution
 tries `components.json` before `components/index.js`. The failure is silent — every named import returns `undefined` and the build
 dies at prerender with `Element type is invalid ... got: undefined`, naming no file. Do not remove that mapping. Directory barrels
-without a colliding sibling file (`@/constants`) resolve normally.
+without a colliding sibling file (`@/constants`) resolve normally. The Worker bundle depends on the same file: wrangler's esbuild
+reads `jsconfig.json` too, which is the only reason `worker/*.js` can import `@/lib/content` and `@/constants`.
+
+**A static export writes nested-route prefetch files where the client does not look.** Next 16.3's export saves the page
+segment of `/services/development` as `services/development/__next.services/$d$slug/__PAGE__.txt`, a nested folder, while the
+client router prefetches `services/development/__next.services.$d$slug.__PAGE__.txt`, a dotted file name. Served as-is, every
+nested route's prefetch 404s and the click falls back to fetching the whole `.txt` payload. Navigation still works, so it
+presents only as red rows in the network panel and a slower click. `scripts/flatten-segments.mjs` runs after `next build` and
+copies each nested file to its dotted name. Top-level routes (`/partner`, `/lab`) have the same shape one level down and are
+covered by the same copy. If a Next upgrade makes the 404s disappear without the script, drop it.
+
+**`npm run dev` has no `/api`.** The form endpoints live in `worker/`, which Next does not run, so a form submitted against the
+dev server gets a 404 and shows its failure panel. That is not a regression in the form. Build and use `npm run preview`, and pass
+a test webhook with `--var CONTACT_WEBHOOK_URL:http://127.0.0.1:<port>` rather than pointing a local run at the real inbox.
+
+**`wrangler dev` locks `out/` on Windows.** With the preview running, `next build` fails with `EBUSY: resource busy or locked,
+rmdir '...\out'`. Stopping the npm task is not enough. `workerd.exe` and `esbuild.exe` outlive it and keep the lock, so kill those
+too before rebuilding.
 
 **A page with no `#hero` used to park the particle cloud in its globe pose forever.** `stage.heroOut` only advanced while `#hero`
 was on the page, so on `/services/[slug]` it stayed at `0`, `orbiting` stayed at `1`, and the globe never sank or dispersed. Every

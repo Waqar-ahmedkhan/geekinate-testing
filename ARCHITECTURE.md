@@ -20,6 +20,7 @@ requests a day, while static asset requests are free and unmetered. So the site 
 | Worker | `worker/index.js` | Routes `/api/contact`, `/api/partner` and `/api/guide` to their handlers, answers 405 to anything but POST, and hands every other path back to `env.ASSETS` |
 | Handlers | `worker/{contact,partner,guide}.js` | The former `app/api/*/route.js` files, moved unchanged apart from the visitor key. Each exports `POST(request)` and reads secrets from `process.env` |
 | Mailer | `worker/mailer.js` | Shared by the contact and partner handlers. Sends over SMTP (port 587, `worker-mailer`) when `SMTP_HOST`, `SMTP_USER` and `SMTP_PASS` are set, through Resend's API otherwise; `CONTACT_FROM` is parsed from `Name <address>` |
+| Throttle | `worker/throttle.js` | `createThrottle({ ms, max })` returns a per-isolate sliding-window check. Contact allows five per ten minutes, partner five a minute, the Guide `GUIDE.window` |
 | Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, and a year's immutable cache on `/_next/static/*`. Cloudflare applies it to static responses only, never to the Worker's |
 
 Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pinned by `account_id`), connected to
@@ -28,7 +29,7 @@ Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pi
 Three consequences follow from the platform:
 
 - **Module-scope state is per isolate.** A counter in a handler is shared only by the requests one isolate happens to serve, so
-  the throttles in `worker/partner.js` and `worker/guide.js` are best-effort.
+  the throttles in `worker/contact.js`, `worker/partner.js` and `worker/guide.js` are best-effort.
 - **The visitor's address is `cf-connecting-ip`.** Cloudflare sets it, so nothing depends on a proxy.
 - **`NEXT_PUBLIC_APP_URL` is a build variable.** It is baked into every page at `next build`, so it is set in the Worker's build
   settings, not with its runtime secrets. See AGENTS.md §Boundaries.
@@ -1066,7 +1067,7 @@ day a transitive version moves. Anything this project actually depends on gets i
 - **The Vercel staging project is unprotected once this branch lands.** Its `*.vercel.app` noindex rule lived in `next.config.mjs`,
   which a static export cannot carry, and its forms have no `/api` any more. Retire that project, or it serves an indexable copy
   of the site with broken forms.
-- **The in-memory rate limiters in `worker/partner.js` and `worker/guide.js` are per isolate.** Cloudflare spreads requests over
+- **The in-memory rate limiters in `worker/contact.js`, `worker/partner.js` and `worker/guide.js` are per isolate.** Cloudflare spreads requests over
   many isolates, so the limits are best-effort. A real one is Cloudflare rate limiting, and it should exist before the Guide is
   switched back on.
 - `constants/index.js` carries `// PLACEHOLDER` contact and social values.

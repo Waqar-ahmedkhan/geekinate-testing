@@ -1,4 +1,5 @@
 import { mailReady, sendMail } from './mailer';
+import { createThrottle } from './throttle';
 import { PARTNER } from '@/constants';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -7,23 +8,12 @@ const WINDOW_MAX = 5;
 const FIT_VALUES = ['development', 'games', 'marketing', 'unsure'];
 const TYPE_VALUES = ['agency', 'consultant', 'founder', 'client', 'other'];
 
-const hits = new Map();
+const throttled = createThrottle({ ms: WINDOW_MS, max: WINDOW_MAX });
 
 const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
 const picked = (value, allowed) => (allowed.includes(value) ? value : '');
 const chosen = (value, allowed) => (Array.isArray(value) ? value.filter((item) => allowed.includes(item)) : []);
 const requestId = () => Math.random().toString(36).slice(2, 10);
-
-const throttled = (key) => {
-  const now = Date.now();
-  const seen = (hits.get(key) || []).filter((stamp) => now - stamp < WINDOW_MS);
-  hits.forEach((stamps, id) => {
-    if (!stamps.some((stamp) => now - stamp < WINDOW_MS)) hits.delete(id);
-  });
-  if (seen.length >= WINDOW_MAX) return true;
-  hits.set(key, [...seen, now]);
-  return false;
-};
 
 const invalid = (body) => {
   const found = {};

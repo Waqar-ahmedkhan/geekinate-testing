@@ -260,8 +260,8 @@ The Blueprint section, its form and its `/api/blueprint` routes were removed the
 them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so never describe this feature as
 spend-capped.
 
-**The in-process throttle is per isolate, so on Cloudflare it is a speed bump, not a limit.** `worker/{partner,guide}.js` keep
-their counters in a module-scope `Map`. Cloudflare runs the Worker in many isolates across many machines and recycles them
+**The in-process throttle is per isolate, so on Cloudflare it is a speed bump, not a limit.** `worker/{contact,partner,guide}.js` each
+keep their counters in a module-scope `Map`, built by `createThrottle` in `worker/throttle.js`. Cloudflare runs the Worker in many isolates across many machines and recycles them
 freely, so a visitor whose requests land on different isolates gets a fresh count on each, and nothing survives a redeploy. The
 visitor key is `cf-connecting-ip`, which Cloudflare sets on every request and a client cannot forge; it was `x-forwarded-for`
 while the site ran behind its own proxy. A real limit needs Cloudflare's own rate limiting (a Worker binding or a WAF rule) — raise
@@ -282,6 +282,13 @@ address the old site's contact form sent from and to. `worker/mailer.js` signs i
 password (`SMTP_*`), from and to that address. geekinate.com's mail is on Migadu (MX, SPF and DKIM all point there); once a
 mailbox for the site is created, the switch is secrets only: `SMTP_HOST=smtp.migadu.com`, that mailbox in `SMTP_USER` and
 `CONTACT_FROM`, its password in `SMTP_PASS`. Delete `SMTP_PASS` and the forms fall back to Resend.
+
+**The contact form confirms to the visitor, and is rate-limited because it does.** Instructed 2026-10-21: after the enquiry is
+accepted, `worker/contact.js` mails the visitor `contactContent.confirmation` with their message quoted, through `ctx.waitUntil`
+so the "Message sent" panel does not wait on a second SMTP round. Mailing an address the visitor typed is what makes the form
+usable to send mail to strangers from our account, so the same change added a throttle of five per ten minutes per IP. The mailer
+also flattens every subject to one line: `worker-mailer` writes an all-ASCII subject into the header unencoded, so a name with a
+line break in it would have added headers.
 
 **Read `node_modules/ai/docs/` before touching the AI SDK, the same way you would for Next.** It is v7 and the surface moves.
 Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Schema and **not yup**, so the model's shape goes
@@ -401,8 +408,13 @@ too before rebuilding.
 **A wrangler login that sees two accounts deploys to whichever it is told.** The user's Cloudflare login is a member of their own
 account and of Nouman's, and the site's first deploy went to their own — a live `geekinate.am-musawir.workers.dev` nobody meant
 to run. `account_id` in `wrangler.jsonc` is what pins it. Do not drop it, and do not override it with `CLOUDFLARE_ACCOUNT_ID`.
-The Worker's `name` must also match the dashboard's (`geekinate-com`), or a Workers Build fails and a CLI deploy creates a
-second Worker beside it.
+The Worker's `name` must also match the dashboard's (`geekinate-com`): a CLI deploy under another name creates a second Worker
+beside it, and Workers Builds flags the mismatch and opens a PR to rename it in the file.
+
+**Every push to `main` deploys the live site.** Workers Builds on `geekinate-com` was connected to `geekinate/geekinate` on
+2026-10-21: production branch `main`, `npm run build`, `npx wrangler deploy`, with `NEXT_PUBLIC_APP_URL` as its build variable.
+The live Worker's secrets select the SMTP mailer, so a `main` without `worker/mailer.js` would deploy a form that fails every
+enquiry. Land a branch on `development` first and release it to `main` the usual way; never push to `main` to test.
 
 **A page with no `#hero` used to park the particle cloud in its globe pose forever.** `stage.heroOut` only advanced while `#hero`
 was on the page, so on `/services/[slug]` it stayed at `0`, `orbiting` stayed at `1`, and the globe never sank or dispersed. Every

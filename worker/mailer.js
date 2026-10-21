@@ -3,6 +3,8 @@ import { WorkerMailer } from 'worker-mailer';
 const SMTP_PORT = 587;
 const ADDRESS_SHAPE = /^(.*)<([^>]+)>$/;
 
+const singleLine = (value) => value.replace(/\s+/g, ' ').trim();
+
 const parseAddress = (value) => {
   const match = ADDRESS_SHAPE.exec(value.trim());
   return match ? { name: match[1].trim(), email: match[2].trim() } : { email: value.trim() };
@@ -21,7 +23,7 @@ const sendSmtp = async ({ to, replyTo, subject, text }) => {
       authType: 'plain',
       credentials: { username: process.env.SMTP_USER, password: process.env.SMTP_PASS },
     },
-    { from: parseAddress(process.env.CONTACT_FROM), to, reply: replyTo, subject, text }
+    { from: parseAddress(process.env.CONTACT_FROM), to, reply: replyTo, subject: singleLine(subject), text }
   );
   return true;
 };

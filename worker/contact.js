@@ -1,10 +1,14 @@
 import { mailReady, sendMail } from './mailer';
+import { createThrottle } from './throttle';
 import { contactContent } from '@/lib/content';
 
 const LIMITS = { name: 120, email: 200, company: 160, message: 4000, topic: 40 };
 const INTERESTS = new Set(contactContent.interests.options);
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 12;
+const WINDOW = { ms: 600000, max: 5 };
+const { confirmation } = contactContent;
+const throttled = createThrottle(WINDOW);
 
 const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
 const pickInterests = (value) => (Array.isArray(value) ? [...new Set(value.filter((item) => INTERESTS.has(item)))] : []);
@@ -41,7 +45,18 @@ const sendWebhook = async (url, body) => {
 
 const enquiry = (body, to) => ({ to, replyTo: body.email, subject: `New project enquiry from ${body.name}`, text: compose(body) });
 
-export async function POST(request) {
+const receipt = (body) =>
+  [
+    `${confirmation.greeting} ${body.name},`,
+    confirmation.intro,
+    confirmation.quoted,
+    body.message,
+    confirmation.outro,
+    confirmation.signoff,
+  ].join('\n\n');
+const acknowledgement = (body, replyTo) => ({ to: body.email, replyTo, subject: confirmation.subject, text: receipt(body) });
+
+export async function POST(request, ctx) {
   let payload = null;
   try {
     payload = await request.json();
@@ -49,6 +64,7 @@ export async function POST(request) {
     return Response.json({ error: 'invalid' }, { status: 400 });
   }
   if (clean(payload?.trap, 8)) return Response.json({ ok: true });
+  if (throttled(request.headers.get('cf-connecting-ip') || 'local')) return Response.json({ error: 'throttled' }, { status: 429 });
   const body = {
     name: clean(payload?.name, LIMITS.name),
     email: clean(payload?.email, LIMITS.email),
@@ -65,6 +81,7 @@ export async function POST(request) {
   try {
     const sent = webhook ? await sendWebhook(webhook, body) : await sendMail(enquiry(body, to));
     if (!sent) return Response.json({ error: 'failed' }, { status: 502 });
+    if (!webhook) ctx.waitUntil(sendMail(acknowledgement(body, to)).catch(() => false));
     return Response.json({ ok: true });
   } catch {
     return Response.json({ error: 'failed' }, { status: 502 });

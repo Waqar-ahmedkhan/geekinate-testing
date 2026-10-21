@@ -6,10 +6,10 @@ const ROUTES = { '/api/contact': contact, '/api/guide': guide, '/api/partner': p
 const NOT_ALLOWED = { status: 405, headers: { Allow: 'POST' } };
 
 const worker = {
-  fetch(request, env) {
+  fetch(request, env, ctx) {
     const handler = ROUTES[new URL(request.url).pathname];
     if (!handler) return env.ASSETS.fetch(request);
-    return request.method === 'POST' ? handler(request) : new Response(null, NOT_ALLOWED);
+    return request.method === 'POST' ? handler(request, ctx) : new Response(null, NOT_ALLOWED);
   },
 };
 

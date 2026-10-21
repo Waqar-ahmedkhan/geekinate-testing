@@ -3,23 +3,13 @@ import { openai } from '@ai-sdk/openai';
 import { convertToModelMessages, stepCountIs, streamText } from 'ai';
 import { guideSystem } from '@/lib/ai/prompts';
 import { guideTools } from '@/lib/ai/tools';
+import { createThrottle } from './throttle';
 import { GUIDE } from '@/constants';
 
-const hits = new Map();
+const throttled = createThrottle(GUIDE.window);
 
 const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
 const digest = (value) => createHash('sha256').update(value).digest('hex');
-
-const throttled = (key) => {
-  const now = Date.now();
-  const seen = (hits.get(key) || []).filter((stamp) => now - stamp < GUIDE.window.ms);
-  hits.forEach((stamps, id) => {
-    if (!stamps.some((stamp) => now - stamp < GUIDE.window.ms)) hits.delete(id);
-  });
-  if (seen.length >= GUIDE.window.max) return true;
-  hits.set(key, [...seen, now]);
-  return false;
-};
 
 const visitor = (request) => {
   const address = request.headers.get('cf-connecting-ip') || 'local';

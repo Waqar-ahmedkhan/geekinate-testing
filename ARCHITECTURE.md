@@ -531,18 +531,20 @@ so the nav's surface detection must read it, which is the reverse of what the pa
 - The grid is six columns from `lg`, 16px gaps, 10px tile radius, and `span` counts sixths: rhythm **4+2 / 6 / 3+3**, aspect
   following span, degrading to two columns then one below `lg`. The full-width tile was 16:9 while it ran the AR game and is
   **2:1 since 2026-09-22**, when the Elevé pair moved onto it: that clip is a 2:1 render whose logo starts 2% in from the
-  left and whose badge ends 2% from the right, and a 16:9 cover would have cut 5.5% off each of them. It was three columns at **2+1 / 3 / 1+1+1** until 2026-09-17, when
+  left and whose badge ends 2% from the right, and a 16:9 cover would have cut 5.5% off each of them. The AR game took the
+  full-width tile back on 2026-10-21 and the 2:1 stayed, cover-cropping its 16:9 frame exactly as tile 1 already did. It was three columns at **2+1 / 3 / 1+1+1** until 2026-09-17, when
   the middle tile of the last row (an `AI & Automation` Pexels clip) was removed on instruction and the two left took half each;
   thirds cannot hold a half, hence sixths. A half tile is `lg:aspect-[3/2]`, which lands within a few pixels of the first row's
   height. **The rhythm needs exactly five projects** — `span` values in `lib/content/work.js` change with the count.
 - Tiles are `WorkTile`: black fill, 1.5px ink border and hard shadow, with the title and discipline chips overlaid on the media
   and no scrim. A project with no `href` renders a `div` rather than a dead link.
-- **A tile with `hoverMedia` rests on a still and reveals a second clip.** The Elevé tile (the full-width tile 3): `media`
-  is only a `poster` (the brand render's last frame) plus its `focus`, so the tile renders no base video at all;
+- **A tile with `hoverMedia` rests on a still and reveals a second clip.** The Elevé tile (tile 1 since 2026-10-21, the full-width
+  tile 3 before that): `media` is only a `poster` (the brand render's last frame) plus its `focus`, so the tile renders no base
+  video at all, and `hoverMedia` is the same `eleve-site.mp4` the case page's hero runs as its `cover` (`eleveSiteClip`);
   `hoverMedia` sits over the still at `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
-  title and chips would vanish. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
+  title and chips would vanish; the logo clip needed it, and the site clip, on a dark ground, does not. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
   screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating
   went with it. On a touch screen the hover clip plays in view and fades out on scroll-out, instructed 2026-10-12 when the
   tile was the one clip on the page that never moved on a phone. Below `sm` the 2:1 clip is cropped square and its
@@ -1108,8 +1110,9 @@ day a transitive version moves. Anything this project actually depends on gets i
   it carries `tone: 'light'`. The render's own logo sits in its left third, outside the sheet's centred mobile safe area, so
   the intro carries `focus: '0% 50%'`: the square crop below `sm` shows the logo over the office rather than an empty desk. The
   discipline tags travelled with the clips, so tile 1 reads Games & Interactive and tile 3 Web Products (Development & AI since
-  2026-10-02). On its case page
-  the intro is the cover and plays once; the logo reveal appears only on the tile.
+  2026-10-02). On 2026-10-21 the pair went back to tile 1 and the AR game to tile 3, this time as whole projects, because a
+  video-only swap left each title over the other's clip; the hover clip became `eleve-site.mp4`, the case page's cover, so
+  `eleve-logo.mp4` is unused too.
 - **Encode clips as H.264 (`avc1`) in MP4 or VP9 in WebM.** A clip that was H.265/HEVC (`hvc1`) rendered as a blank tile in Chrome on
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a

@@ -142,20 +142,26 @@ the supplied originals that stay beside them in `public/media/clients/`: ink-on-
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
 flipping `src` values in `lib/content/index.js` is the whole change either way.
 
-**The Elevé tile rests on a still, and hover runs the logo clip.** The full-width tile 3 shows the brand render's settled
-frame (`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip — the logo colouring
-in on white — fading it in under the pointer. From 2026-09-22 to 2026-10-06 the render itself played as a one-shot intro when
+**The Elevé tile rests on a still, and hover runs its case page's clip.** Tile 1 shows the brand render's settled frame
+(`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip, fading it in under the
+pointer: `eleve-site.mp4`, the laptop render the Elevé case page's hero runs as its cover (instructed 2026-10-21, "hover par jo
+video ati hai usko replace karna hai, eleve detailed page ky top par hero section may jo video hai us sy"). It replaced the logo
+colouring in on white, `eleve-logo.mp4`, which stays in `public/media/work/` unused. The same day Elevé moved from the
+full-width tile 3 to tile 1 and the AR game took tile 3. A video-only swap was tried first and left each title over the other
+project's clip ("Tile par likha hai AR game jb ky video eleve ki hai"), so **a clip, its title, its tags and its case link
+travel as one project**: reorder `projects` and swap their `span`, never the media alone. From 2026-09-22 to 2026-10-06 the
+render itself played as a one-shot intro when
 half the tile came on screen, with hover gated on its `ended` event; on 2026-10-06 the user had the intro removed because of
 its flicker-in ("jb yeh tile view port may ata hai toh video start hoti hai jis may flicker hai ... flicker na ho bs screen asi
 ho, or hover par woh video chaly"). So a tile with `hoverMedia` now renders `media.poster` as its base and no base video, and
 hover works from the first moment. `eleve-mockup.mp4` stays in `public/media/work/` unused; restoring the intro means giving
 `media` its sources back and the gating `WorkTile` had. Do not put the intro's autoplay back. A touch screen is the one
-exception, and it plays the logo clip, not the intro: a phone has no hover, so since 2026-10-12 the logo clip plays in view,
+exception, and it plays the hover clip, not the intro: a phone has no hover, so since 2026-10-12 the hover clip plays in view,
 like every other clip there, after the user reported it as the one tile that never moved on a phone. Since 2026-10-14 every
 work tile waits for its centre to cross 70% of the screen height (`WORK.playLine`) before its clip starts, because at half on
 screen the clip covered the still before anyone saw it ("on mobile the thumbnail image doesn't show up at all").
-The hover clip's ground is white, so `hoverMedia.tone: 'light'` turns the caption ink while it shows; drop that and the title
-disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
+The site clip's ground is dark, so the caption stays paper and the pair carries no `tone`. A hover clip on a white ground, as
+the logo clip was, needs `hoverMedia.tone: 'light'` to turn the caption ink while it shows, or the title disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
 sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).
 
 **The copy sells, and the contact prompt follows the page.** Instructed 2026-09-25: every page but `/partner` was rewritten

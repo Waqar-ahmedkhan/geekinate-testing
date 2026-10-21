@@ -19,6 +19,7 @@ requests a day, while static asset requests are free and unmetered. So the site 
 | Worker config | `wrangler.jsonc` | Worker `geekinate-com`, `nodejs_compat`, assets from `./out`. `run_worker_first: ["/api/*"]` is the only route the Worker sees before the assets; `404-page` serves `out/404.html`; `auto-trailing-slash` maps `/partner` to `partner.html` |
 | Worker | `worker/index.js` | Routes `/api/contact`, `/api/partner` and `/api/guide` to their handlers, answers 405 to anything but POST, and hands every other path back to `env.ASSETS` |
 | Handlers | `worker/{contact,partner,guide}.js` | The former `app/api/*/route.js` files, moved unchanged apart from the visitor key. Each exports `POST(request)` and reads secrets from `process.env` |
+| Mailer | `worker/mailer.js` | Shared by the contact and partner handlers. Sends over SMTP (port 587, `worker-mailer`) when `SMTP_HOST`, `SMTP_USER` and `SMTP_PASS` are set, through Resend's API otherwise; `CONTACT_FROM` is parsed from `Name <address>` |
 | Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, and a year's immutable cache on `/_next/static/*`. Cloudflare applies it to static responses only, never to the Worker's |
 
 Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pinned by `account_id`), connected to
@@ -1137,9 +1138,9 @@ day a transitive version moves. Anything this project actually depends on gets i
 - The footer's Legal column links nowhere — no privacy or terms page exists. `/partner`'s consent checkboxes therefore state the
   Privacy Policy as plain text with no link, and section 10 omits the `Read referral terms →` link entirely rather than pointing at
   a placeholder. Both need wiring when those pages exist, along with the `partner_terms_click` event.
-- **`/partner` cannot actually deliver a submission yet.** `worker/partner.js` returns `503 not-configured` unless
-  `PARTNER_WEBHOOK_URL`/`CONTACT_WEBHOOK_URL`, or `RESEND_API_KEY` + `PARTNER_TO`/`CONTACT_TO` + `CONTACT_FROM`, are set. Until then
-  every real submit shows the failure panel with the mailto fallback.
+- **`/partner` delivers only where its secrets are set.** `worker/partner.js` returns `503 not-configured` unless
+  `PARTNER_WEBHOOK_URL`/`CONTACT_WEBHOOK_URL`, or `PARTNER_TO`/`CONTACT_TO` + `CONTACT_FROM` with either the `SMTP_*` trio or
+  `RESEND_API_KEY`, are set, and the failure panel then shows the mailto fallback. The live Worker has the SMTP route set.
 - No analytics provider is installed. `lib/analytics.js` queues events on `window.dataLayer` for whichever provider lands.
 - **The client's copy handoff is applied** (`../docs/geekinate-copy-and-ui-handoff.md`, 2026-10-02): naming, CTA convention,
   home copy, the shared form with its interest chips, the Marketing page, and the doc's one-line contact questions for

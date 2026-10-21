@@ -1,3 +1,4 @@
+import { mailReady, sendMail } from './mailer';
 import { contactContent } from '@/lib/content';
 
 const LIMITS = { name: 120, email: 200, company: 160, message: 4000, topic: 40 };
@@ -38,20 +39,7 @@ const sendWebhook = async (url, body) => {
   return response.ok;
 };
 
-const sendResend = async (body) => {
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.CONTACT_FROM,
-      to: [process.env.CONTACT_TO],
-      reply_to: body.email,
-      subject: `New project enquiry from ${body.name}`,
-      text: compose(body),
-    }),
-  });
-  return response.ok;
-};
+const enquiry = (body, to) => ({ to, replyTo: body.email, subject: `New project enquiry from ${body.name}`, text: compose(body) });
 
 export async function POST(request) {
   let payload = null;
@@ -72,10 +60,10 @@ export async function POST(request) {
   const fields = invalid(body);
   if (fields) return Response.json({ error: 'invalid', fields }, { status: 400 });
   const webhook = process.env.CONTACT_WEBHOOK_URL;
-  const resend = process.env.RESEND_API_KEY && process.env.CONTACT_TO && process.env.CONTACT_FROM;
-  if (!webhook && !resend) return Response.json({ error: 'not-configured' }, { status: 503 });
+  const to = process.env.CONTACT_TO;
+  if (!webhook && !mailReady(to)) return Response.json({ error: 'not-configured' }, { status: 503 });
   try {
-    const sent = webhook ? await sendWebhook(webhook, body) : await sendResend(body);
+    const sent = webhook ? await sendWebhook(webhook, body) : await sendMail(enquiry(body, to));
     if (!sent) return Response.json({ error: 'failed' }, { status: 502 });
     return Response.json({ ok: true });
   } catch {

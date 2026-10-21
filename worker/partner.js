@@ -1,3 +1,4 @@
+import { mailReady, sendMail } from './mailer';
 import { PARTNER } from '@/constants';
 
 const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
@@ -69,20 +70,7 @@ const sendWebhook = async (url, body) => {
   return response.ok;
 };
 
-const sendResend = async (body) => {
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from: process.env.CONTACT_FROM,
-      to: [process.env.PARTNER_TO || process.env.CONTACT_TO],
-      reply_to: body.email,
-      subject: subjectFor(body),
-      text: compose(body),
-    }),
-  });
-  return response.ok;
-};
+const referral = (body, to) => ({ to, replyTo: body.email, subject: subjectFor(body), text: compose(body) });
 
 export async function POST(request) {
   let payload = null;
@@ -115,11 +103,11 @@ export async function POST(request) {
   const fields = invalid(body);
   if (fields) return Response.json({ error: 'invalid', fields }, { status: 400 });
   const webhook = process.env.PARTNER_WEBHOOK_URL || process.env.CONTACT_WEBHOOK_URL;
-  const resend = process.env.RESEND_API_KEY && (process.env.PARTNER_TO || process.env.CONTACT_TO) && process.env.CONTACT_FROM;
-  if (!webhook && !resend) return Response.json({ error: 'not-configured' }, { status: 503 });
+  const to = process.env.PARTNER_TO || process.env.CONTACT_TO;
+  if (!webhook && !mailReady(to)) return Response.json({ error: 'not-configured' }, { status: 503 });
   const id = requestId();
   try {
-    const sent = webhook ? await sendWebhook(webhook, { ...body, id }) : await sendResend(body);
+    const sent = webhook ? await sendWebhook(webhook, { ...body, id }) : await sendMail(referral(body, to));
     if (!sent) return Response.json({ error: 'failed', id }, { status: 502 });
     return Response.json({ ok: true, id });
   } catch {

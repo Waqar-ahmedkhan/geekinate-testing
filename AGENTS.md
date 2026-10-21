@@ -98,6 +98,8 @@ Geometry is as much the brand as the colour: **1.5px ink borders, 20px card radi
 `@react-three/fiber` and `@react-three/drei` are the one granted exception — raised and approved on 2026-08-10 for the hero brief in
 `docs/geekinate-hero-3d-prompt.md`. That approval covers the rest of that brief's list too (`lenis`, `zustand`, `maath`, `leva`,
 `@react-three/postprocessing`), but each installs with the phase that uses it. It does not extend to anything else.
+`worker-mailer` is the second, raised and approved on 2026-10-21 so the forms can send through an SMTP mailbox (Gmail now, the
+Migadu mailbox once it exists) rather than wait on Resend's domain verification. It is pinned to 1.2.1, the version Eleve runs.
 
 **One particle system holds the whole page, and it wears three shapes.** There is a single WebGL canvas, mounted from the app shell
 as a fixed sibling of every section (`lib/ui/reusable_components/cosmos`). The 26,000 particles in it are the hero's globe, the
@@ -266,13 +268,20 @@ while the site ran behind its own proxy. A real limit needs Cloudflare's own rat
 it before the Guide is switched back on, because the Guide's 20-a-day cap is what stands between a script and the OpenAI bill.
 
 **Secrets live in the Worker's settings, and `NEXT_PUBLIC_APP_URL` lives in the build's.** Every `.env*` file except `.env.example`
-is gitignored, so Cloudflare sees none of them. The form and Guide keys (`CONTACT_*`, `RESEND_API_KEY`, `PARTNER_*`,
-`OPENAI_API_KEY`, `AI_USER_SALT`) are **runtime** secrets, set under the Worker's *Settings → Variables and Secrets*; the routes
+is gitignored, so Cloudflare sees none of them. The form and Guide keys (`CONTACT_*`, `SMTP_*`, `RESEND_API_KEY`,
+`PARTNER_*`, `OPENAI_API_KEY`, `AI_USER_SALT`) are **runtime** secrets, set under the Worker's *Settings → Variables and Secrets*; the routes
 read them through `process.env`, which `nodejs_compat` fills from the Worker's environment. `NEXT_PUBLIC_APP_URL` is read by
 `next build` and baked into every page, so it goes under *Settings → Build → Variables* instead, and a change to it only shows after
 a rebuild. Without a form key `/api/contact` answers 503 and the form shows its fallback panel; without `OPENAI_API_KEY`
 `/api/guide` answers 503 and the chat reads "The guide is not running right now." — which is exactly what the Vercel staging
 showed on 2026-09-14 while the same page answered locally.
+
+**The forms send through Adil's Gmail until a Migadu mailbox exists.** Resend's test sender delivers only to the owner of the
+Resend account, and geekinate.com has no Resend DNS, so on 2026-10-21 the user had enquiries go to madilmazhar@gmail.com — the
+address the old site's contact form sent from and to. `worker/mailer.js` signs in to `smtp.gmail.com` with the old site's app
+password (`SMTP_*`), from and to that address. geekinate.com's mail is on Migadu (MX, SPF and DKIM all point there); once a
+mailbox for the site is created, the switch is secrets only: `SMTP_HOST=smtp.migadu.com`, that mailbox in `SMTP_USER` and
+`CONTACT_FROM`, its password in `SMTP_PASS`. Delete `SMTP_PASS` and the forms fall back to Resend.
 
 **Read `node_modules/ai/docs/` before touching the AI SDK, the same way you would for Next.** It is v7 and the surface moves.
 Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Schema and **not yup**, so the model's shape goes

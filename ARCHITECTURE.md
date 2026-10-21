@@ -16,13 +16,14 @@ requests a day, while static asset requests are free and unmetered. So the site 
 |---|---|---|
 | Static export | `next.config.mjs` | `output: 'export'` writes every route to `out/` as HTML plus RSC `.txt` payloads. `images.unoptimized`, because the export has no image server and every image here is already a small webp |
 | Segment copy | `scripts/flatten-segments.mjs` | Runs after `next build`; works around the export's prefetch file names (AGENTS.md §Traps) |
-| Worker config | `wrangler.jsonc` | Worker `geekinate`, `nodejs_compat`, assets from `./out`. `run_worker_first: ["/api/*"]` is the only route the Worker sees before the assets; `404-page` serves `out/404.html`; `auto-trailing-slash` maps `/partner` to `partner.html` |
+| Worker config | `wrangler.jsonc` | Worker `geekinate-com`, `nodejs_compat`, assets from `./out`. `run_worker_first: ["/api/*"]` is the only route the Worker sees before the assets; `404-page` serves `out/404.html`; `auto-trailing-slash` maps `/partner` to `partner.html` |
 | Worker | `worker/index.js` | Routes `/api/contact`, `/api/partner` and `/api/guide` to their handlers, answers 405 to anything but POST, and hands every other path back to `env.ASSETS` |
 | Handlers | `worker/{contact,partner,guide}.js` | The former `app/api/*/route.js` files, moved unchanged apart from the visitor key. Each exports `POST(request)` and reads secrets from `process.env` |
 | Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, and a year's immutable cache on `/_next/static/*`. Cloudflare applies it to static responses only, never to the Worker's |
 
-Deploys are Cloudflare **Workers Builds**, connected to `github.com/geekinate/geekinate`: build command `npm run build`, deploy
-command `npx wrangler deploy`. `wrangler` is not a dependency; `npm run preview` and `npm run deploy` pin it through `npx` instead.
+Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pinned by `account_id`), connected to
+`github.com/geekinate/geekinate` on `main`: build command `npm run build`, deploy command `npx wrangler deploy`. The live URL is
+`geekinate-com.nouman-digg.workers.dev`. `wrangler` is not a dependency; `npm run preview` and `npm run deploy` pin it through `npx` instead.
 Three consequences follow from the platform:
 
 - **Module-scope state is per isolate.** A counter in a handler is shared only by the requests one isolate happens to serve, so

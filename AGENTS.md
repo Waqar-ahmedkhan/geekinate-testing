@@ -14,7 +14,9 @@ Geekinate's agency website, rebuilt from scratch. A single Next.js app living at
 `frontend/` wrapper. The repo is the application. It is **deployed on Cloudflare's free Workers plan** (decided 2026-10-16, in
 the account the team was invited to, not the user's own): `next build` writes a static export to `out/`, Cloudflare serves those
 files as static assets, and one small Worker in `worker/` answers `/api/*` — the form endpoints. There is no `next start` any
-more. See `ARCHITECTURE.md` §Shape for what that changes.
+more. See `ARCHITECTURE.md` §Shape for what that changes. The first deploy landed in the user's own account by mistake; since
+2026-10-21 the site is Worker `geekinate-com` in **Nouman.digg@gmail.com's Account**, at `geekinate-com.nouman-digg.workers.dev`,
+and `account_id` in `wrangler.jsonc` pins every deploy there.
 
 **The site sells three services**, and `services` in `lib/content/index.js` is the list: **AI Development** (`development`),
 **Games & Interactive** (`games`), **Marketing** (`marketing`). The first was **Development & AI** until 2026-10-06, when the user
@@ -386,6 +388,12 @@ a test webhook with `--var CONTACT_WEBHOOK_URL:http://127.0.0.1:<port>` rather t
 **`wrangler dev` locks `out/` on Windows.** With the preview running, `next build` fails with `EBUSY: resource busy or locked,
 rmdir '...\out'`. Stopping the npm task is not enough. `workerd.exe` and `esbuild.exe` outlive it and keep the lock, so kill those
 too before rebuilding.
+
+**A wrangler login that sees two accounts deploys to whichever it is told.** The user's Cloudflare login is a member of their own
+account and of Nouman's, and the site's first deploy went to their own — a live `geekinate.am-musawir.workers.dev` nobody meant
+to run. `account_id` in `wrangler.jsonc` is what pins it. Do not drop it, and do not override it with `CLOUDFLARE_ACCOUNT_ID`.
+The Worker's `name` must also match the dashboard's (`geekinate-com`), or a Workers Build fails and a CLI deploy creates a
+second Worker beside it.
 
 **A page with no `#hero` used to park the particle cloud in its globe pose forever.** `stage.heroOut` only advanced while `#hero`
 was on the page, so on `/services/[slug]` it stayed at `0`, `orbiting` stayed at `1`, and the globe never sank or dispersed. Every

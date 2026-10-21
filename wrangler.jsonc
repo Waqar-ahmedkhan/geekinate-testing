@@ -1,5 +1,6 @@
 {
-  "name": "geekinate",
+  "name": "geekinate-com",
+  "account_id": "3de9e951b487e19705809a2c2809b848",
   "main": "worker/index.js",
   "compatibility_date": "2026-10-01",
   "compatibility_flags": ["nodejs_compat"],

@@ -139,7 +139,8 @@ when that branch lands or the handoff to the live globe jumps.
 leftward, `gap: 150`, `padding: 10`, `fadeWidth: 46` (so the `mask-image` stops land at 23% and 77%). Stokt has no hover slowdown
 (`hoverFactor` is 1 there); ours eases to quarter speed on hover (`hoverFactor: 0.25`, lerped by `hoverEase` — a full stop was
 rejected as "ruk jata hai") with a crossfade to the colour logo set, both instructed by the user on 2026-08-28 and a deliberate
-deviation from the transcription. The running speed was measured back at 40.00 px/s in this build. Retuning any of them is a
+deviation from the transcription. Below `md` the strip's gap is 56, not 150 (`phoneGap`, instructed 2026-10-23: a phone showed
+one logo at a time). The running speed was measured back at 40.00 px/s in this build. Retuning any of them is a
 design decision to raise, not a tidy-up. The logos are **real client marks** as of 2026-08-27, exported twice from
 the supplied originals that stay beside them in `public/media/clients/`: ink-on-transparent (`*.webp`) and original-colour
 (`*-color.webp`, LinkTax refilled in its brand navy because its white type cannot sit on the light strip). The strip runs the

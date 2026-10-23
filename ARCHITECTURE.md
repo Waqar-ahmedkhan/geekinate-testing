@@ -495,6 +495,7 @@ them is a design decision, not a tidy-up.
 |---|---|
 | `speed: 40` | Pixels per second, leftward |
 | `gap: 150` | Between items, and between the repeated groups |
+| `phoneGap: 56` | **Ours** — the client strip's gap below `md` (2026-10-23): at 150 a phone showed one logo at a time. Opt-in via the `phoneGap` prop, so the case-page tech strip keeps its own `gap` |
 | `fadeWidth: 46` | Total percentage of the strip spent fading, split across the two edges — `mask-image` stops land at 23% and 77% |
 | `padding: 10` | The frame's own padding |
 | `hoverFactor: 0.25` | **Ours, not Stokt's** — the pace the track eases to while the pointer is inside the frame |
@@ -547,7 +548,9 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   `hoverMedia` sits over the still at `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
-  title and chips would vanish; the logo clip needed it, and the site clip, on a dark ground, does not. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
+  title and chips would vanish; the logo clip needed it, and the site clip, on a dark ground, does not. The paper title carries a
+  stacked black `text-shadow` (`LEGIBLE`) and the chips a light one since 2026-10-23, after the Twinhub title disappeared into the laptop's white
+  screen on a phone; a bottom scrim was tried against it and read weaker at the title's height. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
   screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating
   went with it. On a touch screen the hover clip plays in view and fades out on scroll-out, instructed 2026-10-12 when the
   tile was the one clip on the page that never moved on a phone. Below `sm` the 2:1 clip is cropped square and its

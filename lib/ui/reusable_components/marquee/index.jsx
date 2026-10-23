@@ -2,11 +2,13 @@
 
 import { useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
+import { cn } from '@/lib/utils';
 import { MARQUEE } from '@/constants';
 
+const SPACING = 'flex items-center gap-(--marquee-gap) md:gap-(--marquee-gap-md)';
 const wrap = (offset, span) => (span > 0 ? ((offset % span) + span) % span : 0);
 
-export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE.gap, fade = MARQUEE.fadeWidth }) {
+export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE.gap, phoneGap = gap, fade = MARQUEE.fadeWidth }) {
   const frameRef = useRef(null);
   const trackRef = useRef(null);
   const groupRef = useRef(null);
@@ -20,7 +22,7 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
       group = groupRef.current;
     if (!frame || !group) return undefined;
     const measure = () => {
-      const span = group.getBoundingClientRect().width + gap;
+      const span = group.getBoundingClientRect().width + parseFloat(getComputedStyle(group).columnGap);
       spanRef.current = span;
       setCopies(Math.max(MARQUEE.minCopies, Math.ceil(frame.getBoundingClientRect().width / span) + 1));
     };
@@ -29,7 +31,7 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
     observer.observe(frame);
     observer.observe(group);
     return () => observer.disconnect();
-  }, [gap]);
+  }, [gap, phoneGap]);
 
   useEffect(() => {
     const frame = frameRef.current,
@@ -72,16 +74,21 @@ export default function Marquee({ children, speed = MARQUEE.speed, gap = MARQUEE
   }, [speed]);
 
   const edge = `linear-gradient(to right, transparent 0%, #000 ${fade / 2}%, #000 ${100 - fade / 2}%, transparent 100%)`;
-  const frameStyle = { maskImage: edge, WebkitMaskImage: edge, padding: MARQUEE.padding };
-  const trackStyle = { gap: `${gap}px` };
+  const frameStyle = {
+    maskImage: edge,
+    WebkitMaskImage: edge,
+    padding: MARQUEE.padding,
+    '--marquee-gap': `${phoneGap}px`,
+    '--marquee-gap-md': `${gap}px`,
+  };
   const groups = Array.from({ length: copies }, (unused, index) => (
-    <div key={index} ref={index === 0 ? groupRef : null} aria-hidden={index > 0} className='flex shrink-0 items-center' style={trackStyle}>
+    <div key={index} ref={index === 0 ? groupRef : null} aria-hidden={index > 0} className={cn(SPACING, 'shrink-0')}>
       {children}
     </div>
   ));
   return (
     <div ref={frameRef} className='relative overflow-hidden' style={frameStyle}>
-      <div ref={trackRef} className='flex w-max items-center will-change-transform' style={trackStyle}>
+      <div ref={trackRef} className={cn(SPACING, 'w-max will-change-transform')}>
         {groups}
       </div>
     </div>

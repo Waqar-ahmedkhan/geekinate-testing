@@ -1,6 +1,7 @@
 import { Section, SectionHead } from '@/components';
 import { ClientLogo, Marquee } from '@/lib/ui/reusable_components';
 import { clients, clientsContent } from '@/lib/content';
+import { MARQUEE } from '@/constants';
 
 export default function Clients() {
   const { heading } = clientsContent;
@@ -8,7 +9,7 @@ export default function Clients() {
   return (
     <Section id='clients' variant='paper' className='px-0 py-20 md:px-0 md:py-20'>
       <SectionHead heading={heading} className='px-6 md:px-10' />
-      <Marquee>{logoEls}</Marquee>
+      <Marquee phoneGap={MARQUEE.phoneGap}>{logoEls}</Marquee>
     </Section>
   );
 }

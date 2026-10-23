@@ -23,9 +23,11 @@ const SIZES = {
 const TILE = 'border-brutal relative block overflow-hidden rounded-lg bg-black shadow-brutal';
 const POSTER = 'pointer-events-none object-cover transition-opacity duration-300';
 const REVEAL = 'absolute inset-0 opacity-0 transition-opacity duration-300';
-const TITLE = 'text-lg font-medium text-paper drop-shadow-[0_1px_8px_rgba(16,22,19,0.55)] transition-[color,filter] duration-300';
-const CHIP = 'rounded-[5px] bg-paper/25 px-[10px] py-[5px] text-xs text-paper backdrop-blur-[2px] transition-colors duration-300';
-const ON_LIGHT = { title: 'text-ink drop-shadow-none', chip: 'bg-ink/10 text-ink' };
+const LEGIBLE = 'text-shadow-[0_0_2px_rgb(0_0_0/0.9),0_1px_4px_rgb(0_0_0/0.7),0_2px_18px_rgb(0_0_0/0.6)]';
+const TITLE = `text-lg font-medium text-paper ${LEGIBLE} transition-[color,text-shadow] duration-300`;
+const CHIP =
+  'rounded-[5px] bg-paper/25 px-[10px] py-[5px] text-xs text-paper text-shadow-[0_1px_2px_rgb(0_0_0/0.6)] backdrop-blur-[2px] transition-colors duration-300';
+const ON_LIGHT = { title: 'text-ink text-shadow-none', chip: 'bg-ink/10 text-ink text-shadow-none' };
 
 export default function WorkTile({ title, disciplines = [], span = 2, href, media, hoverMedia, className: tileClassName }) {
   const paired = Boolean(hoverMedia);

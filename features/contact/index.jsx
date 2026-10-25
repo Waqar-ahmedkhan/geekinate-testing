@@ -1,23 +1,14 @@
-import { Eyebrow, Section, StepIndex } from '@/components';
+import { Eyebrow, Section } from '@/components';
 import Cta from '@/features/cta';
 import { ContactForm, TypedHeading } from '@/lib/ui/reusable_components';
 import { contactContent, services } from '@/lib/content';
 import { SITE } from '@/constants';
 
 export default function Contact({ topic = 'home' }) {
-  const { eyebrow, pitches, steps, direct } = contactContent;
+  const { eyebrow, pitches, next, direct } = contactContent;
   const pitch = pitches[topic] ?? pitches.home;
   const { headings, intro } = pitch;
   const service = services.find(({ slug }) => slug === topic);
-  const stepEls = steps.map(({ title, detail }, index) => (
-    <li key={title} className='flex gap-4'>
-      <StepIndex value={index + 1} />
-      <span className='flex flex-col gap-1'>
-        <span className='text-base leading-tight text-foreground'>{title}</span>
-        <span className='text-sm leading-[1.5] text-mut'>{detail}</span>
-      </span>
-    </li>
-  ));
   return (
     <>
       <Cta />
@@ -32,7 +23,7 @@ export default function Contact({ topic = 'home' }) {
               />
               <p className='max-w-[46ch] text-base leading-[1.6] text-mut'>{intro}</p>
             </header>
-            <ol className='flex flex-col gap-5 border-t-[1.5px] border-line pt-8'>{stepEls}</ol>
+            <p className='border-t-[1.5px] border-line pt-8 text-base leading-[1.6] text-foreground'>{next}</p>
           </div>
           <ContactForm topic={service?.title} />
         </div>

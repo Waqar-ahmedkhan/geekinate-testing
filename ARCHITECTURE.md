@@ -872,7 +872,14 @@ sentence, which is why the two no longer share a baseline. Contact is shared, so
 **The contact heading is not shared.** `Contact` takes a `topic` (default `home`) and reads its typed headings and intro from
 `contactContent.pitches[topic]`: `/services/[slug]` passes the slug and `/work/[slug]` passes the project's `service`. Before
 2026-09-25 every page cycled the same four questions, so the marketing page asked "What do you want to automate?" under a
-CtaBand reading "Let's automate it." The steps, the form and the address stay shared.
+CtaBand reading "Let's automate it." The next-steps line, the form and the address stay shared.
+
+**The contact column is an intro and one line.** Until 2026-10-25 the heading sat over a three-sentence intro and three numbered
+`StepIndex` steps, each a title and a sentence, so a phone read about nine lines before the form, and the intro's last sentence
+repeated steps 2 and 3 almost word for word. The user found it excessive on a phone (2026-10-23) and picked two of four suggested
+trims: the home intro lost that last sentence, and the steps became `contactContent.next`, one sentence under the same rule. The
+form now starts inside the first screen at 390×844. Both were the client handoff's own text, so this departs from it on the user's
+word. The Guide's `engagement` grounding reads the same line.
 
 **The enquiry carries the service.** `Contact` resolves its `topic` against `services` and passes the title to `ContactForm`, which
 posts it as `topic`; `/api/contact` writes it into the enquiry as a `Service:` line. The home page has no topic and sends none.
@@ -1151,7 +1158,8 @@ day a transitive version moves. Anything this project actually depends on gets i
   Development & AI and Games, which no longer rotate. Two of its release checks failed and are fixed: over a paper band the nav
   pills turn `bg-void/80` (the links measured about 2.4:1 on the 50% glass, about 5.3:1 now), and `.on-paper :focus-visible`
   draws a solid 2px ink outline, because the volt-at-50% ring all but vanished on white. The closing `CtaBand` is gone from all three service pages on the
-  user's word. The reply time stays at two working days on the user's word, although the handoff also says one.
+  user's word. The reply time stays at two working days on the user's word, although the handoff also says one. The home contact
+  intro and the three contact steps were cut to two sentences and one line on 2026-10-25, also on the user's word.
 - **The 3D mark stops at Phase 2.** No camera rig, no length gradient, no taper, no post-processing, no mobile downgrade. Phases 3
   to 5 in `docs/geekinate-hero-3d-prompt.md` are unbuilt.
 - **The journey is invisible.** Every section below the hero is opaque and sits above the canvas, so the mark only shows through

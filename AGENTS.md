@@ -185,7 +185,9 @@ service pages. `/partner` keeps its own band.
 what the visitor can do and what Geekinate does, with no unsupported promise — so "free traffic", "growth never stalls", "every
 lead traced" and a universal "4 to 6 weeks" are out wherever they still stand. Applied so far: the naming above, the home page's
 copy (hero, clients, work, services, contact), and the CTA convention — every button that opens an enquiry reads **Let's talk**,
-every button to the work grid reads **See our work** (`/#work`), and the form submits with **Send enquiry**. **There is one
+every button to the work grid reads **See our work** (`/#work`), and the form submits with **Send enquiry**. The contact column
+is shorter than the handoff wrote it, on the user's word (2026-10-25, "text looks excessive" on a phone): a two-sentence home
+intro and one next-steps line, `contactContent.next`, where three numbered steps stood. Do not put the steps back. **There is one
 contact form and every page shows it**, interest question included: the handoff drew those six options for Marketing, and the user
 put them on the shared form instead ("all pages will show the same contact us form") — do not fork the form per service. Since
 2026-10-06 the options are a single-choice dropdown, not chips (instructed) — a Radix `Select` from the already-installed `radix-ui`

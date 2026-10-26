@@ -389,7 +389,9 @@ single sentences to `{ title, detail }` the same day, because the design needs a
 
 **`CtaBand` breaks its line before the volt phrase.** Instructed 2026-09-18 ("let's new line par ajaye ga"): the trail is a
 `block` span, so "Got a vibe coded app?" and "Let's Geekinate it." are always two lines rather than wrapping wherever the
-measure lands. `/partner` shares the band and reads the same way.
+measure lands. `/partner` shares the band and reads the same way. Keep the space between the lead and that span: a block
+break is visual only, and without the space a screen reader read "client.Earn" as one word (found 2026-10-26, a handover
+accessibility check). Any heading split across spans needs the same space.
 
 ## Conventions
 

@@ -147,11 +147,17 @@ the supplied originals that stay beside them in `public/media/clients/`: ink-on-
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
 flipping `src` values in `lib/content/index.js` is the whole change either way.
 
-**The Elevé tile rests on a still, and hover runs its case page's clip.** Tile 1 shows the brand render's settled frame
-(`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip, fading it in under the
-pointer: `eleve-site.mp4`, the laptop render the Elevé case page's hero runs as its cover (instructed 2026-10-21, "hover par jo
-video ati hai usko replace karna hai, eleve detailed page ky top par hero section may jo video hai us sy"). It replaced the logo
-colouring in on white, `eleve-logo.mp4`, which stays in `public/media/work/` unused. The same day Elevé moved from the
+**The Elevé and Shifa tiles rest on a still, and hover runs a clip of their own.** Tile 1 shows the brand render's settled
+frame (`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip, fading it in under
+the pointer: `eleve-hover.mp4`, the site scrolling on a laptop over a concrete plinth, supplied on 2026-10-26 ("jb us par hover
+karyn gyn toh yeh video play hogi"). From 2026-10-21 until then the hover ran `eleve-site.mp4`, the case page's cover ("hover
+par jo video ati hai usko replace karna hai, eleve detailed page ky top par hero section may jo video hai us sy"); the case
+page still runs that clip, so the tile and the case hero are separate media now. Before that the hover was the logo colouring
+in on white, `eleve-logo.mp4`, which stays in `public/media/work/` unused. Tile 5, Shifa International, took the same pair the
+same day: `shifa-poster.webp` (the *5x growth in online giving* card) at rest and `shifa-hover.mp4` (the Shifa Foundation USA
+footage) on hover, replacing the stats count-up, which its case page keeps as `cover`. The Shifa card was supplied at 3:2 and
+is mirror-extended to a square, because the tile is square below `lg` and a centre crop cut the *5x* off — see
+ARCHITECTURE.md §The featured work section. On 2026-10-21 Elevé moved from the
 full-width tile 3 to tile 1 and the AR game took tile 3. A video-only swap was tried first and left each title over the other
 project's clip ("Tile par likha hai AR game jb ky video eleve ki hai"), so **a clip, its title, its tags and its case link
 travel as one project**: reorder `projects` and swap their `span`, never the media alone. From 2026-09-22 to 2026-10-06 the
@@ -165,7 +171,8 @@ exception, and it plays the hover clip, not the intro: a phone has no hover, so 
 like every other clip there, after the user reported it as the one tile that never moved on a phone. Since 2026-10-14 every
 work tile waits for its centre to cross 70% of the screen height (`WORK.playLine`) before its clip starts, because at half on
 screen the clip covered the still before anyone saw it ("on mobile the thumbnail image doesn't show up at all").
-The site clip's ground is dark, so the caption stays paper and the pair carries no `tone`. A hover clip on a white ground, as
+Neither new clip carries a `tone`: the caption lands on Elevé's grey plinth and over Shifa's footage, where the paper title's
+black shadow holds. A hover clip on a white ground, as
 the logo clip was, needs `hoverMedia.tone: 'light'` to turn the caption ink while it shows, or the title disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
 sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).
 

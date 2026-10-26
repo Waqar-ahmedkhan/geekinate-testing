@@ -542,13 +542,24 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   height. **The rhythm needs exactly five projects** — `span` values in `lib/content/work.js` change with the count.
 - Tiles are `WorkTile`: black fill, 1.5px ink border and hard shadow, with the title and discipline chips overlaid on the media
   and no scrim. A project with no `href` renders a `div` rather than a dead link.
-- **A tile with `hoverMedia` rests on a still and reveals a second clip.** The Elevé tile (tile 1 since 2026-10-21, the full-width
-  tile 3 before that): `media` is only a `poster` (the brand render's last frame) plus its `focus`, so the tile renders no base
-  video at all, and `hoverMedia` is the same `eleve-site.mp4` the case page's hero runs as its `cover` (`eleveSiteClip`);
-  `hoverMedia` sits over the still at `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
+- **A tile with `hoverMedia` rests on a still and reveals a second clip.** Two tiles do, since 2026-10-26. The Elevé tile (tile
+  1 since 2026-10-21, the full-width tile 3 before that): `media` is only a `poster` (the brand render's last frame) plus its
+  `focus`, so the tile renders no base video at all, and `hoverMedia` is `eleve-hover.mp4`, the site on a laptop over a
+  concrete plinth, supplied at 1742×1080 and encoded at 1440×892, H.264 High, `-preset slow -crf 20`, no audio, `+faststart`
+  — 1.2MB. From 2026-10-21 to 2026-10-26 the hover ran `eleve-site.mp4`, the case page's `cover`, which the page still runs.
+  The Shifa tile (tile 5): `media` is `shifa-poster.webp`, the *5x growth in online giving* card, and `hoverMedia` is
+  `shifa-hover.mp4`, the Shifa Foundation USA footage, its 884×588 H.264 stream copied as supplied with the audio dropped and
+  `+faststart` — 0.7MB; the stats count-up it replaced stays on as the case page's `cover`. **The Shifa card is supplied at
+  3:2 and stored square.** The tile is square below `lg`, and a centre crop of the 3:2 card cut the *5x* off the headline, so
+  the 884×589 card is padded to 884×884 by mirroring its own text-free rows: the bottom 148 rows reflected downward, and the
+  top 67 rows (the headline starts at row 69) reflected upward and back until they fill 147. The gradient and its grain carry
+  on without a seam, and a 3:2 cover crop of the square is the supplied card pixel for pixel, so `lg` and the `More` tiles show
+  it unchanged. Redo the padding when the card is re-exported, or ask for a square export. `hoverMedia` sits over the still at
+  `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
-  title and chips would vanish; the logo clip needed it, and the site clip, on a dark ground, does not. The paper title carries a
+  title and chips would vanish; the logo clip needed it, and neither current clip does: the caption lands on Elevé's grey
+  plinth and on Shifa's footage. The paper title carries a
   stacked black `text-shadow` (`LEGIBLE`) and the chips a light one since 2026-10-23, after the Twinhub title disappeared into the laptop's white
   screen on a phone; a bottom scrim was tried against it and read weaker at the title's height. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
   screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating
@@ -625,7 +636,7 @@ nechy scroll hojata hai"). Every `video` is paused and seeked to `frame / 30` an
 (the marquee, the nav's transitions) is paused and stepped 33.3ms per frame before the capture. Composited with ffmpeg
 `overlay`, scaled to 1440², H.264 High, `-preset slow -crf 20`, no audio, `+faststart` — 0.9MB. `eleve-site.webp` is its
 first frame, 64KB. Re-record it the same way when the
-Elevé site changes; the tile keeps its intro-and-reveal pair either way.
+Elevé site changes. The tile no longer shares it: since 2026-10-26 its hover runs `eleve-hover.mp4`.
 
 **Four of the five pages carry drafted copy.** Only Twinhub had a case study on the old site, and its Requirements, Challenge,
 Solution and stack are transcribed from it (geekinate.com/portfolio/Twinhub_-_Coworking_Space_Website), as is its *Visit* link.
@@ -1125,7 +1136,9 @@ day a transitive version moves. Anything this project actually depends on gets i
   discipline tags travelled with the clips, so tile 1 reads Games & Interactive and tile 3 Web Products (Development & AI since
   2026-10-02). On 2026-10-21 the pair went back to tile 1 and the AR game to tile 3, this time as whole projects, because a
   video-only swap left each title over the other's clip; the hover clip became `eleve-site.mp4`, the case page's cover, so
-  `eleve-logo.mp4` is unused too.
+  `eleve-logo.mp4` is unused too. On 2026-10-26 the hover took a clip of its own, `eleve-hover.mp4`, and tile 5's stats
+  count-up gave way to a still and a hover clip as well (see the `hoverMedia` note above); `stats-grid.mp4` and its poster
+  stay for the Shifa case page's hero.
 - **Encode clips as H.264 (`avc1`) in MP4 or VP9 in WebM.** A clip that was H.265/HEVC (`hvc1`) rendered as a blank tile in Chrome on
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a

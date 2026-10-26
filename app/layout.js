@@ -3,6 +3,8 @@ import { Toaster } from '@/components/ui/sonner';
 import { Footer, JsonLd } from '@/components';
 import { CosmosCanvas, GrainWake, Nav, Preloader, SmoothScroll, SubstrateField } from '@/lib/ui/reusable_components';
 import { buildMetadata, organizationJsonLd, websiteJsonLd } from '@/lib/seo';
+import { joinNames } from '@/lib/utils';
+import { homeMeta, serviceNames } from '@/lib/content';
 import { SITE } from '@/constants';
 import './globals.css';
 
@@ -15,9 +17,10 @@ const display = Instrument_Serif({
 });
 const sans = Red_Hat_Display({ subsets: ['latin'], display: 'swap', variable: '--font-red-hat-display' });
 const mono = IBM_Plex_Mono({ subsets: ['latin'], display: 'swap', weight: ['400', '500'], variable: '--font-ibm-plex-mono' });
+const pillars = joinNames(Object.values(serviceNames).map(({ title, short = title }) => short));
 const rootMetadata = buildMetadata({
-  title: `${SITE.name} | AI Development, Games & Marketing`,
-  description: SITE.description,
+  title: `${SITE.name} | ${pillars}`,
+  description: homeMeta.description,
 });
 const fontVariables = `${sans.variable} ${display.variable} ${mono.variable}`;
 

@@ -547,14 +547,20 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   `focus`, so the tile renders no base video at all, and `hoverMedia` is `eleve-hover.mp4`, the site on a laptop over a
   concrete plinth, supplied at 1742×1080 and encoded at 1440×892, H.264 High, `-preset slow -crf 20`, no audio, `+faststart`
   — 1.2MB. From 2026-10-21 to 2026-10-26 the hover ran `eleve-site.mp4`, the case page's `cover`, which the page still runs.
-  The Shifa tile (tile 5): `media` is `shifa-poster.webp`, the *5x growth in online giving* card, and `hoverMedia` is
-  `shifa-hover.mp4`, the Shifa Foundation USA footage, its 884×588 H.264 stream copied as supplied with the audio dropped and
-  `+faststart` — 0.7MB; the stats count-up it replaced stays on as the case page's `cover`. **The Shifa card is supplied at
-  3:2 and stored square.** The tile is square below `lg`, and a centre crop of the 3:2 card cut the *5x* off the headline, so
-  the 884×589 card is padded to 884×884 by mirroring its own text-free rows: the bottom 148 rows reflected downward, and the
-  top 67 rows (the headline starts at row 69) reflected upward and back until they fill 147. The gradient and its grain carry
-  on without a seam, and a 3:2 cover crop of the square is the supplied card pixel for pixel, so `lg` and the `More` tiles show
-  it unchanged. Redo the padding when the card is re-exported, or ask for a square export. `hoverMedia` sits over the still at
+  The Shifa tile (tile 5): `media` is `shifa-poster.webp`, the *5× monthly online donation transaction volume by month five*
+  card, and `hoverMedia` is `shifa-hover.mp4`, the Shifa Foundation USA footage, its 884×588 H.264 stream copied as supplied
+  with the audio dropped and `+faststart` — 0.7MB, with its first frame as `shifa-hover.webp`. The same clip is the case page's
+  `cover` (`shifaClip`); the stats count-up it replaced, `stats-grid.mp4`, is deleted, because its agency figures were the
+  2026-10-26 handover's P0. **The card is rebuilt here, not the supplied export.** The supplied 884×589 card read *5x growth in
+  online giving for a US nonprofit*, and the handover allows only the owner's transaction-volume claim. Its headline (rows
+  69–171, columns 61–639) was removed by filling rows 58–182 with a per-column blend between the blurred rows just above and
+  below, plus the grain lifted from 140 rows further down, feathered over 16px at the sides; the doc's line was then set in
+  Red Hat Display, 300 with the *5×* in 700, 46px on a 52px line from (60, 58), and captured at DPR 2 in headless Chrome
+  (1768×1178). **It is stored square.** The tile is square below `lg`, and a centre crop of a 3:2 card cuts the start of the
+  headline off, so the card is padded to 1768×1768 by mirroring its own text-free rows: the bottom rows reflected downward, and
+  the rows above the headline reflected upward and back until they fill the top. The gradient and its grain carry on without a
+  seam, and a 3:2 cover crop of the square is the 3:2 card pixel for pixel, so `lg` and the `More` tiles show it as designed.
+  When the designer's Canva export arrives with the approved wording, pad that instead, or ask for a square export. `hoverMedia` sits over the still at
   `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
@@ -599,9 +605,9 @@ whole site and two layouts invented without it were rejected first:
 
 | Piece | What it is | Stokt's |
 |---|---|---|
-| `CaseHero` (`features/case-hero`) | **The old site's hero, on our ground** (instructed 2026-09-24, "make hero section exact same like the previous version", with a screenshot of geekinate.com's Fintech SAAS App page). The project `title` centred in display type, one line on a desktop, and below it the tile's clip in a bordered frame with an ink hard shadow, 16:9 unless the media carries a `ratio`, capped at `62svh` of height. The frame plays the project's `cover` when it has one and its tile `media` otherwise; only Elevé has one (below). A `paper` panel starts 42% of the way down the frame and runs to the hero's foot, so the frame straddles the black ground and the white page as the old mockup straddled its green band; the panel's top edge dips in the middle through a radial `mask-image`, the old band's curve | Stokt's Heron hero card ran here for an afternoon and was replaced on this instruction |
-| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Let’s talk* pill (*Build something like this* until 2026-10-02) | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
-| `Stack` | A thin `ink` strip: the *Tech stack* label beside a `Marquee` of the stack in mono caps with volt squares, the client strip's own component at a 64px gap. The label sits above the marquee below `md` | Heron's *[ TECH STACK ]* strip |
+| `CaseHero` (`features/case-hero`) | **The old site's hero, on our ground** (instructed 2026-09-24, "make hero section exact same like the previous version", with a screenshot of geekinate.com's Fintech SAAS App page). The project `title` centred in display type, one line on a desktop, and below it the tile's clip in a bordered frame with an ink hard shadow, 16:9 unless the media carries a `ratio`, capped at `62svh` of height. The frame plays the project's `cover` when it has one and its tile `media` otherwise; Elevé (below) and Shifa, whose tile rests on a still and whose cover is its hover footage, have one. A `paper` panel starts 42% of the way down the frame and runs to the hero's foot, so the frame straddles the black ground and the white page as the old mockup straddled its green band; the panel's top edge dips in the middle through a radial `mask-image`, the old band's curve | Stokt's Heron hero card ran here for an afternoon and was replaced on this instruction |
+| `Intro` | `paper`, continuous with the hero's panel. The project's `headline` as a display statement on the left, its `mark` in italic; on the right the summary, a hairline table of the `facts` plus *Service* and, when the project has a `url`, *Visit the website*, then the *Let’s talk* pill (*Build something like this* until 2026-10-02). *Service* is the tile's category in sentence case (`sentenceCase(disciplines)`), so the card and the table never disagree. Shifa's *What we achieved* row is the one long value and wraps right-aligned | Heron's *[ INTRO ]*, with Kastle's ruled Client / Year / link table on the right |
+| `Stack` | A thin `ink` strip: the *Tech stack* label beside a `Marquee` of the stack in mono caps with volt squares, the client strip's own component at a 64px gap. The label sits above the marquee below `md`. A project's `stackLabel` replaces the label; Shifa's reads *Platforms & Tools*, because what it lists is the client's fundraising stack, not code | Heron's *[ TECH STACK ]* strip |
 | `Brief` | `paper`. Requirements and Challenge side by side as two editorial columns, each an eyebrow, a display heading and a hairline-ruled numbered list | |
 | `Solution` | `ink`. The service page's Deliverables list, reused on instruction (2026-09-24, "reuse this or this based on dark or light section"): `Cycle` on a dark band, heading left and list right — it ran mirrored like Deliverables for an hour and was flipped back on instruction ("left section moves to right and right to left"). Each solution point is `{ title, detail }`: a short name set in display type, the sentence beside it. The names were added that day; the sentences are the brief's own, Twinhub's still the old site's except the SEO line, cut to its first sentence because `Cycle` keeps every sentence in the layout and the full line made row 07 visibly taller than the rest | |
 | `More` | `paper`, closed by a hairline before `Contact`: the next three projects in `work` order, wrapping, as `WorkTile`s at `aspect-[3/2]` through the tile's `className`. The clips were exported for the 3:2 and 2:1 slots with the caption zone at the bottom, and a square crop pushed the Shifa figures under the caption | |
@@ -617,7 +623,11 @@ Mechanics worth knowing before editing:
 - **The Elevé intro plays once and rests on its last frame**, through `useHoverVideo({ introduce: true })`; the frame is fully on
   screen at load, so the half-on-screen rule passes at once. A looping clip plays through `InViewVideo` while the frame is in view.
 - **The frame crops with `object-cover` to 16:9**: Twinhub's square clip keeps its whole laptop inside that crop and the Shifa
-  grid loses only its outer rules. Elevé's cover is the same square mockup, so it crops identically.
+  footage, 3:2, loses a strip top and bottom. Elevé's cover is the same square mockup, so it crops identically.
+- **Metadata is the project's `meta`, not its card title.** The card and `h1` are the short name (*Elevé*, *TwinHub*); the
+  `<title>` and description are the handover's (*Elevé Brand Identity and Website*, and so on), and the layout appends
+  ` | Geekinate`.
+- **The contact pitch is the project's `contact` when it has one**, else its `service`'s. Shifa's is the only one.
 - There is no `CtaBand`: the old page goes straight from View More to the form. The page carries no `#hero` (the hero is `hero-work`), so the particle cloud takes the heroless path the service
   pages rely on.
 
@@ -639,7 +649,15 @@ nechy scroll hojata hai"). Every `video` is paused and seeked to `frame / 30` an
 first frame, 64KB. Re-record it the same way when the
 Elevé site changes. The tile no longer shares it: since 2026-10-26 its hover runs `eleve-hover.mp4`.
 
-**Four of the five pages carry drafted copy.** Only Twinhub had a case study on the old site, and its Requirements, Challenge,
+**The copy on all five pages is the client's handover of 2026-10-26** (`../docs/geekinate-website-copy-handover-2026-10-26.md`),
+applied section by section: short card names, a delivered-service category per card, first-person overviews, Elevé inside
+brand and website, TwinHub across website, CMS, SEO, social and paid work with seven reworded solution rows, both games named
+as client commissions with their features untouched, and Shifa rewritten end to end as **Shifa Foundation USA** — the donor
+journey, CharityStack with PayPal, Meta and Google Ad Grants, and the owner-approved 5× transaction-volume line as its *What we
+achieved* row. The route stays `/work/shifa-international`; a move needs a redirect plan first. What follows is how the pages
+stood before it.
+
+Until 2026-10-26 four of the five pages carried drafted copy. Only Twinhub had a case study on the old site, and its Requirements, Challenge,
 Solution and stack are transcribed from it (geekinate.com/portfolio/Twinhub_-_Coworking_Space_Website), as is its *Visit* link.
 The AR game, Elevé, the VR game and Shifa International were drafted on 2026-09-24, with the user's go-ahead, from what their
 clips show: headline, summary, facts, brief and stack alike. Elevé's stack is the one drafted part read off a real
@@ -884,7 +902,9 @@ sentence, which is why the two no longer share a baseline. Contact is shared, so
 **The contact heading is not shared.** `Contact` takes a `topic` (default `home`) and reads its typed headings and intro from
 `contactContent.pitches[topic]`: `/services/[slug]` passes the slug and `/work/[slug]` passes the project's `service`. Before
 2026-09-25 every page cycled the same four questions, so the marketing page asked "What do you want to automate?" under a
-CtaBand reading "Let's automate it." The next-steps line, the form and the address stay shared.
+CtaBand reading "Let's automate it." The next-steps line, the form and the address stay shared. A case page can pass a whole
+pitch instead, through `pitch`, which wins over the topic's; `/work/[slug]` passes the project's `contact`, which only Shifa
+carries (2026-10-26). The form still gets the `service` title as its topic, so an enquiry from Shifa's page arrives as Marketing.
 
 **The contact column is an intro and one line.** Until 2026-10-25 the heading sat over a three-sentence intro and three numbered
 `StepIndex` steps, each a title and a sentence, so a phone read about nine lines before the form, and the intro's last sentence
@@ -1076,11 +1096,12 @@ day a transitive version moves. Anything this project actually depends on gets i
 - **There is no spend ceiling on the Guide.** `/api/guide` calls OpenAI directly, so the only limits are `maxOutputTokens`, the
   message and turn caps and the per-IP throttle — all of which bound size and rate, none of which stop a bill. A hard limit has to
   be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
-- **Four case pages run drafted copy, and it reads as fact.** Since 2026-09-24 `work` holds real project names, but only
-  Twinhub's page is sourced from the old site (rephrased on 2026-09-25, no claims added). Shifa International is now framed as
-  a marketing campaign on the user's word, but what the campaign was is still unknown. The AR game, Elevé, the VR game and Shifa International carry headlines,
-  facts, briefs and stacks drafted from their clips (see **The case pages**) — the games' platforms and engines, Elevé's brand
-  work, Shifa's whole brief. Each needs the real copy before it is public, the same standing as the invented testimonials.
+- **The case pages carry the client's copy, with checks the handover leaves open.** Since 2026-10-26 every page's words come
+  from `../docs/geekinate-website-copy-handover-2026-10-26.md`. Still to confirm with the project developers: Elevé's stack
+  (Figma, Next.js, Tailwind CSS, Radix UI, Nodemailer) and TwinHub's (Next.js, MUI, MongoDB, AWS EC2), both observed rather
+  than checked, and TwinHub's marketing tools, which the doc forbids guessing. Elevé's tour and day-pass booking should be
+  tested on eleve.space. No TwinHub occupancy figure goes up until its period and capacity basis are recorded. Shifa's card is
+  rebuilt here with the approved line and should be replaced by the designer's Canva export when it arrives.
   The Guide's prompt still tells it never to present a `projects` entry as a named case study, which stays right while that
   copy is unconfirmed; revisit that line once it is.
 - **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their
@@ -1138,8 +1159,8 @@ day a transitive version moves. Anything this project actually depends on gets i
   2026-10-02). On 2026-10-21 the pair went back to tile 1 and the AR game to tile 3, this time as whole projects, because a
   video-only swap left each title over the other's clip; the hover clip became `eleve-site.mp4`, the case page's cover, so
   `eleve-logo.mp4` is unused too. On 2026-10-26 the hover took a clip of its own, `eleve-hover.mp4`, and tile 5's stats
-  count-up gave way to a still and a hover clip as well (see the `hoverMedia` note above); `stats-grid.mp4` and its poster
-  stay for the Shifa case page's hero.
+  count-up gave way to a still and a hover clip as well (see the `hoverMedia` note above). The same day the handover had its
+  figures removed from every surface, so `stats-grid.mp4` and its poster are deleted and the Shifa case page runs the footage.
 - **Encode clips as H.264 (`avc1`) in MP4 or VP9 in WebM.** A clip that was H.265/HEVC (`hvc1`) rendered as a blank tile in Chrome on
   Windows, which cannot decode HEVC without Microsoft's paid extension — and it fails silently, with no media error event, so it
   presents as "not loading" rather than "unsupported". `WorkTile` carries `bg-ink` so a tile that has not painted still reads as a
@@ -1172,8 +1193,14 @@ day a transitive version moves. Anything this project actually depends on gets i
   Development & AI and Games, which no longer rotate. Two of its release checks failed and are fixed: over a paper band the nav
   pills turn `bg-void/80` (the links measured about 2.4:1 on the 50% glass, about 5.3:1 now), and `.on-paper :focus-visible`
   draws a solid 2px ink outline, because the volt-at-50% ring all but vanished on white. The closing `CtaBand` is gone from all three service pages on the
-  user's word. The reply time stays at two working days on the user's word, although the handoff also says one. The home contact
-  intro and the three contact steps were cut to two sentences and one line on 2026-10-25, also on the user's word.
+  user's word. The reply time stayed at two working days on the user's word until 2026-10-26, when the owner confirmed one
+  working day in the second handover; `replyWindow` carries it to the contact, success, confirmation and `/partner` copy. The
+  home contact intro and the three contact steps were cut to two sentences and one line on 2026-10-25, also on the user's word.
+- **The second handover's Development and Games service-page rewrites are still pending** (2026-10-26). Applied: the naming,
+  the removed Development hero strip (*Week one*, *100% yours*, *Zero* lock-in), and both contact bodies. Left as they stand
+  until the client supplies wording, as the doc asks: the Development hero line's "hours back every week", the Integrations
+  card's "never dropping a message", the Development deliverables' ownership and on-call promises, and the Games hero and
+  deliverables.
 - **The 3D mark stops at Phase 2.** No camera rig, no length gradient, no taper, no post-processing, no mobile downgrade. Phases 3
   to 5 in `docs/geekinate-hero-3d-prompt.md` are unbuilt.
 - **The journey is invisible.** Every section below the hero is opaque and sits above the canvas, so the mark only shows through

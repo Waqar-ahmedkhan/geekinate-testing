@@ -18,15 +18,21 @@ more. See `ARCHITECTURE.md` §Shape for what that changes. The first deploy land
 2026-10-21 the site is Worker `geekinate-com` in **Nouman.digg@gmail.com's Account**, at `geekinate-com.nouman-digg.workers.dev`,
 and `account_id` in `wrangler.jsonc` pins every deploy there.
 
-**The site sells three services**, and `services` in `lib/content/index.js` is the list: **AI Development** (`development`),
-**Games & Interactive** (`games`), **Marketing** (`marketing`). The first was **Development & AI** until 2026-10-06, when the user
-renamed it sitewide over the client handoff's normalisation (URL unchanged). The last was **Marketing Systems** until 2026-10-02, when the
-client's handoff (`../docs/geekinate-copy-and-ui-handoff.md`) renamed it sitewide — nav, cards, footer, page titles, `/partner` and
-the work tags alike — and kept every URL. The site once named four pillars with Web Products as its own; Web Products is folded into
-AI Development. The pillar vocabulary used to survive as **tags** on the featured work, and since the same handoff it does not:
-`work[].disciplines` draws from the three service names only (`Web Products` became `AI Development`, `Marketing Systems` became
-`Marketing`). Shifa International, tile 5, is the one `Marketing` tile, on the user's word (2026-09-25). Derive from `services`
-rather than transcribing a count anywhere.
+**The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
+**Games & Interactive** (`games`), **Marketing** (`marketing`). **The names live in one place**, `serviceNames` in
+`lib/content/shared.js`, and everything else reads them from there — the service cards, page titles and eyebrows, the footer,
+`/partner`'s cards and referral options, the Guide's prompt, and the home page's `<title>`, which `joinNames` builds from them
+(`short` is the name that title uses, so Games reads *Games* there). Instructed 2026-10-26: "iska kuch esa karo ky bad jb b
+titles change karne hoon ak hi jagah sy karun". Never type a service name into a component or another content module. The
+first service was **Development & AI**, then **AI Development** from 2026-10-06 (the user's rename over the first handoff's
+normalisation), and **Development & AI** again since 2026-10-26, on the second handoff and the user's word (URL unchanged
+throughout). The last was **Marketing Systems** until 2026-10-02, when the client's handoff
+(`../docs/geekinate-copy-and-ui-handoff.md`) renamed it. The site once named four pillars with Web Products as its own; Web
+Products is folded into Development & AI. **The work tiles do not carry service names.** Since the handover of 2026-10-26
+(`../docs/geekinate-website-copy-handover-2026-10-26.md`) each project's `disciplines` is the service actually delivered —
+*Brand Identity & Web Development*, *AR Game Development* and so on — and the case page's *Service* row is the same string in
+sentence case (`sentenceCase`). The pillar a project belongs to is its `service` slug, which picks its contact pitch and the
+form's topic; keep the two apart. Derive from `services` rather than transcribing a count anywhere.
 
 **The home hero has no eyebrow.** The three service names sat above the `h1` in mono caps with dot separators, each lighting its
 arc group on the globe under hover; on 2026-10-06 the user said the strip gave the hero an "AI vibe" and it was removed, along with
@@ -153,11 +159,14 @@ the pointer: `eleve-hover.mp4`, the site scrolling on a laptop over a concrete p
 karyn gyn toh yeh video play hogi"). From 2026-10-21 until then the hover ran `eleve-site.mp4`, the case page's cover ("hover
 par jo video ati hai usko replace karna hai, eleve detailed page ky top par hero section may jo video hai us sy"); the case
 page still runs that clip, so the tile and the case hero are separate media now. Before that the hover was the logo colouring
-in on white, `eleve-logo.mp4`, which stays in `public/media/work/` unused. Tile 5, Shifa International, took the same pair the
-same day: `shifa-poster.webp` (the *5x growth in online giving* card) at rest and `shifa-hover.mp4` (the Shifa Foundation USA
-footage) on hover, replacing the stats count-up, which its case page keeps as `cover`. The Shifa card was supplied at 3:2 and
-is mirror-extended to a square, because the tile is square below `lg` and a centre crop cut the *5x* off — see
-ARCHITECTURE.md §The featured work section. On 2026-10-21 Elevé moved from the
+in on white, `eleve-logo.mp4`, which stays in `public/media/work/` unused. Tile 5, Shifa Foundation USA, took the same pair the
+same day: `shifa-poster.webp` at rest and `shifa-hover.mp4` (the Shifa Foundation USA footage) on hover, and the footage is its
+case page's `cover` too. The stats count-up it replaced is deleted: its agency figures (150+ projects, 95% satisfaction) were
+the handover's P0. **The card's line is the handover's approved claim and nothing looser**: *5× monthly online donation
+transaction volume by month five*. The supplied card read *5x growth in online giving*, which the handover rules out (transaction
+volume, not funds raised, and 5× rather than "5x growth"); the user had it corrected to the doc ("jo sahi hai doc ky mutabik woh
+kardo"), so the card is rebuilt here until the designer's Canva export carries the same wording — see ARCHITECTURE.md §The
+featured work section. On 2026-10-21 Elevé moved from the
 full-width tile 3 to tile 1 and the AR game took tile 3. A video-only swap was tried first and left each title over the other
 project's clip ("Tile par likha hai AR game jb ky video eleve ki hai"), so **a clip, its title, its tags and its case link
 travel as one project**: reorder `projects` and swap their `span`, never the media alone. From 2026-09-22 to 2026-10-06 the
@@ -173,7 +182,7 @@ work tile waits for its centre to cross 70% of the screen height (`WORK.playLine
 screen the clip covered the still before anyone saw it ("on mobile the thumbnail image doesn't show up at all").
 Elevé's pair carries no `tone`: the caption lands on its grey plinth, where the paper title's black shadow holds. Shifa's
 caption is ink at rest and on hover (`tone: 'light'` on both `media` and `hoverMedia`), instructed 2026-10-26 ("kardo dark"),
-because the *Marketing* chip read faint in paper on the pale card. A hover clip on a white ground, as
+because the paper chip read faint on the pale card. A hover clip on a white ground, as
 the logo clip was, needs `hoverMedia.tone: 'light'` to turn the caption ink while it shows, or the title disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
 sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).
 
@@ -184,6 +193,10 @@ Do not drift back to the wry, understated register ("Games people finish", "How 
 no project counts, percentages or client results that nobody supplied; the facts rows keep the claims that were already
 there. The contact heading and intro are `contactContent.pitches[topic]`, keyed `home` or by service slug: a service page
 passes its slug and a case page passes its project's `service`, so the marketing page never asks what you want to automate.
+A project can override that with its own `contact` pitch, passed as `Contact`'s `pitch`; only Shifa does, because the Marketing
+prompt about bookings and buying does not fit a fundraising story (handover, 2026-10-26). **The reply time is one working day**
+everywhere — contact, success message, the visitor's confirmation email and `/partner` — and it is written once, `replyWindow`
+in `lib/content/shared.js`. It was two working days until 2026-10-26, when the owner confirmed one.
 The service pages carried a `CtaBand` before the contact section, its line each service's `handoff`, until 2026-10-02: the client's
 handoff called it a repeat of the contact and work buttons right before the form, and the user had it removed from all three
 service pages. `/partner` keeps its own band.
@@ -206,7 +219,7 @@ current page's own `#contact` on `/services/*` and `/work/*` (`CONTACT_ROUTES`) 
 `Process` link was removed because the home page has no `#process` to land on. The Marketing page carries the handoff's copy
 section by section: its own Scope and Process eyebrows and headings through `service.sections` (merged over the shared
 `servicePageContent.blocks`), an intro line under the Deliverables and Process headings, no facts strip, and a single fixed contact
-heading under a *Let's talk* eyebrow. AI Development and Games keep their own copy. Its scope cards carried a small label over a
+heading under a *Let's talk* eyebrow. Development & AI and Games keep their own copy. Its scope cards carried a small label over a
 sentence title until 2026-10-07, when the client's revised copy made the service name the sole heading over one paragraph — the
 same number, heading, paragraph shape the other two service pages run — so `Scope` no longer takes a `label`.
 
@@ -218,9 +231,13 @@ the clip below it straddling the black ground and a white panel with the old ban
 ("make hero section exact same like the previous version") after a Stokt media-card hero ran for an afternoon, so the route
 carries no `HeroSheet`. Two layouts invented without the reference were rejected the same day — the old page copied band for
 band ("very bad"), then a card-heavy rework ("still very poor") — so reach for the reference before inventing a third. Do not bring the old page's look across (the green blobs, the
-check-circle bullets, the logo strip). **Four of the five pages are drafted copy** — only Twinhub's is transcribed from the old
-site — so treat every word on the AR game, Elevé, VR game and Shifa International pages as a placeholder until the real copy
-replaces it. See ARCHITECTURE.md §The case pages.
+check-circle bullets, the logo strip). **The copy on all five pages is the client's**, from the handover of 2026-10-26
+(`../docs/geekinate-website-copy-handover-2026-10-26.md`): first person ("we", "our"), the service actually delivered, and no
+result beyond what the owner approved — Shifa's 5× transaction volume is the only figure. Elevé stays inside brand and website;
+TwinHub covers its CMS, SEO, social and paid work without occupancy figures; both games are named client commissions. Until then
+four of the five were drafted here. Each page's `<title>` and description are its `meta`, separate from the card title, and
+Shifa's tools strip is labelled *Platforms & Tools* (`stackLabel`) because its tools are WordPress and fundraising platforms,
+not this site's stack. The Shifa route stays `/work/shifa-international` under the new name. See ARCHITECTURE.md §The case pages.
 
 **The preload gate must never be able to trap the page.** `lib/ui/reusable_components/preloader` holds a black overlay over
 everything until the globe paints its first frame, which reaches it through `lib/boot/ready.js`. That signal can legitimately never

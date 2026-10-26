@@ -50,7 +50,8 @@ export default function WorkTile({ title, disciplines = [], span = 2, href, medi
   }, [watchedRef]);
   const hoverHandlers = paired ? revealHandlers : baseHandlers;
   const revealed = paired && playing;
-  const onLight = revealed && hoverMedia.tone === 'light';
+  const tone = revealed ? hoverMedia.tone : media?.tone;
+  const onLight = tone === 'light';
   const className = cn(TILE, SPANS[span] ?? SPANS[2], tileClassName);
   const titleClass = cn(TITLE, onLight && ON_LIGHT.title);
   const chipClass = cn(CHIP, onLight && ON_LIGHT.chip);

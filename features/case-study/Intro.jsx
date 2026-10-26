@@ -1,5 +1,6 @@
 import { ArrowUpRight } from 'lucide-react';
 import { Actions, Eyebrow, Section } from '@/components';
+import { sentenceCase } from '@/lib/utils';
 
 const STATEMENT = 'max-w-[17ch] text-balance font-display text-[clamp(2.4rem,4.8vw,4.25rem)] leading-[1.02] tracking-[-0.01em]';
 const ROW = 'flex items-baseline justify-between gap-6 border-b-[1.5px] border-line py-3.5';
@@ -12,7 +13,7 @@ const hostOf = (url) => new URL(url).hostname.replace(/^www\./, '');
 
 export default function Intro({ block, visit, project, actions }) {
   const { headline, summary, facts, disciplines, url } = project;
-  const rows = [...facts, { label: block.service, value: disciplines.join(', ') }];
+  const rows = [...facts, { label: block.service, value: sentenceCase(disciplines.join(', ')) }];
   const rowEls = rows.map(({ label, value }) => (
     <div key={label} className={ROW}>
       <dt className={LABEL}>{label}</dt>

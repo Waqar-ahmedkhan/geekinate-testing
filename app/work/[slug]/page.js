@@ -18,7 +18,8 @@ export async function generateMetadata({ params }) {
   const { slug } = await params;
   const project = findProject(slug);
   if (!project) return {};
-  return buildMetadata({ title: project.title, description: project.summary, path: project.href });
+  const { title, description } = project.meta;
+  return buildMetadata({ title, description, path: project.href });
 }
 
 export default async function WorkPage({ params }) {
@@ -31,7 +32,7 @@ export default async function WorkPage({ params }) {
       <CaseHero project={project} />
       <HydrationSplit>
         <CaseStudy project={project} />
-        <Contact topic={project.service} />
+        <Contact topic={project.service} pitch={project.contact} />
       </HydrationSplit>
     </main>
   );

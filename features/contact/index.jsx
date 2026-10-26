@@ -4,9 +4,9 @@ import { ContactForm, TypedHeading } from '@/lib/ui/reusable_components';
 import { contactContent, services } from '@/lib/content';
 import { SITE } from '@/constants';
 
-export default function Contact({ topic = 'home' }) {
+export default function Contact({ topic = 'home', pitch: projectPitch }) {
   const { eyebrow, pitches, next, direct } = contactContent;
-  const pitch = pitches[topic] ?? pitches.home;
+  const pitch = projectPitch ?? pitches[topic] ?? pitches.home;
   const { headings, intro } = pitch;
   const service = services.find(({ slug }) => slug === topic);
   return (

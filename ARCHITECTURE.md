@@ -558,8 +558,9 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
-  title and chips would vanish; the logo clip needed it, and neither current clip does: the caption lands on Elevé's grey
-  plinth and on Shifa's footage. The paper title carries a
+  title and chips would vanish; the logo clip needed it. `media.tone: 'light'` does the same for the still at rest, so a
+  tile's caption follows whichever layer is showing. Shifa sets both, since its card and its washed footage are both pale and
+  the paper chip read faint on the card (2026-10-26); Elevé sets neither, its caption landing on the grey plinth. The paper title carries a
   stacked black `text-shadow` (`LEGIBLE`) and the chips a light one since 2026-10-23, after the Twinhub title disappeared into the laptop's white
   screen on a phone; a bottom scrim was tried against it and read weaker at the title's height. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
   screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating

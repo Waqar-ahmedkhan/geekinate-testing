@@ -542,31 +542,28 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   height. **The rhythm needs exactly five projects** — `span` values in `lib/content/work.js` change with the count.
 - Tiles are `WorkTile`: black fill, 1.5px ink border and hard shadow, with the title and discipline chips overlaid on the media
   and no scrim. A project with no `href` renders a `div` rather than a dead link.
-- **A tile with `hoverMedia` rests on a still and reveals a second clip.** Two tiles do, since 2026-10-26. The Elevé tile (tile
+- **A tile with `hoverMedia` rests on a still and reveals a second clip.** Only Elevé does. The Elevé tile (tile
   1 since 2026-10-21, the full-width tile 3 before that): `media` is only a `poster` (the brand render's last frame) plus its
   `focus`, so the tile renders no base video at all, and `hoverMedia` is `eleve-hover.mp4`, the site on a laptop over a
   concrete plinth, supplied at 1742×1080 and encoded at 1440×892, H.264 High, `-preset slow -crf 20`, no audio, `+faststart`
   — 1.2MB, with its first frame as `eleve-hover.webp`. Since 2026-10-27 the same clip is the case page's `cover` too
   (`eleveClip`), on the client's word; from 2026-10-21 to 2026-10-26 both ran `eleve-site.mp4`, which stays unused.
-  The Shifa tile (tile 5): `media` is `shifa-poster.webp`, the client's Canva card (*5x growth in online giving for a US
-  nonprofit*), and `hoverMedia` is `shifa-hover.mp4`, the Shifa Foundation USA footage, its 884×588 H.264 stream copied as
-  supplied with the audio dropped and `+faststart` — 0.7MB, with its first frame as `shifa-hover.webp`. The same clip is the
-  case page's `cover` (`shifaClip`); the stats count-up it replaced, `stats-grid.mp4`, is deleted, because its agency figures
-  were the 2026-10-26 handover's P0. **The card is the supplied export, unchanged in its pixels.** For one day (2026-10-26) it
-  was redrawn here with the handover's transaction-volume line in place of the Canva headline, and the client asked why it no
-  longer matched Canva; supplied artwork is not reworded to fit a copy document. **It is stored square.** The tile is square
-  below `lg`, and a centre crop of the 3:2 card cut the *5x* off the headline, so the 884×589 card is padded to 884×884 by
-  mirroring its own text-free rows: the bottom 148 rows reflected downward, and the 66 rows above the headline (which starts at
-  row 69) reflected upward and back until they fill 147. The gradient and its grain carry on without a seam, and a 3:2 cover
-  crop of the square is the supplied card pixel for pixel, so `lg` and the `More` tiles show it as designed. When a new export
-  arrives, pad that the same way, or ask for a square one. `hoverMedia` sits over the still at
+  The Shifa tile (tile 5) ran the same pair from 2026-10-26 to 2026-10-27 and is a plain clip tile now, like Twinhub and the
+  games: `media` is `shifaClip`, `shifa-hover.mp4`, the Shifa Foundation USA footage (its 884×588 H.264 stream copied as
+  supplied with the audio dropped and `+faststart` — 0.7MB), with its own first frame as the poster (`shifa-hover.webp`), and
+  the same clip is the case page's `cover`. The stats count-up before it, `stats-grid.mp4`, is deleted, because its agency
+  figures were the 2026-10-26 handover's P0. The pair's still was the client's Canva card (*5x growth in online giving for a
+  US nonprofit*); it stays unused as `shifa-poster.webp`, **stored square**: the tile is square below `lg`, and a centre crop
+  of the 3:2 card cut the *5x* off the headline, so the 884×589 card was padded to 884×884 by mirroring its own text-free rows
+  — the bottom 148 rows reflected downward, and the 66 rows above the headline (which starts at row 69) reflected upward and
+  back until they fill 147 — which keeps a 3:2 cover crop pixel for pixel the supplied card. For one day it was also redrawn
+  with the handover's transaction-volume line, and the client asked why it no longer matched Canva; supplied artwork is not
+  reworded to fit a copy document. `hoverMedia` sits over the still at
   `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
-  title and chips would vanish; the logo clip needed it. `media.tone: 'light'` does the same for the still at rest, so a
-  tile's caption follows whichever layer is showing. Shifa sets both, because its card and its washed footage are both pale
-  and the paper chip read faint on the card; the client's 2026-10-27 ask for a uniform paper caption was tried and reverted
-  the same day on the user's word. Elevé sets neither, its caption landing on the grey plinth. The paper title carries a
+  title and chips would vanish; the logo clip needed it. No tile sets it now: every caption is paper (2026-10-27, "Shifa tile
+  ka caption uniform kardo wapis"), after Shifa's ran in ink on its pale card for a day. The paper title carries a
   stacked black `text-shadow` (`LEGIBLE`) and the chips a light one since 2026-10-23, after the Twinhub title disappeared into the laptop's white
   screen on a phone; a bottom scrim was tried against it and read weaker at the title's height. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
   screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating

@@ -153,21 +153,22 @@ the supplied originals that stay beside them in `public/media/clients/`: ink-on-
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
 flipping `src` values in `lib/content/index.js` is the whole change either way.
 
-**The Elevé and Shifa tiles rest on a still, and hover runs a clip of their own.** Tile 1 shows the brand render's settled
+**The Elevé tile rests on a still, and hover runs a clip of its own.** Tile 1 shows the brand render's settled
 frame (`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip, fading it in under
 the pointer: `eleve-hover.mp4`, the site scrolling on a laptop over a concrete plinth, supplied on 2026-10-26 ("jb us par hover
 karyn gyn toh yeh video play hogi"), and **the case page's hero runs the same clip** (`eleveClip` is both `hoverMedia` and
 `cover`), on the client's word the next day ("the hero video inside eleve also needs to match the one on homepage"). From
 2026-10-21 to 2026-10-26 both ran `eleve-site.mp4` ("hover par jo video ati hai usko replace karna hai, eleve detailed page ky
 top par hero section may jo video hai us sy"), which now stays in `public/media/work/` unused, as does the logo colouring in on
-white, `eleve-logo.mp4`, the hover before that. Tile 5, Shifa Foundation USA, took the same pair the same day:
-`shifa-poster.webp` at rest and `shifa-hover.mp4` (the Shifa Foundation USA footage) on hover, and the footage is its case
-page's `cover` too. The stats count-up it replaced is deleted: its agency figures (150+ projects, 95% satisfaction) were the
-handover's P0. **The Shifa card is the client's Canva artwork, word for word** (*5x growth in online giving for a US
-nonprofit*). Do not reword supplied artwork to match a copy document: on 2026-10-26 the card was redrawn here with the
-handover's transaction-volume line, and the client asked the next day why it no longer matched Canva, so the supplied card went
-back. Where artwork and copy disagree, raise it and leave the artwork alone. It is stored square — see ARCHITECTURE.md §The
-featured work section. On 2026-10-21 Elevé moved from the
+white, `eleve-logo.mp4`, the hover before that. **Tile 5, Shifa Foundation USA, works like Twinhub and the games**: one clip,
+`shifa-hover.mp4` (the Shifa Foundation USA footage), resting on its own first frame (`shifa-hover.webp`) and playing on hover,
+and the same clip is its case page's `cover`. Instructed 2026-10-27 ("uski starting sy ak image lo or uski as thumbnail use
+karlo"). From 2026-10-26 to then it was a still-and-hover pair resting on the client's Canva card (*5x growth in online giving
+for a US nonprofit*), which stays in `public/media/work/` as `shifa-poster.webp`, padded square, unused. The stats count-up
+before that is deleted: its agency figures (150+ projects, 95% satisfaction) were the handover's P0. **Do not reword supplied
+artwork to match a copy document**: on 2026-10-26 the Canva card was redrawn here with the handover's transaction-volume line,
+and the client asked the next day why it no longer matched Canva. Where artwork and copy disagree, raise it and leave the
+artwork alone. On 2026-10-21 Elevé moved from the
 full-width tile 3 to tile 1 and the AR game took tile 3. A video-only swap was tried first and left each title over the other
 project's clip ("Tile par likha hai AR game jb ky video eleve ki hai"), so **a clip, its title, its tags and its case link
 travel as one project**: reorder `projects` and swap their `span`, never the media alone. From 2026-09-22 to 2026-10-06 the
@@ -181,11 +182,10 @@ exception, and it plays the hover clip, not the intro: a phone has no hover, so 
 like every other clip there, after the user reported it as the one tile that never moved on a phone. Since 2026-10-14 every
 work tile waits for its centre to cross 70% of the screen height (`WORK.playLine`) before its clip starts, because at half on
 screen the clip covered the still before anyone saw it ("on mobile the thumbnail image doesn't show up at all").
-**Shifa's caption is ink, at rest and on hover; every other tile's is paper.** `tone: 'light'` sits on both its `media` and
-its `hoverMedia`, instructed 2026-10-26 ("kardo dark") because the paper chip read faint on the pale card. On 2026-10-27 the
-client asked for it to match the other tiles ("Shouldn't it be uniform as others?"); it went paper for an hour and the user had
-it reverted the same day ("Dono jagah dark"). Keep it ink unless the user says otherwise. Elevé's pair carries no `tone`: its
-caption lands on the grey plinth, where the paper title's black shadow holds. A hover clip on a white ground, as
+**Every tile's caption is paper, Shifa's included** (instructed 2026-10-27, "Shifa tile ka caption uniform kardo wapis"). Shifa's
+was ink from 2026-10-26 ("kardo dark", because the paper chip read faint on the pale Canva card), went paper and back to ink on
+2026-10-27, and is paper for good now that the tile rests on its footage rather than the pale card. No tile carries a `tone`.
+A hover clip on a white ground, as
 the logo clip was, needs `hoverMedia.tone: 'light'` to turn the caption ink while it shows, or the title disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
 sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).
 
@@ -238,7 +238,9 @@ check-circle bullets, the logo strip). **The copy on all five pages is the clien
 (`../docs/geekinate-website-copy-handover-2026-10-26.md`): first person ("we", "our"), the service actually delivered, and no
 result beyond what the owner approved — Shifa's 5× transaction volume is the only figure. Elevé stays inside brand and website;
 Twinhub covers its CMS, SEO, social and paid work without occupancy figures (the handover wrote *TwinHub*; the client
-corrected it to **Twinhub** everywhere on 2026-10-27); both games are named client commissions. Until then
+corrected it to **Twinhub** everywhere on 2026-10-27); both games are named client commissions. The games' card and `h1`
+titles are **Augmented Reality Video Game** and **Virtual Reality Video Game** (instructed 2026-10-27, title only — their
+category chips keep *AR Game Development* and *VR Game Development*, and their `meta` titles keep the handover's strings). Until then
 four of the five were drafted here. Each page's `<title>` and description are its `meta`, separate from the card title, and
 Shifa's tools strip is labelled *Platforms & Tools* (`stackLabel`) because its tools are WordPress and fundraising platforms,
 not this site's stack. The Shifa route stays `/work/shifa-international` under the new name. See ARCHITECTURE.md §The case pages.

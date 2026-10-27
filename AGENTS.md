@@ -181,10 +181,11 @@ exception, and it plays the hover clip, not the intro: a phone has no hover, so 
 like every other clip there, after the user reported it as the one tile that never moved on a phone. Since 2026-10-14 every
 work tile waits for its centre to cross 70% of the screen height (`WORK.playLine`) before its clip starts, because at half on
 screen the clip covered the still before anyone saw it ("on mobile the thumbnail image doesn't show up at all").
-**Every tile's caption is paper, Shifa's included.** Shifa's was set in ink at rest and on hover for a day (2026-10-26,
-"kardo dark", because the paper chip read faint on the pale card); the client asked the next day for it to match the other
-tiles ("Shouldn't it be uniform as others?"), so neither pair carries a `tone` and the paper caption's black shadow does the
-work. A hover clip on a white ground, as
+**Shifa's caption is ink, at rest and on hover; every other tile's is paper.** `tone: 'light'` sits on both its `media` and
+its `hoverMedia`, instructed 2026-10-26 ("kardo dark") because the paper chip read faint on the pale card. On 2026-10-27 the
+client asked for it to match the other tiles ("Shouldn't it be uniform as others?"); it went paper for an hour and the user had
+it reverted the same day ("Dono jagah dark"). Keep it ink unless the user says otherwise. Elevé's pair carries no `tone`: its
+caption lands on the grey plinth, where the paper title's black shadow holds. A hover clip on a white ground, as
 the logo clip was, needs `hoverMedia.tone: 'light'` to turn the caption ink while it shows, or the title disappears. Every hover clip on every tile loops until the pointer leaves ("sare tiles ki video loop may play hoti rahy gi
 sirf tb stop hogi jb hover hat jaye ga", 2026-09-22).
 

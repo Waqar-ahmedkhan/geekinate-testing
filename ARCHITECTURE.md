@@ -546,27 +546,25 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   1 since 2026-10-21, the full-width tile 3 before that): `media` is only a `poster` (the brand render's last frame) plus its
   `focus`, so the tile renders no base video at all, and `hoverMedia` is `eleve-hover.mp4`, the site on a laptop over a
   concrete plinth, supplied at 1742×1080 and encoded at 1440×892, H.264 High, `-preset slow -crf 20`, no audio, `+faststart`
-  — 1.2MB. From 2026-10-21 to 2026-10-26 the hover ran `eleve-site.mp4`, the case page's `cover`, which the page still runs.
-  The Shifa tile (tile 5): `media` is `shifa-poster.webp`, the *5× monthly online donation transaction volume by month five*
-  card, and `hoverMedia` is `shifa-hover.mp4`, the Shifa Foundation USA footage, its 884×588 H.264 stream copied as supplied
-  with the audio dropped and `+faststart` — 0.7MB, with its first frame as `shifa-hover.webp`. The same clip is the case page's
-  `cover` (`shifaClip`); the stats count-up it replaced, `stats-grid.mp4`, is deleted, because its agency figures were the
-  2026-10-26 handover's P0. **The card is rebuilt here, not the supplied export.** The supplied 884×589 card read *5x growth in
-  online giving for a US nonprofit*, and the handover allows only the owner's transaction-volume claim. Its headline (rows
-  69–171, columns 61–639) was removed by filling rows 58–182 with a per-column blend between the blurred rows just above and
-  below, plus the grain lifted from 140 rows further down, feathered over 16px at the sides; the doc's line was then set in
-  Red Hat Display, 300 with the *5×* in 700, 46px on a 52px line from (60, 58), and captured at DPR 2 in headless Chrome
-  (1768×1178). **It is stored square.** The tile is square below `lg`, and a centre crop of a 3:2 card cuts the start of the
-  headline off, so the card is padded to 1768×1768 by mirroring its own text-free rows: the bottom rows reflected downward, and
-  the rows above the headline reflected upward and back until they fill the top. The gradient and its grain carry on without a
-  seam, and a 3:2 cover crop of the square is the 3:2 card pixel for pixel, so `lg` and the `More` tiles show it as designed.
-  When the designer's Canva export arrives with the approved wording, pad that instead, or ask for a square export. `hoverMedia` sits over the still at
+  — 1.2MB, with its first frame as `eleve-hover.webp`. Since 2026-10-27 the same clip is the case page's `cover` too
+  (`eleveClip`), on the client's word; from 2026-10-21 to 2026-10-26 both ran `eleve-site.mp4`, which stays unused.
+  The Shifa tile (tile 5): `media` is `shifa-poster.webp`, the client's Canva card (*5x growth in online giving for a US
+  nonprofit*), and `hoverMedia` is `shifa-hover.mp4`, the Shifa Foundation USA footage, its 884×588 H.264 stream copied as
+  supplied with the audio dropped and `+faststart` — 0.7MB, with its first frame as `shifa-hover.webp`. The same clip is the
+  case page's `cover` (`shifaClip`); the stats count-up it replaced, `stats-grid.mp4`, is deleted, because its agency figures
+  were the 2026-10-26 handover's P0. **The card is the supplied export, unchanged in its pixels.** For one day (2026-10-26) it
+  was redrawn here with the handover's transaction-volume line in place of the Canva headline, and the client asked why it no
+  longer matched Canva; supplied artwork is not reworded to fit a copy document. **It is stored square.** The tile is square
+  below `lg`, and a centre crop of the 3:2 card cut the *5x* off the headline, so the 884×589 card is padded to 884×884 by
+  mirroring its own text-free rows: the bottom 148 rows reflected downward, and the 66 rows above the headline (which starts at
+  row 69) reflected upward and back until they fill 147. The gradient and its grain carry on without a seam, and a 3:2 cover
+  crop of the square is the supplied card pixel for pixel, so `lg` and the `More` tiles show it as designed. When a new export
+  arrives, pad that the same way, or ask for a square one. `hoverMedia` sits over the still at
   `opacity-0` and fades in while it plays (`REVEAL`), restarted from frame 0 on every
   enter, looping for as long as the pointer stays, and paused in place on leave so the fade-out shows the frame it reached.
   `hoverMedia.tone: 'light'` flips the caption to ink while the clip shows, for a clip with a white ground, where the paper
-  title and chips would vanish; the logo clip needed it. `media.tone: 'light'` does the same for the still at rest, so a
-  tile's caption follows whichever layer is showing. Shifa sets both, since its card and its washed footage are both pale and
-  the paper chip read faint on the card (2026-10-26); Elevé sets neither, its caption landing on the grey plinth. The paper title carries a
+  title and chips would vanish; the logo clip needed it. No current tile sets it: every caption is paper, which the client
+  asked for by name on 2026-10-27 after Shifa's had run in ink for a day. The paper title carries a
   stacked black `text-shadow` (`LEGIBLE`) and the chips a light one since 2026-10-23, after the Twinhub title disappeared into the laptop's white
   screen on a phone; a bottom scrim was tried against it and read weaker at the title's height. Until 2026-10-06 `media` was a one-shot intro clip that played when half the tile came on
   screen, with hover gated on its `ended` event (`introduced`); the user had it removed for its flicker-in, and the gating
@@ -623,15 +621,17 @@ Mechanics worth knowing before editing:
 - **The Elevé intro plays once and rests on its last frame**, through `useHoverVideo({ introduce: true })`; the frame is fully on
   screen at load, so the half-on-screen rule passes at once. A looping clip plays through `InViewVideo` while the frame is in view.
 - **The frame crops with `object-cover` to 16:9**: Twinhub's square clip keeps its whole laptop inside that crop and the Shifa
-  footage, 3:2, loses a strip top and bottom. Elevé's cover is the same square mockup, so it crops identically.
-- **Metadata is the project's `meta`, not its card title.** The card and `h1` are the short name (*Elevé*, *TwinHub*); the
+  footage, 3:2, loses a strip top and bottom. Elevé's cover, the plinth render at about 1.6:1, loses a little more.
+- **Metadata is the project's `meta`, not its card title.** The card and `h1` are the short name (*Elevé*, *Twinhub*); the
   `<title>` and description are the handover's (*Elevé Brand Identity and Website*, and so on), and the layout appends
   ` | Geekinate`.
 - **The contact pitch is the project's `contact` when it has one**, else its `service`'s. Shifa's is the only one.
 - There is no `CtaBand`: the old page goes straight from View More to the form. The page carries no `#hero` (the hero is `hero-work`), so the particle cloud takes the heroless path the service
   pages rely on.
 
-**Elevé's hero runs its own clip, not the tile's, and it wears Twinhub's laptop.** The first cover (2026-09-24) was
+**Elevé's hero ran its own clip until 2026-10-27, and it wore Twinhub's laptop.** Since then the hero runs the tile's hover
+clip, `eleve-hover.mp4` (client: "the hero video inside eleve also needs to match the one on homepage"), and what follows is
+how the unused `eleve-site.mp4` was made. The first cover (2026-09-24) was
 `../VideoClips/Project 4 Hover Video.mp4`, a laptop in a dark room shot from a distance; on 2026-09-25 the user asked for the
 laptop to sit exactly as it does on Twinhub's page ("the laptop in the video is a bit far"). `eleve-site.mp4` is now Twinhub's
 own mockup source (`../VideoClips/work-specs/tile-4.mp4`, 2880², 190 frames at 30fps, static camera, head-on screen) with
@@ -647,11 +647,11 @@ nechy scroll hojata hai"). Every `video` is paused and seeked to `frame / 30` an
 (the marquee, the nav's transitions) is paused and stepped 33.3ms per frame before the capture. Composited with ffmpeg
 `overlay`, scaled to 1440², H.264 High, `-preset slow -crf 20`, no audio, `+faststart` — 0.9MB. `eleve-site.webp` is its
 first frame, 64KB. Re-record it the same way when the
-Elevé site changes. The tile no longer shares it: since 2026-10-26 its hover runs `eleve-hover.mp4`.
+Elevé site changes, if it is ever brought back.
 
 **The copy on all five pages is the client's handover of 2026-10-26** (`../docs/geekinate-website-copy-handover-2026-10-26.md`),
 applied section by section: short card names, a delivered-service category per card, first-person overviews, Elevé inside
-brand and website, TwinHub across website, CMS, SEO, social and paid work with seven reworded solution rows, both games named
+brand and website, Twinhub (spelled so on the client's correction of 2026-10-27) across website, CMS, SEO, social and paid work with seven reworded solution rows, both games named
 as client commissions with their features untouched, and Shifa rewritten end to end as **Shifa Foundation USA** — the donor
 journey, CharityStack with PayPal, Meta and Google Ad Grants, and the owner-approved 5× transaction-volume line as its *What we
 achieved* row. The route stays `/work/shifa-international`; a move needs a redirect plan first. What follows is how the pages
@@ -1098,10 +1098,9 @@ day a transitive version moves. Anything this project actually depends on gets i
   be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
 - **The case pages carry the client's copy, with checks the handover leaves open.** Since 2026-10-26 every page's words come
   from `../docs/geekinate-website-copy-handover-2026-10-26.md`. Still to confirm with the project developers: Elevé's stack
-  (Figma, Next.js, Tailwind CSS, Radix UI, Nodemailer) and TwinHub's (Next.js, MUI, MongoDB, AWS EC2), both observed rather
-  than checked, and TwinHub's marketing tools, which the doc forbids guessing. Elevé's tour and day-pass booking should be
-  tested on eleve.space. No TwinHub occupancy figure goes up until its period and capacity basis are recorded. Shifa's card is
-  rebuilt here with the approved line and should be replaced by the designer's Canva export when it arrives.
+  (Figma, Next.js, Tailwind CSS, Radix UI, Nodemailer) and Twinhub's (Next.js, MUI, MongoDB, AWS EC2), both observed rather
+  than checked, and Twinhub's marketing tools, which the doc forbids guessing. Elevé's tour and day-pass booking should be
+  tested on eleve.space. No Twinhub occupancy figure goes up until its period and capacity basis are recorded.
   The Guide's prompt still tells it never to present a `projects` entry as a named case study, which stays right while that
   copy is unconfirmed; revisit that line once it is.
 - **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their

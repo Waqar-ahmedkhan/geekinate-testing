@@ -6,7 +6,7 @@ import { work } from '@/lib/content';
 import { WORK } from '@/constants';
 
 const ALL_WORK =
-  'group flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-mut transition-colors duration-200 hover:text-foreground';
+  'group -my-2 flex shrink-0 items-center gap-2 py-2 font-mono text-xs uppercase tracking-[0.18em] text-mut transition-colors duration-200 hover:text-foreground';
 
 const relatedTo = (projects, slug) => {
   const index = projects.findIndex((project) => project.slug === slug);

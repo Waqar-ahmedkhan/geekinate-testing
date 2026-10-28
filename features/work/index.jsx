@@ -5,7 +5,7 @@ import { WorkTile } from '@/lib/ui/reusable_components';
 import { work, workContent } from '@/lib/content';
 
 const ALL_WORK =
-  'group flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-[0.18em] text-mut transition-colors duration-200 hover:text-foreground';
+  'group -my-2 flex shrink-0 items-center gap-2 py-2 font-mono text-xs uppercase tracking-[0.18em] text-mut transition-colors duration-200 hover:text-foreground';
 
 export default function Work() {
   const { eyebrow, heading, allWork } = workContent;

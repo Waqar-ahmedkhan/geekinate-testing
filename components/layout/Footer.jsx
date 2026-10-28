@@ -4,7 +4,7 @@ import { footerColumns, footerContent } from '@/lib/content';
 import { SITE, SOCIALS } from '@/constants';
 
 const MUTED = 'text-[1.225rem] leading-[1.1] tracking-[-0.02em] text-footer-mut';
-const LINK = `${MUTED} transition-colors duration-200 hover:text-paper`;
+const LINK = `${MUTED} -my-1.5 py-1.5 transition-colors duration-200 hover:text-paper`;
 
 const FooterLink = ({ label, href, external }) => {
   if (!href) return <span className={MUTED}>{label}</span>;
@@ -26,7 +26,7 @@ const SocialLink = ({ label, icon, href }) => (
     href={href}
     target='_blank'
     rel='noreferrer'
-    className='flex items-center gap-2 text-footer-mut transition-colors duration-200 hover:text-paper'
+    className='-my-2 flex items-center gap-2 py-2 text-footer-mut transition-colors duration-200 hover:text-paper'
   >
     <SocialIcon name={icon || label} className='size-[18px]' />
     <span className='text-sm leading-[1.1] tracking-[-0.02em]'>{label}</span>

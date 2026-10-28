@@ -33,7 +33,7 @@ export default function ServiceFit() {
             location='services'
             label={reassurance.action.label}
             intent={reassurance.action.intent}
-            className='group flex shrink-0 items-center gap-2 font-mono text-xs uppercase tracking-[0.14em] text-volt underline decoration-volt/40 decoration-[1.5px] underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-volt'
+            className='group -my-2 flex shrink-0 items-center gap-2 py-2 font-mono text-xs uppercase tracking-[0.14em] text-volt underline decoration-volt/40 decoration-[1.5px] underline-offset-[6px] transition-[text-decoration-color] duration-200 hover:decoration-volt'
           >
             {reassurance.action.label}
             <ArrowRight aria-hidden='true' className='size-3.5 transition-transform duration-200 group-hover:translate-x-1' />

@@ -282,18 +282,6 @@
   outline-offset: 2px;
 }
 
-[data-marked] {
-  outline: 1.5px solid var(--volt);
-  outline-offset: -1.5px;
-  transition: outline-color 240ms ease-out;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  [data-marked] {
-    transition: none;
-  }
-}
-
 .on-paper {
   --line: var(--ink);
   --line-volt: var(--ink);

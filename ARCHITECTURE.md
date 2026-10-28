@@ -17,11 +17,11 @@ requests a day, while static asset requests are free and unmetered. So the site 
 | Static export | `next.config.mjs` | `output: 'export'` writes every route to `out/` as HTML plus RSC `.txt` payloads. `images.unoptimized`, because the export has no image server and every image here is already a small webp |
 | Segment copy | `scripts/flatten-segments.mjs` | Runs after `next build`; works around the export's prefetch file names (AGENTS.md §Traps) |
 | Worker config | `wrangler.jsonc` | Worker `geekinate-com`, `nodejs_compat`, assets from `./out`. `run_worker_first: ["/api/*"]` is the only route the Worker sees before the assets; `404-page` serves `out/404.html`; `auto-trailing-slash` maps `/partner` to `partner.html` |
-| Worker | `worker/index.js` | Routes `/api/contact`, `/api/partner` and `/api/guide` to their handlers, answers 405 to anything but POST, and hands every other path back to `env.ASSETS` |
-| Handlers | `worker/{contact,partner,guide}.js` | The former `app/api/*/route.js` files, moved unchanged apart from the visitor key. Each exports `POST(request)` and reads secrets from `process.env` |
+| Worker | `worker/index.js` | Routes `/api/contact` and `/api/partner` to their handlers, answers 405 to anything but POST, and hands every other path back to `env.ASSETS` |
+| Handlers | `worker/{contact,partner}.js` | The former `app/api/*/route.js` files, moved unchanged apart from the visitor key. Each exports `POST(request)` and reads secrets from `process.env` |
 | Mailer | `worker/mailer.js` | Shared by the contact and partner handlers. Sends over SMTP (port 587, `worker-mailer`) when `SMTP_HOST`, `SMTP_USER` and `SMTP_PASS` are set, through Resend's API otherwise; `CONTACT_FROM` is parsed from `Name <address>` |
-| Throttle | `worker/throttle.js` | `createThrottle({ ms, max })` returns a per-isolate sliding-window check. Contact allows five per ten minutes, partner five a minute, the Guide `GUIDE.window` |
-| Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, and a year's immutable cache on `/_next/static/*`. Cloudflare applies it to static responses only, never to the Worker's |
+| Throttle | `worker/throttle.js` | `createThrottle({ ms, max })` returns a per-isolate sliding-window check. Contact allows five per ten minutes, partner five a minute |
+| Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, a year's immutable cache on `/_next/static/*`, and an hour fresh plus a day stale-while-revalidate on `/media`, `/brand` and `/images`, whose file names carry no hash. Cloudflare applies it to static responses only, never to the Worker's |
 
 Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pinned by `account_id`), connected to
 `github.com/geekinate/geekinate` on `main`: build command `npm run build`, deploy command `npx wrangler deploy`. The live URL is
@@ -29,7 +29,7 @@ Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pi
 Three consequences follow from the platform:
 
 - **Module-scope state is per isolate.** A counter in a handler is shared only by the requests one isolate happens to serve, so
-  the throttles in `worker/contact.js`, `worker/partner.js` and `worker/guide.js` are best-effort.
+  the throttles in `worker/contact.js` and `worker/partner.js` are best-effort.
 - **The visitor's address is `cf-connecting-ip`.** Cloudflare sets it, so nothing depends on a proxy.
 - **`NEXT_PUBLIC_APP_URL` is a build variable.** It is baked into every page at `next build`, so it is set in the Worker's build
   settings, not with its runtime secrets. See AGENTS.md §Boundaries.
@@ -50,8 +50,7 @@ the archive of the two older sites and holds nothing from this build.
 | Path | Holds | Notes |
 |---|---|---|
 | `app/` | Routes only | Pages compose components and do nothing else |
-| `worker/` | The Cloudflare Worker | `index.js` routes `/api/*`; `contact.js`, `partner.js` and `guide.js` are the POST handlers. The only server code in the project, and outside Next: `next dev` does not run it |
-| `lib/ai/` | The Guide's server half, and the page-control bus | `knowledge.js` (grounding, derived), `prompts.js`, `tools.js` (`goToSection`, `highlight`), `sections.js` (id lookup), `bus.js` (`runPageActions`) |
+| `worker/` | The Cloudflare Worker | `index.js` routes `/api/*`; `contact.js` and `partner.js` are the POST handlers. The only server code in the project, and outside Next: `next dev` does not run it |
 | `components/layout/` | Presentational primitives | `Section`, `SectionHead`, `Eyebrow`, `PageHero`, `Card`, `DeckCard`, `LiftCard`, `RollIndex`, `RollDie`, `Actions`, `CtaBand`, `StepIndex`, `JsonLd`, `Footer`, `HydrationSplit` |
 | `components/ui/` | shadcn output | CLI-generated; fork only deliberately |
 | `features/` | Page sections | One folder per section, `index.jsx` entry |
@@ -60,14 +59,13 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/boot/settled.js` | `watchSettled`: window `load` plus one painted frame | The gate for everything the first paint does not need; `useSettled` is its hook. See §Performance |
 | `lib/boot/clock.js` | The scene clock | Starts at zero on the scene's first frame; `cueSceneClock` sets it to the phone clip's time at the handoff |
 | `lib/boot/phone.js` | `isPhone`, `onFirstInput` | Below `PHONE.query` (`constants/phone.js`) the preloader is skipped and the scene waits for the first input |
-| `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold), `sheet.js` (whether `HeroSheet` covers the hero) |
+| `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state. The globe drag takes mouse and touch; `#hero` is `touch-pan-y` so a sideways swipe turns the globe and a vertical one still scrolls (mouse-only until 2026-10-08) |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos`. `pose.js` is the pure half, which runs in `cosmos/shapes.worker.js` |
 | `lib/shape/` | Point samplers the cloud morphs between | `cloud.js`, `glyph.js`, `circuit.js` (the service mark), `pillars.js`, `order.js`, `snake.js`, and `footprint.js`: the glyph mask and cloud scale the footer automata read, so they never import the three-backed cloud |
 | `lib/media/preload.js` | When a clip may start downloading | `preloadWhenNear` (one shared `IntersectionObserver`, a quarter viewport ahead) and `preloadAfterLoad` (hero clips, from window `load`) |
 | `lib/content/index.js` | Every user-facing string for `/` and `/services/[slug]` | Sections read their copy from here |
 | `lib/content/work.js` | The five projects and every string on `/work/[slug]` | One entry per project feeds its home-page tile and its case page; `href` is derived from `WORK.path` |
-| `lib/content/guide.js` | Every user-facing string for the Guide | `guidedServices` picks the service pages that carry it; `jumps` labels the button under a reply |
 | `lib/content/partner.js` | Every user-facing string for `/partner` | Rates and the earning window interpolate from `PARTNER` so they cannot drift |
 | `lib/analytics.js` | Vendor-neutral event shim | `track()` pushes to `window.dataLayer`; no provider is installed |
 | `lib/partner/intent.js` | Which form mode a CTA asked for | `chooseIntent()` from a CTA, `watchIntent()` from the form — same shape as `lib/boot/ready.js` |
@@ -166,7 +164,6 @@ so it has no entry there.
 | `/lab` | `app/lab/page.js` | Static, `noindex`. Background prototype — not part of the site |
 | `/api/contact` | `worker/contact.js` | Worker. Contact form endpoint |
 | `/api/partner` | `worker/partner.js` | Worker. Dual-intent referral endpoint — see **The referral form** |
-| `/api/guide` | `worker/guide.js` | Worker. Streams the Guide's replies — see **The Guide** |
 | 404 | `app/not-found.js` | Static |
 | `/sitemap.xml` | `app/sitemap.js` | Static, `force-static` (the export requires it). Home is listed by hand; the service and work routes are derived from `services` and `work` |
 | `/robots.txt` | `app/robots.js` | Static, `force-static` |
@@ -460,7 +457,7 @@ relative, not as the score PSI will print.
 
 The service, case and partner pages landed at 78–82 on the same build. What moved it, in the order it was found:
 
-- **The barrel carried the Guide into every page.** See the trap in `AGENTS.md`. `"sideEffects": ["*.css"]` in `package.json`
+- **The barrel carried the Guide (removed 2026-10-28) into every page.** See the trap in `AGENTS.md`. `"sideEffects": ["*.css"]` in `package.json`
   took the AI SDK, `zod`, the referral form and its Radix parts (about 350KB raw) out of the root layout's chunk.
 - **`SubstrateField` imported the three-backed cloud** for its glyph mask, so three.js core, the globe build and the land mask
   sat in every page's first-load JS. They now reach it through `lib/shape/footprint.js`, and three loads only with `Scene`.
@@ -997,7 +994,7 @@ carries (2026-10-26). The form still gets the `service` title as its topic, so a
 repeated steps 2 and 3 almost word for word. The user found it excessive on a phone (2026-10-23) and picked two of four suggested
 trims: the home intro lost that last sentence, and the steps became `contactContent.next`, one sentence under the same rule. The
 form now starts inside the first screen at 390×844. Both were the client handoff's own text, so this departs from it on the user's
-word. The Guide's `engagement` grounding reads the same line.
+word.
 
 **The enquiry carries the service.** `Contact` resolves its `topic` against `services` and passes the title to `ContactForm`, which
 posts it as `topic`; `/api/contact` writes it into the enquiry as a `Service:` line. The home page has no topic and sends none.
@@ -1040,55 +1037,18 @@ bandwidth and decode budget before anyone scrolled to it. `VideoSurface` gained 
 
 ## The Guide
 
-**Off since 2026-09-16:** `guidedServices` is empty, so no page mounts it. The description below is what returns when
-`development` goes back in that array.
-
-`/services/development` docks a chat panel in its hero, `lib/ui/reusable_components/guide`. It answers from a knowledge object
-derived from the site's own content, streams through `/api/guide`, and can point at four sections of the page — `scope`,
-`process`, `deliverables` and `contact`, which is `TARGET_IDS` in `constants/ai.js`.
-
-| File | Responsibility |
-|---|---|
-| `guide/index.jsx` | Dock, floating launcher, greeting, nudges, the request and the stream loop |
-| `guide/Chat.jsx` | The log, the starters, the button under a reply, the field |
-| `guide/stream.js` | Reads the UI message stream: `textOf`, `actionsOf`, `jumpOf` |
-| `worker/guide.js` | Cross-origin check, turn cap, credential check, throttle, then `streamText` |
-| `lib/ai/prompts.js` + `lib/ai/tools.js` | The system prompt, and the two tools the model may call |
-| `lib/ai/bus.js` | `runPageActions`: `goToSection` scrolls, `highlight` outlines |
-
-**A reply never moves the page.** A `goToSection` call is read off the streamed message by `jumpOf`, carried on the message as
-`jump`, and rendered as a button under the reply once it has finished streaming. The page scrolls when the visitor presses it;
-pressed from the floating panel, the panel closes first. Scrolling on arrival was the first build and was rejected on 2026-09-14
-because the page left before the answer could be read. `highlight` still runs as soon as it arrives, because it moves nothing.
-The tools exclude `hero-service`: under `HeroSheet` the hero is stuck, and `scrollToElement` would measure its stuck position.
-
-**It floats on either of two signals.** Its own `IntersectionObserver` catches the hero scrolling away; `watchSheet` catches the
-sheet covering a dock that is still geometrically on screen. While floating, the dock is `inert` as well as `aria-hidden`, so a
-covered field cannot take focus.
-
-**Grounding is derived, never transcribed.** `lib/ai/knowledge.js` is built from `services`, `work` and `contactContent` and
-stringified once at module load. `testimonials` is excluded — it was written when they were invented, and nothing has asked for
-them since they became real. `work` is included with its placeholder
-titles, and the system prompt forbids presenting any of them as a named case study — see Known gaps.
-
-**Cost control, in the order it runs:** cross-origin check, the eight-turn cap, the credential check, then a 20-per-day throttle
-keyed on a salted IP hash; every message is trimmed to 500 characters and replies stop at `maxOutputTokens`. All of that bounds
-how large and how often requests are; **none of it can stop a bill.** The ceiling is set in the OpenAI dashboard under Settings →
-Limits and nothing in this repo can set it.
-
-**"The guide is not running right now." means the route has no key.** Without `OPENAI_API_KEY` the route answers 503
-`not-configured` and the chat shows `guideContent.unavailable`. Every `.env*` file but the example is gitignored, so a host that
-builds from the repo needs the key in its own settings — on Cloudflare a Worker secret, which takes effect without a rebuild.
-
-The Blueprint, a generated Today-vs-automated block that sat under Deliverables with `/api/blueprint` and `/api/blueprint/email`
-behind it, was removed on 2026-09-14 at the user's instruction. Its code is in git history before that date.
+Removed on 2026-10-28. An OpenAI-backed chat docked in the `/services/development` hero from 2026-09-09, answered from a knowledge
+object derived from the site's content through `/api/guide`, and could point at the page's sections. It was switched off on
+2026-09-16 and deleted with its route, `lib/ai/`, `lib/content/guide.js`, the `ai` and `@ai-sdk/openai` packages and the
+`OPENAI_API_KEY` and `AI_USER_SALT` secrets once it was clear nothing used it, because the service hero still shipped its 290KB of
+AI SDK and `zod` to every service page while it was off. Its code is in git history before that date, and so is the Blueprint,
+a generated Today-vs-automated block that sat under Deliverables until 2026-09-14.
 
 ## The hero sheet
 
 `lib/ui/reusable_components/hero-sheet`, instructed on 2026-09-14: on `/services/[slug]` and `/partner`, scrolling past the dark
 hero should read as the white section beneath sliding up over it like a sheet, not as the hero scrolling away. One component
-serves both routes; each passes its hero as `hero` and every later section as children. The hold, the recede and the cover signal
-run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under the sheet's rounded edge.
+serves both routes; each passes its hero as `hero` and every later section as children. The hold and the recede run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under the sheet's rounded edge.
 
 | Piece | What it is |
 |---|---|
@@ -1096,7 +1056,6 @@ run from `lg` up (`SHEET.holdFrom`); below it the hero scrolls normally under th
 | Spacer | `h-svh`, after the stage inside the same plain wrapper — the stage's containing block — so the hero is held for one small viewport of scroll |
 | Sheet | A plain `div` pulled up by `-mt-[100svh]`, so it starts where the hero ends. Its first child takes `rounded-t-3xl`, and every direct `<section>` child is at least `min-h-svh` with its content centred on a flex column (instructed 2026-09-15), through the `sheet-screen` variant in `globals.css`. A `Section` passed `compact` renders `data-compact` and keeps its natural height: `CtaBand` and `Terms`, whose content filled under 55% of a 911px viewport and read as empty at full height (rejected on sight the same day). `Deliverables` was compact too until 2026-09-17, when two short black bands on one page read as two banners; it now fills the screen by carrying its four items as large display-type cards in a 2x2 grid, 615px of content on a 900px viewport, rather than by being stretched. `Process` was compact from 2026-10-02 to 2026-10-06, with no bottom padding, because it sat paper against the paper `Contact` and two full-screen paper bands left a wide white gap; since `Contact` brings the black *Ready to Geekinate?* band with it, the user asked for Process at full height again ("this section must be full height") and it is no longer compact. `Cta`'s own section is compact, so the sheet never restyles its scroll stage. A child that is not a `<section>` gets none of it |
 | Recede | One scrubbed timeline over the sheet's `top bottom → top top`: the hero scales to `SHEET.recede.scale` while a black shade rises to `SHEET.recede.dim` |
-| Cover signal | An `IntersectionObserver` on the sheet with `SHEET.coverMargin`: `markSheet(true)` once its top edge passes mid-viewport |
 
 Mechanics worth knowing before editing:
 
@@ -1104,10 +1063,8 @@ Mechanics worth knowing before editing:
   viewport on the same frame the stage releases, and the hero leaves already covered. Every section after it has to stay opaque,
   or the released hero shows through.
 - **The hold starts at `lg`, the breakpoint the Work pin already uses.** Below it the hero stacks — 1315px tall at 390×844, with
-  the Guide's dock filling most of the screen. Held there, the dock sits under the thumb for a whole screen of scroll, and a swipe
-  that lands on its chat log scrolls the log, or with `overscroll-behavior: contain` nothing at all. Measured before the gate went
-  in: wheel input over the dock left the page parked at 480px. So below `lg` the stage is plain `relative`, the recede and the
-  cover signal are not armed, and the Guide floats on its own `IntersectionObserver` as it always did.
+  the Guide's dock (removed since) filling most of the screen. Held there, the dock sat under the thumb for a whole screen of
+  scroll. So below `lg` the stage is plain `relative` and the recede is not armed.
 - **A hero taller than the viewport sticks by its bottom edge.** A short laptop screen can still sit under the hero's height at
   `lg`; `top` goes negative by the difference, so the proof strip is read before the sheet arrives rather than covered unseen.
 - **The sheet wrapper is deliberately unpositioned.** `Nav` measures `.on-paper` bands with `offsetTop`, which is relative to the
@@ -1117,10 +1074,10 @@ Mechanics worth knowing before editing:
   would paint below the fixed particle canvas at `z-[1]`.
 - **The recede is gated on `prefers-reduced-motion: no-preference` as well as `lg`.** Under reduce the sheet still covers the hero
   — that is layout — but nothing scales or darkens.
-- **Covered is not off screen.** See the trap in `AGENTS.md`; the Guide listens to `watchSheet` for exactly this.
+- **Covered is not off screen.** See the trap in `AGENTS.md`. The cover signal that answered it went with the Guide.
 
 Measured on `/services/development` at 1568×911 on 2026-09-14: 300px into the page the sheet's top sat at 611, the hero at scale
-0.980 and the shade at 0.198; at 700px the sheet's top was at 211, the launcher had appeared and the dock was inert.
+0.980 and the shade at 0.198; at 700px the sheet's top was at 211.
 
 ## The service mark
 
@@ -1129,7 +1086,7 @@ fourth pose of the one cloud, mixed in the vertex shader after the globe and foo
 
 | Piece | What it is |
 |---|---|
-| Slot | `features/service-hero` passes `PageHero` an empty square `div` with `data-cosmos-shape='circuit'` when `SERVICE_SHAPES` names the slug. That map is empty since 2026-09-18 — the hero's aside is the AI clip now — so nothing below fires until a slug is put back in it. The Guide still wins the aside if a slug is in `guidedServices`, and `SERVICE_CLIPS` wins it before the shape |
+| Slot | `features/service-hero` passes `PageHero` an empty square `div` with `data-cosmos-shape='circuit'` when `SERVICE_SHAPES` names the slug. That map is empty since 2026-09-18 — the hero's aside is the AI clip now — so nothing below fires until a slug is put back in it. `SERVICE_CLIPS` wins the aside before the shape |
 | Sampler | `lib/shape/circuit.js` → `sampleCircuit(count)`: the letters, circuit buses, vias and two rings, drawn in a unit square. Every bead where `index % 5 < 3` joins (18,000 of 30,000), assigned in angle order so beads travel radially; the rest get kind `0` |
 | Buffers | `cloud.js` allocates `aShape`, `aShapeNormal`, `aShapeData` empty and fills them the first time a page asks for the shape (`wearShape`) |
 | Placement | `stage.js` measures the slot on layout, `MorphCloud` turns its box into `uShapeMatrix` every frame — centre from the slot, scale from its size over `CIRCUIT.fit`, turn from `CIRCUIT.pose` plus the shared pointer tilt |
@@ -1163,7 +1120,6 @@ Mechanics worth knowing before editing:
 | `shadcn` | The CLI, kept as a dependency by its own installer |
 | `three`, `@react-three/fiber`, `@react-three/drei` | The 3D mark. Raised and approved 2026-08-10 against the standing no-new-deps rule |
 | `lenis` | Scroll smoothing, and the clock the 3D mark runs on. Same approval, added with Phase 2 |
-| `ai` + `@ai-sdk/openai` | The Guide. Raised and approved 2026-09-09 for the Blueprint against the standing no-new-deps rule, and the Guide has used them since. `zod` appears in the lockfile as a required peer of `ai`; nothing here imports it |
 | `yup` | **Unused since 2026-09-14.** It was the Blueprint's validator and nothing imports it now. Removing it or reusing it is a decision to raise |
 | `gsap` | The frame loop the whole site runs on — `gsap.ticker` drives Lenis, the canvases and the marquees — plus `ScrollTrigger` for the work pin, the CTA reveal and the hero sheet. Same approval |
 
@@ -1179,25 +1135,19 @@ day a transitive version moves. Anything this project actually depends on gets i
 
 ## Known gaps
 
-- **There is no spend ceiling on the Guide.** `/api/guide` calls OpenAI directly, so the only limits are `maxOutputTokens`, the
-  message and turn caps and the per-IP throttle — all of which bound size and rate, none of which stop a bill. A hard limit has to
-  be set in the OpenAI dashboard under Settings → Limits, and it is not known whether one is.
 - **The case pages carry the client's copy, with checks the handover leaves open.** Since 2026-10-26 every page's words come
   from `../docs/geekinate-website-copy-handover-2026-10-26.md`. Still to confirm with the project developers: Elevé's stack
   (Figma, Next.js, Tailwind CSS, Radix UI, Nodemailer) and Twinhub's (Next.js, MUI, MongoDB, AWS EC2), both observed rather
   than checked, and Twinhub's marketing tools, which the doc forbids guessing. Elevé's tour and day-pass booking should be
   tested on eleve.space. No Twinhub occupancy figure goes up until its period and capacity basis are recorded.
-  The Guide's prompt still tells it never to present a `projects` entry as a named case study, which stays right while that
-  copy is unconfirmed; revisit that line once it is.
 - **The live particle system is not documented in this file.** `cosmos/`, `lib/globe/` and `lib/shape/` have no section of their
   own; `AGENTS.md` §Boundaries is currently the only prose describing them, and *The 3D mark* below documents the retired build
   it replaced. Anyone working on the canvas has to read the code. This is the largest gap in this document.
 - **The Vercel staging project is unprotected once this branch lands.** Its `*.vercel.app` noindex rule lived in `next.config.mjs`,
   which a static export cannot carry, and its forms have no `/api` any more. Retire that project, or it serves an indexable copy
   of the site with broken forms.
-- **The in-memory rate limiters in `worker/contact.js`, `worker/partner.js` and `worker/guide.js` are per isolate.** Cloudflare spreads requests over
-  many isolates, so the limits are best-effort. A real one is Cloudflare rate limiting, and it should exist before the Guide is
-  switched back on.
+- **The in-memory rate limiters in `worker/contact.js` and `worker/partner.js` are per isolate.** Cloudflare spreads requests over
+  many isolates, so the limits are best-effort. A real one is Cloudflare rate limiting.
 - `constants/index.js` carries `// PLACEHOLDER` contact and social values.
 - **Placeholder media, two kinds — check the filename prefix.** `stokt-*` was taken from wearestokt.com to exercise the layouts and
   **must not ship**; one services clip carries their wordmark on a keycap. `pexels-*` is Pexels stock, free for commercial use with

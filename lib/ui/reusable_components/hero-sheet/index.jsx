@@ -3,7 +3,6 @@
 import { useLayoutEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { markSheet } from '@/lib/scroll/sheet';
 import { SHEET } from '@/constants';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -25,17 +24,8 @@ export default function HeroSheet({ hero, children }) {
       stage.style.setProperty('--hero-h', `${stage.offsetHeight}px`);
       ScrollTrigger.refresh();
     };
-    const cover = ([entry]) => markSheet(entry.isIntersecting || entry.boundingClientRect.bottom <= 0);
     const sizer = new ResizeObserver(fit);
     const media = gsap.matchMedia();
-    media.add(SHEET.holdFrom, () => {
-      const watcher = new IntersectionObserver(cover, { rootMargin: SHEET.coverMargin });
-      watcher.observe(sheet);
-      return () => {
-        watcher.disconnect();
-        markSheet(false);
-      };
-    });
     media.add(`${SHEET.holdFrom} and (prefers-reduced-motion: no-preference)`, () => {
       gsap
         .timeline({ defaults: { ease: 'none' }, scrollTrigger: { trigger: sheet, start: 'top bottom', end: 'top top', scrub: true } })

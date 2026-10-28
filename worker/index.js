@@ -1,8 +1,7 @@
 import { POST as contact } from './contact';
-import { POST as guide } from './guide';
 import { POST as partner } from './partner';
 
-const ROUTES = { '/api/contact': contact, '/api/guide': guide, '/api/partner': partner };
+const ROUTES = { '/api/contact': contact, '/api/partner': partner };
 const NOT_ALLOWED = { status: 405, headers: { Allow: 'POST' } };
 
 const worker = {

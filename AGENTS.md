@@ -21,7 +21,7 @@ and `account_id` in `wrangler.jsonc` pins every deploy there.
 **The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
 **Games & Interactive** (`games`), **Marketing** (`marketing`). **The names live in one place**, `serviceNames` in
 `lib/content/shared.js`, and everything else reads them from there — the service cards, page titles and eyebrows, the footer,
-`/partner`'s cards and referral options, the Guide's prompt, and the home page's `<title>`, which `joinNames` builds from them
+`/partner`'s cards and referral options, and the home page's `<title>`, which `joinNames` builds from them
 (`short` is the name that title uses, so Games reads *Games* there). Instructed 2026-10-26: "iska kuch esa karo ky bad jb b
 titles change karne hoon ak hi jagah sy karun". Never type a service name into a component or another content module. The
 first service was **Development & AI**, then **AI Development** from 2026-10-06 (the user's rename over the first handoff's
@@ -291,33 +291,27 @@ list on 2026-09-22, once the Development & AI page was signed off ("make rest of
 service page"): each runs the clip its home-page card already runs (`game.mp4`, `marketing.mp4`, both cut on black — measured, every
 corner reads `0 0 0`, so the blend holds), and each took a `scopeIntro` line for the Scope head, which only Development carried before.
 
-**The Guide never moves the page by itself, and it calls OpenAI with no ceiling above it.** It is **off for now**: pulled from the
-`/services/development` hero on 2026-09-16 ("remove chat agent for now") by emptying `guidedServices` in `lib/content/guide.js`,
-which hands that hero's aside to the clip (the Guide wins the slot over `SERVICE_CLIPS` when a slug is in both). Every piece of it is
-still in the tree; putting `'development'` back in that array restores it. When on, it docks in the hero and floats once the dock is
-off screen or under the sheet. A `goToSection` call used to scroll the moment the reply streamed in, which took the page away before
-the answer could be read; since 2026-09-14 it renders a button under that reply instead, labelled from `guideContent.jumps`, and the
-page moves only when the visitor presses it. `highlight` is the one action that still runs on arrival, because it moves nothing.
-The Blueprint section, its form and its `/api/blueprint` routes were removed the same day. On cost: `maxOutputTokens`, the
-500-character message cap, the eight-turn cap and the 20-per-day throttle bound how large and how often requests are — **none of
-them stop a bill.** The hard limit lives in the OpenAI dashboard and nothing here can set it, so never describe this feature as
-spend-capped.
+**There is no AI chat on the site.** The Guide, an OpenAI-backed chat that docked in the Development & AI hero, was
+switched off on 2026-09-16 ("remove chat agent for now") and deleted on 2026-10-28 on the user's word ("agar use nhi hota toh
+please isko remove hi kardo"), together with `/api/guide`, `lib/ai/`, the `ai` and `@ai-sdk/openai` packages and its two
+secrets. Switched off, it still cost every service page about 290KB of AI SDK and `zod`, because the service hero, a server
+component, imported it to decide whether to render it. Bringing a chat back is new work, not a revert: it needs a hard spend
+limit in the provider's dashboard and Cloudflare rate limiting in front of it before it goes live.
 
-**The in-process throttle is per isolate, so on Cloudflare it is a speed bump, not a limit.** `worker/{contact,partner,guide}.js` each
+**The in-process throttle is per isolate, so on Cloudflare it is a speed bump, not a limit.** `worker/{contact,partner}.js` each
 keep their counters in a module-scope `Map`, built by `createThrottle` in `worker/throttle.js`. Cloudflare runs the Worker in many isolates across many machines and recycles them
 freely, so a visitor whose requests land on different isolates gets a fresh count on each, and nothing survives a redeploy. The
 visitor key is `cf-connecting-ip`, which Cloudflare sets on every request and a client cannot forge; it was `x-forwarded-for`
 while the site ran behind its own proxy. A real limit needs Cloudflare's own rate limiting (a Worker binding or a WAF rule) — raise
-it before the Guide is switched back on, because the Guide's 20-a-day cap is what stands between a script and the OpenAI bill.
+it before anything that costs money per request sits behind the Worker.
 
 **Secrets live in the Worker's settings, and `NEXT_PUBLIC_APP_URL` lives in the build's.** Every `.env*` file except `.env.example`
-is gitignored, so Cloudflare sees none of them. The form and Guide keys (`CONTACT_*`, `SMTP_*`, `RESEND_API_KEY`,
-`PARTNER_*`, `OPENAI_API_KEY`, `AI_USER_SALT`) are **runtime** secrets, set under the Worker's *Settings → Variables and Secrets*; the routes
+is gitignored, so Cloudflare sees none of them. The form keys (`CONTACT_*`, `SMTP_*`, `RESEND_API_KEY`,
+`PARTNER_*`) are **runtime** secrets, set under the Worker's *Settings → Variables and Secrets*; the routes
 read them through `process.env`, which `nodejs_compat` fills from the Worker's environment. `NEXT_PUBLIC_APP_URL` is read by
 `next build` and baked into every page, so it goes under *Settings → Build → Variables* instead, and a change to it only shows after
-a rebuild. Without a form key `/api/contact` answers 503 and the form shows its fallback panel; without `OPENAI_API_KEY`
-`/api/guide` answers 503 and the chat reads "The guide is not running right now." — which is exactly what the Vercel staging
-showed on 2026-09-14 while the same page answered locally.
+a rebuild. Without a form key `/api/contact` answers 503 and the form shows its fallback panel. `OPENAI_API_KEY` and `AI_USER_SALT`
+belonged to the removed Guide; nothing reads them, and they can be deleted from the Worker.
 
 **The forms send through Adil's Gmail until a Migadu mailbox exists.** Resend's test sender delivers only to the owner of the
 Resend account, and geekinate.com has no Resend DNS, so on 2026-10-21 the user had enquiries go to madilmazhar@gmail.com — the
@@ -332,11 +326,6 @@ so the "Message sent" panel does not wait on a second SMTP round. Mailing an add
 usable to send mail to strangers from our account, so the same change added a throttle of five per ten minutes per IP. The mailer
 also flattens every subject to one line: `worker-mailer` writes an all-ASCII subject into the header unencoded, so a name with a
 line break in it would have added headers.
-
-**Read `node_modules/ai/docs/` before touching the AI SDK, the same way you would for Next.** It is v7 and the surface moves.
-Three things already caught: `Output.object` takes Zod, Valibot or a raw JSON Schema and **not yup**, so the model's shape goes
-through `jsonSchema()` (the removed Blueprint rode yup on its `validate` hook); `generateObject`, `maxTokens` and tool `parameters` are all gone; and
-`zod` sits in the lockfile only as a required peer of `ai`, so importing it would be depending on a transitive.
 
 **A sticky grid item is not clamped to its own row.** `Process` and `Contact` both put `lg:sticky` directly on a
 `<header>` grid child, which is safe only because those grids have one row. The Blueprint (removed 2026-09-14) added a second, full-width row and the
@@ -355,8 +344,8 @@ over it like a sheet rather than scroll it away. `HeroSheet` does it for `/servi
 its hero as `hero` and every later section as children — so a new marketing page reuses it rather than restyling a section. From
 `lg` up the hero is held `sticky` for one `100svh` of scroll while the sheet rises, rounded at its top edge, and the hero scales
 back and darkens underneath (`SHEET` in `constants/sheet.js`). Below `lg` the hero scrolls normally and only the rounded edge
-arrives: held on a phone, the stacked hero parks the Guide's chat under the thumb for a whole screen of scroll, and a swipe on its
-log moves the log instead of the page. The sheet wrapper is a plain, unpositioned `div` on purpose: `Nav` reads
+arrives: held on a phone, the stacked hero parked the Guide's chat (since removed) under the thumb for a whole screen of scroll. The
+sheet wrapper is a plain, unpositioned `div` on purpose: `Nav` reads
 `.on-paper` bands from `offsetTop`, and a `relative` wrapper would shift every band by the hero's height. See ARCHITECTURE.md
 §The hero sheet.
 
@@ -608,12 +597,12 @@ the pathname, so it runs in the same commit as Next's scroll handler, before any
 **`IntersectionObserver`'s ratio is relative to the target, not the viewport.** A threshold of `0.5` on a section taller than the
 screen can never fire, silently. Compare `intersectionRect.height` against `Math.min(sectionHeight, innerHeight) * 0.5` instead.
 
-**A covered element is still on screen.** Under `HeroSheet` the Guide's dock never leaves the viewport — the sheet slides over it —
-so an `IntersectionObserver` on the dock keeps reporting it visible, and the floating launcher would not appear until the released
+**A covered element is still on screen.** Under `HeroSheet` the Guide's dock never left the viewport — the sheet slid over it —
+so an `IntersectionObserver` on the dock kept reporting it visible, and the floating launcher would not appear until the released
 hero had scrolled a whole viewport further. Occlusion is invisible to `IntersectionObserver`; v2's `isVisible` would see it but is
-Chromium-only. `HeroSheet` publishes whether it covers the hero through `lib/scroll/sheet.js` — `markSheet` / `watchSheet`, the
-same singleton shape as `lib/boot/ready.js` — and the dock floats on either signal. Anything inside a hero that hides or pauses
-on "left the screen" needs the same second listener.
+Chromium-only. `HeroSheet` published whether it covered the hero through `lib/scroll/sheet.js` (`markSheet` / `watchSheet`,
+the same singleton shape as `lib/boot/ready.js`) for the Guide's dock; that signal went with the Guide on 2026-10-28, so anything
+inside a hero that hides or pauses on "left the screen" needs it brought back.
 
 **An in-page hash link does not fire `hashchange` here.** With Lenis anchors and the Next router in play, a CTA pointing at
 `#refer-a-lead` scrolls but never notifies a `hashchange` listener, so anything keyed on it works on a cold load and silently fails
@@ -647,12 +636,12 @@ cannot shrink below its own padding — so a `max-width: 0` element with `pl-2` 
 
 **A barrel imported by one client component ships everything the barrel re-exports.** `features/cta` is a client component and
 imports `Section` from `@/components`; that barrel re-exports `Footer`, which imports `lib/ui/reusable_components`, which
-re-exports the Guide and the referral form. With no `sideEffects` field, Turbopack could not prove the unused re-exports were
+re-exported the Guide (since removed) and the referral form. With no `sideEffects` field, Turbopack could not prove the unused re-exports were
 safe to drop, so the root layout's chunk carried the AI SDK, `zod`, `@ai-sdk/gateway` and the referral form's Radix parts to
 every page — 600KB raw, half of it from a feature that is switched off (found 2026-09-25). `"sideEffects": ["*.css"]` in
 `package.json` is the fix, and it has a cost: a module imported only for what it does on import, with no export used, is now
-dropped. Import such a module where its export is used, or list it in that array. Check the root layout's chunk for `zod`
-after touching either barrel.
+dropped. Import such a module where its export is used, or list it in that array. Check the root layout's chunk for the referral
+form's Radix parts after touching either barrel.
 
 **Anything the layout mounts must not import three.** `SubstrateField` read the glyph mask off `getCloud()`, and that one import
 put three.js core, the globe build and the land mask into every page's first-load JS, ahead of the lazy `Scene` it was meant to

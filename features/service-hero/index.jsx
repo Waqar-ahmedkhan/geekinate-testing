@@ -1,13 +1,11 @@
 import Clip from './Clip';
 import { Actions, PageHero } from '@/components';
-import { Guide } from '@/lib/ui/reusable_components';
-import { guidedServices, servicePageContent } from '@/lib/content';
+import { servicePageContent } from '@/lib/content';
 import { SERVICE_CLIPS, SERVICE_SHAPES } from '@/constants';
 
 const SHAPE_SLOT = 'mx-auto aspect-square w-full max-w-sm lg:max-w-none';
 
 const heroAside = ({ slug, media }) => {
-  if (guidedServices.includes(slug)) return <Guide />;
   if (SERVICE_CLIPS.includes(slug)) return <Clip media={media} />;
   const shape = SERVICE_SHAPES[slug];
   return shape ? <div data-cosmos-shape={shape} aria-hidden='true' className={SHAPE_SLOT} /> : null;

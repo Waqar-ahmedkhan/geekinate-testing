@@ -574,8 +574,35 @@ paint lands near 300ms, so anything started on `load` still counts as loaded bef
 that have to arrive: React and Next (about 130KB), the fonts, the stylesheet and the still. `experimental.inlineCss` was tried
 again and scored worse — it put the HTML at 401KB raw and FCP at 1.6s.
 
-The work clips are the next lever for real phones rather than for the score: `geekinate-ar-game.mp4` is 4.8MB and autoplays in
-view on touch.
+**Round four (2026-10-28): rounds two and three land, and what they had been hiding.** PR #21 stayed open for a month while
+`development` moved on, so the live site still ran round one: PageSpeed's lab was replaced by local Lighthouse 12 at 10x CPU
+against the built export, the same morning, both builds served the same way. Ranges are three runs for the home page and two
+for the others; the machine's own load moves a run by ten points either way.
+
+| Page | `development` before | This round | TBT before → after |
+|---|---|---|---|
+| Home | 46 | 65–78 | 2,659ms → 330–730ms |
+| `/services/development` | 40 | 84–86 | 3,696ms → 244–284ms |
+| `/services/games` | — | 71 | 482ms |
+| `/work/eleve` | 55 | 85–88 | 3,062ms → 152–238ms |
+| `/work/ar-game` | — | 78 | 406ms |
+| `/partner` | 43 | 64–70 | 2,431ms → 545–978ms |
+| `/privacy-policy` | 44 | 84–91 | 2,081ms → 235–399ms |
+
+What moved it, besides the port itself (which took every phone off the three.js load and the preloader):
+
+- **The Guide's 290KB chunk on every service page** — AI SDK and `zod`, shipped because a server component imported the Guide to
+  decide whether to render it. The Guide is deleted (see *The Guide*).
+- **Case pages render in one piece.** See the outlined-boundary trap in `AGENTS.md`; PageSpeed had scored `/work/eleve` at a
+  layout shift of 0.447 for it.
+- **The phone still is a `<picture>`, not a `preload()` hint** — 40KB off every phone page but the home page.
+- **Colour client logos only where hover exists** — about 230KB off a phone's home page.
+- **The AR and VR clips are re-encoded from their sources** — 4.8MB to 2.7MB and 1.2MB to 0.8MB, at SSIM 0.986 and 0.977.
+- **`/media`, `/brand` and `/images` are cached for an hour**, with a day of stale-while-revalidate; they were `max-age=0`.
+
+A CPU profile of the home page at 4x (source-mapped, as below) puts what is left in React's hydration of a ~500-node tree and
+in style and layout, roughly 300ms and 130ms of real CPU; the scene that shows up eight seconds in is the live globe waking
+2.5s before the phone clip ends, by design. Further cuts mean fewer client components, not a setting.
 
 Attribute before optimising. Build once with `productionBrowserSourceMaps: true` (never commit it) and map chunk bytes and
 CPU-profile samples back to source files; the barrel leak and the sort were both invisible until then.

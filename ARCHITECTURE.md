@@ -469,7 +469,9 @@ The service, case and partner pages landed at 78–82 on the same build. What mo
   before the first `advance` rather than inside it.
 - **The globe does not render under the overlay** — see *The preload gate*.
 - **`HydrationSplit`** (`components/layout`) wraps each band below a hero in its own `Suspense`, so React 19 hydrates them as
-  separate, time-sliced units instead of one long task. It adds no DOM.
+  separate, time-sliced units instead of one long task. It adds no DOM. The home, service and partner pages use it; the case
+  pages do not, since 2026-10-28, because their hero is shorter than a phone screen — see the outlined-boundary trap in
+  `AGENTS.md`.
 - **`Scene` is imported one frame after first paint**, so the 245KB three chunk does not compete with the first paint's bytes.
 - `ClientLogo` asked `next/image` for 2048px logos; its intrinsic size is now the displayed size.
 
@@ -515,12 +517,24 @@ round-two deploy, the user chose the phone hero and the cuts below the same day.
   markup carries `max-md:hidden` so the server-rendered overlay never flashes. A phone rotated past `48rem` is not trapped behind
   it, because it has unmounted.
 - **The hero globe is a recording until the live scene takes over.** `cosmos/PhoneGlobe.jsx` shows the still
-  (`public/media/hero/globe-phone.avif`, 43KB, WebP fallback 92KB, through the `phone-globe` utility and preloaded from
-  `app/page.js`) as the first paint, then plays `globe-phone.mp4` — eight seconds of the real globe, 468KB — once settled. The
+  (`public/media/hero/globe-phone.avif`, 41KB, WebP fallback 129KB) as the first paint, then plays `globe-phone.mp4` — eight
+  seconds of the real globe, 591KB — once settled. The still is a `<picture>` with `fetchPriority='high'`, so the preload scanner
+  finds it in the HTML; its first `<source>` answers `PHONE.wide` with an empty `data:,` image, so a desktop never downloads it.
+  It was a CSS background preloaded with `preload()` from `react-dom` until 2026-10-28, and a `preload()` call — or a rendered
+  `<link rel='preload'>`, which React turns into the same thing — travels in the home page's RSC payload as a hint that the
+  router applies the moment it prefetches that payload: every other page a phone opened downloaded the still for nothing. The
   still is the clip's first frame, so playback starting changes nothing but motion. The first build held the still until a tap
-  and was rejected on sight as breaking the design: a frozen globe that swapped late read as broken. Sized by **viewport height**,
-  not width (`h-[53.83%]`, the crop's share of the 412×823 frame), because the camera's field of view is vertical and the live
-  globe scales with height; sized by width it sat 26px low on a 390×844 phone.
+  and was rejected on sight as breaking the design: a frozen globe that swapped late read as broken.
+- **The layer is placed from the live globe's own geometry.** Its height is a share of the viewport height, because the
+  camera's field of view is vertical and below `GLOBE.aspectRange[0]` the globe's radius is `fitGlobe(…).radius / 2` of the
+  height at every phone; its top is the hero's button row plus `GLOBE.floorGap`, less the crop's margin above the rim, so it
+  follows the floor exactly as the live globe does. The floor reaches CSS as `--globe-floor`, set on mount and on resize, and the
+  server-rendered default `PHONE.floorGuess` (313px, the floor measured from 360 to 430px wide) places the first paint. The crop
+  is `PHONE.frame`, in globe radii: 1.6 across and 1.65 tall, 0.15 of it above the rim, which covers every portrait phone
+  checked from 320×568 to 430×932. A viewport it cannot cover (an aspect above 0.85, or more than 1.5 radii of globe below
+  the rim) starts the live scene at once. The first recording was sized as a fixed share of a 412×823 frame against the fixed
+  `GLOBE.apex`; once the globe's top followed the button row it sat 110px below the live globe at 390×844, and the handoff
+  jumped. Re-recorded 2026-10-28 and checked at four phone sizes: rim and radius match the live globe to the pixel.
 - **The live scene wakes on the first input, or 2.5s before the clip ends** (`PHONE.clip.wakeLead`) — `pointerdown`,
   `touchstart`, `wheel`, `scroll` or `keydown` through `onFirstInput` in `lib/boot/phone.js`. PSI never touches the page and its
   trace ends long before the clip does, so three and R3F never load in its measurement.
@@ -533,10 +547,12 @@ round-two deploy, the user chose the phone hero and the cuts below the same day.
   Three things make the synced frame match: the cloud's random attributes and scattered sample are **seeded**
   (`COSMOS.seed`), the scene clock starts at zero on its first frame rather than at gsap's start, and touch pointers no longer
   tilt or pull the particles (`lib/input/pointer.js` ignores `pointerType === 'touch'`).
-- **Re-record the clip and the still whenever the globe's look, fit or seed changes.** Run `next start`, then
-  `node scripts/record-phone-globe.mjs http://localhost:3007/ .tmp/phone-globe 8`: it steps `requestAnimationFrame` and the
-  page clock by hand at 1/60s and screenshots every second step, so the frames are exact and frame 0 is the scene clock's zero.
-  Crop 824×886 from y=760. Still: `libaom-av1 -still-picture 1 -crf 42 -pix_fmt yuv444p`, and `libwebp -quality 72`. Clip:
+- **Re-record the clip and the still whenever the globe's look, fit or seed changes.** Build, serve `out/`, then
+  `node scripts/record-phone-globe.mjs http://127.0.0.1:3007/ <frames-dir> 8`: it holds `requestAnimationFrame` and the page
+  clock from document start, steps both by hand at 1/60s and screenshots every second step, so the frames are exact and frame 0
+  is the scene clock's zero. It records at 600×823 with `[data-globe-floor]` pinned 30px from the top, which puts the rim at
+  y=70 and the whole globe in frame (radius 351px). Crop `crop=1124:1158:38:34` in device pixels — 1.6 radii by 1.65, 0.15 above
+  the rim — and change `PHONE.frame` with it if the crop changes. Still: `libaom-av1 -still-picture 1 -crf 42 -pix_fmt yuv444p`, and `libwebp -quality 72`. Clip:
   `libx264 -preset veryslow -crf 35 -movflags +faststart -an` after
   `format=yuv444p,geq=lum='lum(X,Y)':cb='clip(128+(cb(X,Y)-128)*(1+0.5*clip((lum(X,Y)-45)/50,0,1)),16,240)':cr='(same)',format=yuv420p`
   — 4:2:0 chroma dims the one-pixel volt dots, and a global saturation boost tinted the black ground green, so the boost is gated

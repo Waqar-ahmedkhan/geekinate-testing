@@ -137,8 +137,8 @@ enough: phones first (fixed for portrait only on 2026-10-02), then laptops, wher
 rim while a 1080p monitor showed a clean gap. On 2026-10-06 the user asked for the same gap on every screen size. The hero marks its
 button row `data-globe-floor`; `measureLayout` records that row's bottom as `stage.floor`, and `globeApex` puts the apex
 `GLOBE.floorGap` CSS pixels (40) below it at every aspect, so the globe rises on tall screens and drops on short ones. `GLOBE.apex`
-is only the fallback for a page with no floor. PR #21's phone recording was made at the old framing, so it has to be re-recorded
-when that branch lands or the handoff to the live globe jumps.
+is only the fallback for a page with no floor. The phone hero's recording follows the same floor: PR #21 recorded it at the old
+framing, so it was re-recorded when that branch landed (2026-10-28), and its layer is placed from `stage.floor` as well.
 
 **The client marquee's numbers are transcribed, not chosen.** `constants/marquee.js` holds values read off `wearestokt.com` on
 2026-08-25 — the live Framer `Ticker`'s own props plus its computed styles, not an eyeballed reconstruction: `speed: 40` px/s
@@ -647,6 +647,14 @@ form's Radix parts after touching either barrel.
 put three.js core, the globe build and the land mask into every page's first-load JS, ahead of the lazy `Scene` it was meant to
 wait for. Data that crosses from the canvas to the rest of the shell goes through a plain singleton — `lib/shape/footprint.js`,
 the same shape as `lib/boot/ready.js`.
+
+**A `Suspense` boundary in the static export paints after the footer.** React outlines a large completed boundary: the HTML
+carries an empty `<template id="B:0">` where the content belongs, the content itself in a hidden `<div id="S:0">` after the
+footer, and an inline `$RC` script that moves it into place on a frame or a timer of 300ms and more. Behind a hero that fills the
+screen that is invisible. Behind a shorter one the browser paints the footer right under the hero and then shoves it thousands of
+pixels down: PageSpeed scored `/work/eleve` at a layout shift of 0.447 for it (2026-10-28), and a local server never shows it,
+because the whole document arrives at once. Only put `HydrationSplit` under a hero that is at least `min-h-svh`, and count
+`<template id="B:` in the built HTML when in doubt.
 
 **Do not put `preload="metadata"` back into the video markup.** It looks like the cheap setting, and Chrome still fetched every
 clip on the home page at 0.7s — nine of them, about 1.3MB — alongside the stylesheet and the fonts. `VideoSurface` renders

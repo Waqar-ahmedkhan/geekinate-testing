@@ -37,7 +37,7 @@ const CLOCK = `(() => {
 })();`;
 const CANVAS_ONLY =
   'body{visibility:hidden!important} body > div[class~="z-[1]"]{visibility:visible!important} ' +
-  '[class*=phone-globe], video, div[style*=radial-gradient]{display:none!important} ' +
+  'picture, video, div[style*=radial-gradient]{display:none!important} ' +
   '[data-globe-floor]{position:fixed!important;top:0!important;left:0!important;height:30px!important;margin:0!important}';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));

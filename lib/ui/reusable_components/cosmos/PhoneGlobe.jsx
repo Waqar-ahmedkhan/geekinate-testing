@@ -9,7 +9,8 @@ import { measureLayout, measureStage, stage } from '@/lib/scroll/stage';
 import { COSMOS, GLOBE, PHONE } from '@/constants';
 
 const LAYER = 'absolute left-1/2 -translate-x-1/2 md:hidden';
-const STILL = 'absolute inset-0 max-md:phone-globe';
+const STILL = 'absolute inset-0 size-full object-cover [mask-image:linear-gradient(to_bottom,transparent,#000_9%)]';
+const BLANK = 'data:,';
 const CLIP = 'absolute inset-0 size-full object-cover';
 const { frame } = PHONE;
 const radiusShare = fitGlobe(GLOBE.aspectRange[0]).radius / 2;
@@ -110,7 +111,11 @@ export default function PhoneGlobe({ live, onWake, onHandoff }) {
   return (
     <div ref={wrapRef} className='absolute inset-0'>
       <div className={LAYER} style={FRAME_STYLE}>
-        <div className={STILL} />
+        <picture>
+          <source media={PHONE.wide} srcSet={BLANK} />
+          <source type='image/avif' srcSet={PHONE.still.avif} />
+          <img src={PHONE.still.webp} alt='' fetchPriority='high' className={STILL} />
+        </picture>
         {clipEl}
       </div>
     </div>

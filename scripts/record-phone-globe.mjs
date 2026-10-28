@@ -10,7 +10,7 @@ const PORT = 9777;
 const STEP = 1000 / 60;
 const FRAME_RATE = 30;
 const PAINTED_BYTES = 150000;
-const VIEW = { width: 412, height: 823, deviceScaleFactor: 2, mobile: true };
+const VIEW = { width: 600, height: 823, deviceScaleFactor: 2, mobile: true };
 
 const CLOCK = `(() => {
   const realFrame = window.requestAnimationFrame.bind(window), realNow = performance.now.bind(performance), realDate = Date.now;
@@ -33,10 +33,12 @@ const CLOCK = `(() => {
     held.queue = [];
     queue.forEach((callback) => callback(held.now));
   };
+  window.__holdClock();
 })();`;
 const CANVAS_ONLY =
   'body{visibility:hidden!important} body > div[class~="z-[1]"]{visibility:visible!important} ' +
-  '[class*=phone-globe], video, div[style*=radial-gradient]{display:none!important}';
+  '[class*=phone-globe], video, div[style*=radial-gradient]{display:none!important} ' +
+  '[data-globe-floor]{position:fixed!important;top:0!important;left:0!important;height:30px!important;margin:0!important}';
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -85,7 +87,8 @@ await send('Page.addScriptToEvaluateOnNewDocument', { source: CLOCK });
 await send('Page.navigate', { url: URL });
 await sleep(3000);
 await run(`document.head.insertAdjacentHTML('beforeend', '<style>${CANVAS_ONLY}</style>')`);
-await run('window.__holdClock()');
+await run('window.dispatchEvent(new Event("resize"))');
+await sleep(300);
 await run('window.dispatchEvent(new Event("keydown"))');
 let painted = null;
 while (!painted) {

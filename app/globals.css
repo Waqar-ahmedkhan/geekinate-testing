@@ -405,8 +405,8 @@
     url('/media/hero/globe-phone.webp') type('image/webp')
   );
   background-size: cover;
-  background-position: bottom;
-  mask-image: linear-gradient(to bottom, transparent, #000 18%);
+  background-position: center;
+  mask-image: linear-gradient(to bottom, transparent, #000 9%);
 }
 
 @utility border-brutal {

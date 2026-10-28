@@ -5,14 +5,28 @@ import { cueSceneClock } from '@/lib/boot/clock';
 import { isPhone } from '@/lib/boot/phone';
 import { watchSettled } from '@/lib/boot/settled';
 import { fitGlobe } from '@/lib/globe/fit';
-import { measureStage, stage } from '@/lib/scroll/stage';
-import { COSMOS, PHONE } from '@/constants';
+import { measureLayout, measureStage, stage } from '@/lib/scroll/stage';
+import { COSMOS, GLOBE, PHONE } from '@/constants';
 
-const LAYER = 'absolute bottom-0 left-1/2 h-[53.83%] aspect-[824/886] -translate-x-1/2 md:hidden';
-const STILL = `${LAYER} max-md:phone-globe`;
-const CLIP = `${LAYER} object-cover`;
+const LAYER = 'absolute left-1/2 -translate-x-1/2 md:hidden';
+const STILL = 'absolute inset-0 max-md:phone-globe';
+const CLIP = 'absolute inset-0 size-full object-cover';
+const { frame } = PHONE;
+const radiusShare = fitGlobe(GLOBE.aspectRange[0]).radius / 2;
+const FRAME_STYLE = {
+  top: `calc(var(--globe-floor, ${PHONE.floorGuess}px) + ${GLOBE.floorGap}px - ${frame.rim * radiusShare * 100}%)`,
+  height: `${frame.height * radiusShare * 100}%`,
+  aspectRatio: `${frame.width} / ${frame.height}`,
+};
 
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const framed = () => {
+  const width = document.documentElement.clientWidth,
+    height = window.innerHeight;
+  const radius = radiusShare * height;
+  const below = height - stage.floor - GLOBE.floorGap;
+  return width / height <= GLOBE.aspectRange[0] && width / 2 <= (frame.width / 2) * radius && below <= (frame.height - frame.rim) * radius;
+};
 
 export default function PhoneGlobe({ live, onWake, onHandoff }) {
   const wrapRef = useRef(null);
@@ -21,14 +35,16 @@ export default function PhoneGlobe({ live, onWake, onHandoff }) {
   const [armed, setArmed] = useState(false);
   const [playing, setPlaying] = useState(false);
   useEffect(() => {
-    if (!isPhone()) {
+    measureStage();
+    if (!isPhone() || !framed()) {
       doneRef.current = true;
+      if (isPhone()) onWake();
       onHandoff();
       return undefined;
     }
     if (reducedMotion()) return undefined;
     return watchSettled(() => setArmed(true));
-  }, [onHandoff]);
+  }, [onHandoff, onWake]);
   useEffect(() => {
     const clip = clipRef.current;
     const handOff = () => {
@@ -57,9 +73,18 @@ export default function PhoneGlobe({ live, onWake, onHandoff }) {
       }
       tryHandoff();
     };
-    follow();
+    const refit = () => {
+      measureLayout();
+      wrapRef.current?.style.setProperty('--globe-floor', `${stage.floor}px`);
+      follow();
+    };
+    refit();
     window.addEventListener('scroll', follow, { passive: true });
-    return () => window.removeEventListener('scroll', follow);
+    window.addEventListener('resize', refit);
+    return () => {
+      window.removeEventListener('scroll', follow);
+      window.removeEventListener('resize', refit);
+    };
   }, [live, playing, onHandoff]);
   useEffect(() => {
     const clip = clipRef.current;
@@ -84,8 +109,10 @@ export default function PhoneGlobe({ live, onWake, onHandoff }) {
   ) : null;
   return (
     <div ref={wrapRef} className='absolute inset-0'>
-      <div className={STILL} />
-      {clipEl}
+      <div className={LAYER} style={FRAME_STYLE}>
+        <div className={STILL} />
+        {clipEl}
+      </div>
     </div>
   );
 }

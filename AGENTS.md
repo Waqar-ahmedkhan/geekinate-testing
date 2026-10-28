@@ -15,8 +15,12 @@ Geekinate's agency website, rebuilt from scratch. A single Next.js app living at
 the account the team was invited to, not the user's own): `next build` writes a static export to `out/`, Cloudflare serves those
 files as static assets, and one small Worker in `worker/` answers `/api/*` — the form endpoints. There is no `next start` any
 more. See `ARCHITECTURE.md` §Shape for what that changes. The first deploy landed in the user's own account by mistake; since
-2026-10-21 the site is Worker `geekinate-com` in **Nouman.digg@gmail.com's Account**, at `geekinate-com.nouman-digg.workers.dev`,
-and `account_id` in `wrangler.jsonc` pins every deploy there.
+2026-10-21 the site is Worker `geekinate-com` in **Nouman.digg@gmail.com's Account**, and `account_id` in `wrangler.jsonc` pins
+every deploy there. **Since 2026-10-28 it is geekinate.com**: the zone moved from OnlyDomains' DNS to Cloudflare (registrar still
+OnlyDomains, nameservers `kai`/`mimi.ns.cloudflare.com`), the apex and `www` are the Worker's custom domains (`routes` in
+`wrangler.jsonc`), and the previous site on a Hetzner server (65.109.164.70) no longer receives traffic. The Migadu mail records
+moved with the zone unchanged, DKIM CNAMEs DNS-only. `geekinate-com.nouman-digg.workers.dev` still serves the same build,
+`noindex` through `public/_headers`.
 
 **The site sells three services**, and `services` in `lib/content/index.js` is the list: **Development & AI** (`development`),
 **Games & Interactive** (`games`), **Marketing** (`marketing`). **The names live in one place**, `serviceNames` in

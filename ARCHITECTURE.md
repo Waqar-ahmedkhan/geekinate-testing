@@ -26,7 +26,8 @@ requests a day, while static asset requests are free and unmetered. So the site 
 
 Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pinned by `account_id`), connected to
 `github.com/geekinate/geekinate` on `main`: build command `npm run build`, deploy command `npx wrangler deploy`. The live URL is
-`geekinate-com.nouman-digg.workers.dev`. `wrangler` is not a dependency; `npm run preview` and `npm run deploy` pin it through `npx` instead.
+`geekinate.com` since 2026-10-28, apex and `www` attached as custom domains through `routes` in `wrangler.jsonc`; the build variable
+`NEXT_PUBLIC_APP_URL` is `https://geekinate.com`. `geekinate-com.nouman-digg.workers.dev` stays on (`workers_dev: true`), noindexed. `wrangler` is not a dependency; `npm run preview` and `npm run deploy` pin it through `npx` instead.
 Three consequences follow from the platform:
 
 - **Module-scope state is per isolate.** A counter in a handler is shared only by the requests one isolate happens to serve, so

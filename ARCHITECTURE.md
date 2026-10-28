@@ -633,7 +633,10 @@ The section is now a plain server component. It is `variant='paper'`, not `clear
 so the nav's surface detection must read it, which is the reverse of what the panel version needed.
 
 - The grid is six columns from `lg`, 16px gaps, 10px tile radius, and `span` counts sixths: rhythm **4+2 / 6 / 3+3**, aspect
-  following span, degrading to two columns then one below `lg`. The full-width tile was 16:9 while it ran the AR game and is
+  following span, degrading to two columns then one below `lg`. In the two-column band (`sm` to `lg`) the full-width tile spans
+  both columns at 2:1 and every other tile is square, so the rows read **1+1 / 2 / 1+1**; until 2026-10-28 the 4-span tile kept
+  its 2:1 there too and the 6-span took one column, which left two short tiles beside two square ones and Shifa alone with an
+  empty cell on a tablet. The full-width tile was 16:9 while it ran the AR game and is
   **2:1 since 2026-09-22**, when the Elevé pair moved onto it: that clip is a 2:1 render whose logo starts 2% in from the
   left and whose badge ends 2% from the right, and a 16:9 cover would have cut 5.5% off each of them. The AR game took the
   full-width tile back on 2026-10-21 and the 2:1 stayed, cover-cropping its 16:9 frame exactly as tile 1 already did. It was three columns at **2+1 / 3 / 1+1+1** until 2026-09-17, when
@@ -707,7 +710,7 @@ whole site and two layouts invented without it were rejected first:
 | `Stack` | A thin `ink` strip: the *Tech stack* label beside a `Marquee` of the stack in mono caps with volt squares, the client strip's own component at a 64px gap. The label sits above the marquee below `md`. A project's `stackLabel` replaces the label; Shifa's reads *Platforms & Tools*, because what it lists is the client's fundraising stack, not code | Heron's *[ TECH STACK ]* strip |
 | `Brief` | `paper`. Requirements and Challenge side by side as two editorial columns, each an eyebrow, a display heading and a hairline-ruled numbered list | |
 | `Solution` | `ink`. The service page's Deliverables list, reused on instruction (2026-09-24, "reuse this or this based on dark or light section"): `Cycle` on a dark band, heading left and list right — it ran mirrored like Deliverables for an hour and was flipped back on instruction ("left section moves to right and right to left"). Each solution point is `{ title, detail }`: a short name set in display type, the sentence beside it. The names were added that day; the sentences are the brief's own, Twinhub's still the old site's except the SEO line, cut to its first sentence because `Cycle` keeps every sentence in the layout and the full line made row 07 visibly taller than the rest | |
-| `More` | `paper`, closed by a hairline before `Contact`: the next three projects in `work` order, wrapping, as `WorkTile`s at `aspect-[3/2]` through the tile's `className`. The clips were exported for the 3:2 and 2:1 slots with the caption zone at the bottom, and a square crop pushed the Shifa figures under the caption | |
+| `More` | `paper`, closed by a hairline before `Contact`: the next three projects in `work` order, wrapping, as `WorkTile`s at `aspect-[3/2]` through the tile's `className`. In the two-column band the first of them spans both columns at 2:1, so three tiles do not leave the last one alone (2026-10-28). The clips were exported for the 3:2 and 2:1 slots with the caption zone at the bottom, and a square crop pushed the Shifa figures under the caption | |
 
 Mechanics worth knowing before editing:
 

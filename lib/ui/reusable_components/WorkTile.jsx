@@ -12,8 +12,8 @@ import { WORK } from '@/constants';
 const SPANS = {
   2: 'lg:col-span-2 aspect-square',
   3: 'lg:col-span-3 aspect-square lg:aspect-[3/2]',
-  4: 'lg:col-span-4 aspect-square sm:aspect-[2/1]',
-  6: 'lg:col-span-6 aspect-square sm:aspect-[2/1]',
+  4: 'lg:col-span-4 aspect-square lg:aspect-[2/1]',
+  6: 'sm:col-span-2 lg:col-span-6 aspect-square sm:aspect-[2/1]',
 };
 const SIZES = {
   2: '(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw',

@@ -7,6 +7,8 @@ import { WORK } from '@/constants';
 
 const ALL_WORK =
   'group -my-2 flex shrink-0 items-center gap-2 py-2 font-mono text-xs uppercase tracking-[0.18em] text-mut transition-colors duration-200 hover:text-foreground';
+const TILE_SHAPE = 'aspect-[3/2]';
+const LEAD_SHAPE = 'aspect-[3/2] sm:col-span-2 sm:aspect-[2/1] lg:col-span-2 lg:aspect-[3/2]';
 
 const relatedTo = (projects, slug) => {
   const index = projects.findIndex((project) => project.slug === slug);
@@ -15,7 +17,7 @@ const relatedTo = (projects, slug) => {
 
 export default function More({ block, slug }) {
   const { label, heading, all } = block;
-  const tileEls = relatedTo(work, slug).map(({ slug: key, title, disciplines, href, media, hoverMedia }) => (
+  const tileEls = relatedTo(work, slug).map(({ slug: key, title, disciplines, href, media, hoverMedia }, index) => (
     <WorkTile
       key={key}
       title={title}
@@ -24,7 +26,7 @@ export default function More({ block, slug }) {
       href={href}
       media={media}
       hoverMedia={hoverMedia}
-      className='aspect-[3/2]'
+      className={index ? TILE_SHAPE : LEAD_SHAPE}
     />
   ));
   return (

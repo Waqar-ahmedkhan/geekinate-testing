@@ -22,6 +22,7 @@ requests a day, while static asset requests are free and unmetered. So the site 
 | Mailer | `worker/mailer.js` | Shared by the contact and partner handlers. Sends over SMTP (port 587, `worker-mailer`) when `SMTP_HOST`, `SMTP_USER` and `SMTP_PASS` are set, through Resend's API otherwise; `CONTACT_FROM` is parsed from `Name <address>` |
 | Throttle | `worker/throttle.js` | `createThrottle({ ms, max })` returns a per-isolate sliding-window check. Contact allows five per ten minutes, partner five a minute |
 | Asset headers | `public/_headers` | `noindex, nofollow` on any `*.workers.dev` host, a year's immutable cache on `/_next/static/*`, and an hour fresh plus a day stale-while-revalidate on `/media`, `/brand` and `/images`, whose file names carry no hash. Cloudflare applies it to static responses only, never to the Worker's |
+| Old-site redirects | `public/_redirects` | 301s from the previous geekinate.com (a Next.js app on a Hetzner server until the domain moves here): `/portfolio` and its twelve project pages to `/#work` (Twinhub's to `/work/twinhub`), and `/service/design`, `/development`, `/tech-consultancy` and `/marketing` to the matching service page. Static rules come before splats, as wrangler asks. Cloudflare applies them before the assets and the Worker |
 
 Deploys are Cloudflare **Workers Builds** in Nouman.digg@gmail.com's Account (pinned by `account_id`), connected to
 `github.com/geekinate/geekinate` on `main`: build command `npm run build`, deploy command `npx wrangler deploy`. The live URL is

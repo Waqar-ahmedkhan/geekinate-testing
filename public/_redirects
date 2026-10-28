@@ -1,0 +1,8 @@
+/portfolio /#work 301
+/portfolio/Twinhub_-_Coworking_Space_Website /work/twinhub 301
+/service/development /services/development 301
+/service/design /services/development 301
+/service/tech-consultancy /services/development 301
+/service/marketing /services/marketing 301
+/portfolio/* /#work 301
+/service/* /#services 301

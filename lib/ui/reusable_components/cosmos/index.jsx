@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import { usePathname } from 'next/navigation';
 import PhoneGlobe from './PhoneGlobe';
-import { isPhone, onFirstInput } from '@/lib/boot/phone';
+import { probeGpu } from '@/lib/boot/gpu';
 import { markGlobeReady } from '@/lib/boot/ready';
 import { trackGlobe } from '@/lib/input/globe';
 import { trackPointer } from '@/lib/input/pointer';
@@ -31,15 +31,24 @@ export default function CosmosCanvas() {
   const handOff = useCallback(() => setHandedOff(true), []);
   const phoneHero = standing && !handedOff;
   const sceneEl = sceneWanted ? <Scene onFirstFrame={onFirstFrame} /> : null;
-  const phoneEl = phoneHero ? <PhoneGlobe live={painted} onWake={wake} onHandoff={handOff} /> : null;
+  const phoneEl = phoneHero ? <PhoneGlobe live={painted} onHandoff={handOff} /> : null;
   const sceneClass = cn('absolute inset-0', phoneHero && 'max-md:opacity-0');
   useEffect(() => {
-    if (isPhone()) return onFirstInput(wake);
-    let timer = 0;
-    const frame = requestAnimationFrame(() => {
-      timer = setTimeout(() => setSceneWanted(true), 0);
+    let live = true,
+      frame = 0,
+      timer = 0;
+    probeGpu().then((hardware) => {
+      if (!live) return;
+      if (!hardware) {
+        markGlobeReady();
+        return;
+      }
+      frame = requestAnimationFrame(() => {
+        timer = setTimeout(wake, 0);
+      });
     });
     return () => {
+      live = false;
       cancelAnimationFrame(frame);
       clearTimeout(timer);
     };

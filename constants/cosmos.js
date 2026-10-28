@@ -57,3 +57,5 @@ export const COSMOS = {
   shapeHold: 1,
   shapeLerp: 2.2,
 };
+
+export const SOFTWARE_GL = /swiftshader|llvmpipe|softpipe|basic render driver|software/i;

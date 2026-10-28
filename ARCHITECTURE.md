@@ -57,8 +57,9 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/ui/reusable_components/` | Client components that own behaviour | `BrandMark`, `ClientLogo`, `Cycle`, `HoverVideoCard`, `WorkTile`, `VideoSurface`, `InViewVideo`, `SocialIcon`, `TestimonialCard`, `TestimonialMarquee`, `useHoverVideo`, `useSettled`, `DeferredToaster`, `contact-form/`, `referral-form/`, `cosmos/`, `grain/`, `guide/`, `hero-sheet/`, `marquee/`, `nav/`, `preloader/`, `smooth-scroll/`, `substrate/` |
 | `lib/boot/ready.js` | The one boot signal the shell shares | `markGlobeReady()` from the canvas, `watchGlobeReady()` from the preloader |
 | `lib/boot/settled.js` | `watchSettled`: window `load` plus one painted frame | The gate for everything the first paint does not need; `useSettled` is its hook. See §Performance |
-| `lib/boot/clock.js` | The scene clock | Starts at zero on the scene's first frame; `cueSceneClock` sets it to the phone clip's time at the handoff |
-| `lib/boot/phone.js` | `isPhone`, `onFirstInput` | Below `PHONE.query` (`constants/phone.js`) the preloader is skipped and the scene waits for the first input |
+| `lib/boot/clock.js` | The scene clock | Starts at zero on the scene's first frame, which is the frame the phone still shows |
+| `lib/boot/gpu.js` | `probeGpu` | Whether WebGL runs on a hardware GPU, asked once in `gpu.worker.js` through `renderer.js`; no scene loads without one |
+| `lib/boot/phone.js` | `isPhone` | Below `PHONE.query` (`constants/phone.js`) the preloader is skipped and the hero opens on the still |
 | `lib/scroll/` | Scroll position, stage and the Lenis handle | `progress.js` (the offset singleton), `stage.js` (`heroOut`/`footerIn`), `controller.js` (holds the engine), `lock.js` (body-scroll hold) |
 | `lib/input/` | Pointer and globe drag, as mutable singletons | `pointer.js`, `globe.js`. Read per frame, never through React state. The globe drag takes mouse and touch; `#hero` is `touch-pan-y` so a sideways swipe turns the globe and a vertical one still scrolls (mouse-only until 2026-10-08) |
 | `lib/globe/` | The globe **pose**, fit, shells and network | Never the particles — those belong to `cosmos`. `pose.js` is the pure half, which runs in `cosmos/shapes.worker.js` |
@@ -516,15 +517,17 @@ round-two deploy, the user chose the phone hero and the cuts below the same day.
 - **No preloader.** It has nothing to wait for on a phone, so it opens the gate on mount and unmounts one frame later; its
   markup carries `max-md:hidden` so the server-rendered overlay never flashes. A phone rotated past `48rem` is not trapped behind
   it, because it has unmounted.
-- **The hero globe is a recording until the live scene takes over.** `cosmos/PhoneGlobe.jsx` shows the still
-  (`public/media/hero/globe-phone.avif`, 41KB, WebP fallback 129KB) as the first paint, then plays `globe-phone.mp4` — eight
-  seconds of the real globe, 591KB — once settled. The still is a `<picture>` with `fetchPriority='high'`, so the preload scanner
-  finds it in the HTML; its first `<source>` answers `PHONE.wide` with an empty `data:,` image, so a desktop never downloads it.
-  It was a CSS background preloaded with `preload()` from `react-dom` until 2026-10-28, and a `preload()` call — or a rendered
-  `<link rel='preload'>`, which React turns into the same thing — travels in the home page's RSC payload as a hint that the
-  router applies the moment it prefetches that payload: every other page a phone opened downloaded the still for nothing. The
-  still is the clip's first frame, so playback starting changes nothing but motion. The first build held the still until a tap
-  and was rejected on sight as breaking the design: a frozen globe that swapped late read as broken.
+- **The hero globe is a still until the live globe draws.** `cosmos/PhoneGlobe.jsx` shows
+  `public/media/hero/globe-phone.avif` (41KB, WebP fallback 129KB) as the first paint and hands off on the scene's first frame;
+  the scene loads one frame after first paint, as on a desktop. The still is the scene's frame at clock zero, so the swap is the
+  globe starting to turn. It is a `<picture>` with `fetchPriority='high'`, so the preload scanner finds it in the HTML; its first
+  `<source>` answers `PHONE.wide` with an empty `data:,` image, so a desktop never downloads it. It was a CSS background
+  preloaded with `preload()` from `react-dom` until 2026-10-28, and a `preload()` call — or a rendered `<link rel='preload'>`,
+  which React turns into the same thing — travels in the home page's RSC payload as a hint that the router applies the moment it
+  prefetches that payload: every other page a phone opened downloaded the still for nothing. From 2026-09-25 to 2026-10-28 an
+  eight-second recording played after the still and the live scene waited for the first input or the recording's last 2.5s;
+  PageSpeed's slower machine kept tracing past that wake and scored the software-rendered frames (see the GPU gate below), and
+  the user turned the recording and the input gate down.
 - **The layer is placed from the live globe's own geometry.** Its height is a share of the viewport height, because the
   camera's field of view is vertical and below `GLOBE.aspectRange[0]` the globe's radius is `fitGlobe(…).radius / 2` of the
   height at every phone; its top is the hero's button row plus `GLOBE.floorGap`, less the crop's margin above the rim, so it
@@ -532,31 +535,23 @@ round-two deploy, the user chose the phone hero and the cuts below the same day.
   server-rendered default `PHONE.floorGuess` (313px, the floor measured from 360 to 430px wide) places the first paint. The crop
   is `PHONE.frame`, in globe radii: 1.6 across and 1.65 tall, 0.15 of it above the rim, which covers every portrait phone
   checked from 320×568 to 430×932. A viewport it cannot cover (an aspect above 0.85, or more than 1.5 radii of globe below
-  the rim) starts the live scene at once. The first recording was sized as a fixed share of a 412×823 frame against the fixed
+  the rim) shows no still and lets the live scene paint. The first recording was sized as a fixed share of a 412×823 frame against the fixed
   `GLOBE.apex`; once the globe's top followed the button row it sat 110px below the live globe at 390×844, and the handoff
   jumped. Re-recorded 2026-10-28 and checked at four phone sizes: rim and radius match the live globe to the pixel.
-- **The live scene wakes on the first input, or 2.5s before the clip ends** (`PHONE.clip.wakeLead`) — `pointerdown`,
-  `touchstart`, `wheel`, `scroll` or `keydown` through `onFirstInput` in `lib/boot/phone.js`. PSI never touches the page and its
-  trace ends long before the clip does, so three and R3F never load in its measurement.
-- **The handoff is time-synced and never happens mid-hero.** The live canvas stays at `max-md:opacity-0` until `PhoneGlobe` hands
-  off: at the top of the page (`stage.heroOut ≤ PHONE.clip.handoffAtTop`) it cues the scene clock to the clip's `currentTime`
-  (`cueSceneClock` in `lib/boot/clock.js`, read by `TickerLoop` through `readSceneClock`) and swaps two frames later, which
-  measured closer than two consecutive clip frames; once the hero has scrolled away (`heroOut ≥ 1`) the globe is gone and it
-  swaps directly. In between, the clip layer sinks and fades with the scroll (`fitGlobe`, now in the three-free
-  `lib/globe/fit.js`) and the live globe waits, because the live one also spins and disperses on scroll and no recording can.
-  Three things make the synced frame match: the cloud's random attributes and scattered sample are **seeded**
-  (`COSMOS.seed`), the scene clock starts at zero on its first frame rather than at gsap's start, and touch pointers no longer
-  tilt or pull the particles (`lib/input/pointer.js` ignores `pointerType === 'touch'`).
-- **Re-record the clip and the still whenever the globe's look, fit or seed changes.** Build, serve `out/`, then
+- **No GPU, no scene.** `probeGpu` (`lib/boot/gpu.js`) opens a WebGL context in a worker with
+  `failIfMajorPerformanceCaveat` and reads the renderer; a refusal, or SwiftShader, llvmpipe or the Basic Render Driver in the
+  name, means the scene never loads. The phone keeps the still, the desktop keeps the glow, and `markGlobeReady` releases the
+  preloader. Measured against the same build at 10x: home 79–80 with SwiftShader (`--use-angle=swiftshader`, how PageSpeed's
+  Chrome renders) against 72 on a real GPU, where the scene loads. Run on the main thread the probe was a 1.9s task under
+  SwiftShader, hence the worker. `failIfMajorPerformanceCaveat` alone is not enough: Chrome refuses it for its own software
+  fallback but grants it for ANGLE's SwiftShader, so the renderer name decides.
+- **Re-record the still whenever the globe's look, fit or seed changes.** Build, serve `out/`, then
   `node scripts/record-phone-globe.mjs http://127.0.0.1:3007/ <frames-dir> 8`: it holds `requestAnimationFrame` and the page
   clock from document start, steps both by hand at 1/60s and screenshots every second step, so the frames are exact and frame 0
   is the scene clock's zero. It records at 600×823 with `[data-globe-floor]` pinned 30px from the top, which puts the rim at
   y=70 and the whole globe in frame (radius 351px). Crop `crop=1124:1158:38:34` in device pixels — 1.6 radii by 1.65, 0.15 above
-  the rim — and change `PHONE.frame` with it if the crop changes. Still: `libaom-av1 -still-picture 1 -crf 42 -pix_fmt yuv444p`, and `libwebp -quality 72`. Clip:
-  `libx264 -preset veryslow -crf 35 -movflags +faststart -an` after
-  `format=yuv444p,geq=lum='lum(X,Y)':cb='clip(128+(cb(X,Y)-128)*(1+0.5*clip((lum(X,Y)-45)/50,0,1)),16,240)':cr='(same)',format=yuv420p`
-  — 4:2:0 chroma dims the one-pixel volt dots, and a global saturation boost tinted the black ground green, so the boost is gated
-  on luma and clamped (unclamped, the brightest rim dots wrapped to lavender). `.tmp/` is not ignored; delete the frames after.
+  the rim — and change `PHONE.frame` with it if the crop changes. Only frame 0 is used now, so a length of `0.1` is enough.
+  Still: `libaom-av1 -still-picture 1 -crf 42 -pix_fmt yuv444p`, and `libwebp -quality 72`. Delete the frames after.
 
 Everywhere, work that the first paint does not need now waits for `watchSettled` (`lib/boot/settled.js`): window `load` **and
 then one painted frame**. `load` alone is not late enough — in Lighthouse's observed trace it fires at about 140ms while the first
@@ -601,8 +596,14 @@ What moved it, besides the port itself (which took every phone off the three.js 
 - **`/media`, `/brand` and `/images` are cached for an hour**, with a day of stale-while-revalidate; they were `max-age=0`.
 
 A CPU profile of the home page at 4x (source-mapped, as below) puts what is left in React's hydration of a ~500-node tree and
-in style and layout, roughly 300ms and 130ms of real CPU; the scene that shows up eight seconds in is the live globe waking
-2.5s before the phone clip ends, by design. Further cuts mean fewer client components, not a setting.
+in style and layout, roughly 300ms and 130ms of real CPU. Further cuts mean fewer client components, not a setting.
+
+**PageSpeed disagreed, and the GPU gate followed (2026-10-28).** Live, PageSpeed mobile scored the home page 39–40 with
+20,350ms of total blocking time and 38.5s of main-thread "Other", while `/services/development` scored 89. Its slower machine
+kept tracing past the moment the phone recording woke the live scene, and its Chrome renders WebGL in SwiftShader, so every
+globe frame became a 300–520ms task. Local Lighthouse never saw it: this machine finished the trace before the wake, and its
+frames run on a GPU. Score with `--chrome-flags="--headless=new --use-angle=swiftshader"` to see what PageSpeed sees. The
+recording and the input gate went, and the scene now loads only where `probeGpu` finds a hardware GPU — see round three.
 
 Attribute before optimising. Build once with `productionBrowserSourceMaps: true` (never commit it) and map chunk bytes and
 CPU-profile samples back to source files; the barrel leak and the sort were both invisible until then.

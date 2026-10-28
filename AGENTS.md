@@ -137,7 +137,7 @@ enough: phones first (fixed for portrait only on 2026-10-02), then laptops, wher
 rim while a 1080p monitor showed a clean gap. On 2026-10-06 the user asked for the same gap on every screen size. The hero marks its
 button row `data-globe-floor`; `measureLayout` records that row's bottom as `stage.floor`, and `globeApex` puts the apex
 `GLOBE.floorGap` CSS pixels (40) below it at every aspect, so the globe rises on tall screens and drops on short ones. `GLOBE.apex`
-is only the fallback for a page with no floor. The phone hero's recording follows the same floor: PR #21 recorded it at the old
+is only the fallback for a page with no floor. The phone hero's still follows the same floor: PR #21 recorded it at the old
 framing, so it was re-recorded when that branch landed (2026-10-28), and its layer is placed from `stage.floor` as well.
 
 **The client marquee's numbers are transcribed, not chosen.** `constants/marquee.js` holds values read off `wearestokt.com` on
@@ -251,14 +251,23 @@ arrive — no WebGL, a throttled tab, a context loss — so `PRELOADER.maxMs` co
 gating on a signal without one, ships a black screen to whoever the globe fails for. `minMs` is the other half: it stops a warm
 cache flashing the overlay for three frames.
 
-**Phones open on a recording of the globe, and the live scene takes over without a seam.** Instructed 2026-09-25, after PSI
-mobile read 41 with every no-visual-change fix live: below `48rem` (`PHONE.query`) there is no preloader, the hero paints a still
-of the globe and then plays an eight-second recording of it, and the live scene wakes on the first input or near the clip's end
-and takes over time-synced. A still held until a tap shipped first and was rejected on sight as breaking the design; a live globe started
-right after first paint instead measured 40–59 at 10x, no better than the original. Desktop is unchanged. The recording must be
-the live globe: the cloud's randoms are seeded for that, and the still and clip are re-recorded with
-`scripts/record-phone-globe.mjs` whenever the globe's look, fit or seed changes. Do not hand off mid-hero — the live globe spins
-and disperses on scroll and the recording cannot. See ARCHITECTURE.md §Performance.
+**Phones open on a still of the globe, and the live globe replaces it on its first frame.** Below `48rem` (`PHONE.query`)
+there is no preloader: the hero paints a still of the globe, the scene loads one frame after first paint exactly as on a
+desktop, and the still is dropped the moment the live globe draws. The still is the scene's own frame at clock zero, and the
+cloud's randoms are seeded, so the swap shows nothing but the globe starting to turn. From 2026-09-25 to 2026-10-28 the still
+became an eight-second recording and the live scene waited for the first touch, or for 2.5s before the recording ended; the
+user turned both down on 2026-10-28 ("home page par globe ki recording ya usko touch par nhi jaga sakty koi or solution
+dhundo"), so do not bring back a recording or an input gate. Re-record the still with `scripts/record-phone-globe.mjs` whenever
+the globe's look, fit or seed changes. See ARCHITECTURE.md §Performance.
+
+**The globe runs only on a hardware GPU.** `lib/boot/gpu.js` asks a Web Worker to open an `OffscreenCanvas` WebGL context with
+`failIfMajorPerformanceCaveat` and to read its renderer; a refused context, or a renderer that names software rasterising
+(`SOFTWARE_GL`: SwiftShader, llvmpipe, Microsoft's Basic Render Driver), means no scene at all. A phone keeps the still, a
+desktop keeps the glow, and the preloader is told the globe is ready so it never waits out its failsafe. PageSpeed's lab has no
+GPU: there the globe drew in SwiftShader at 300–520ms a frame, and on 2026-10-28 the home page scored 40 with 20,350ms of total
+blocking time while `/services/development`, with no globe, scored 89. Real phones render it on their GPU. The probe runs in a
+worker because opening a context is itself a long task under software rendering (1.9s at 10x); it falls back to the main
+thread where a worker cannot open WebGL, as on Safari before 17. Do not remove the gate to "get the globe into PageSpeed".
 
 **The service page speaks the partner page's language, and the two share their primitives.** `/services/[slug]` has been through
 three shapes. It was first built as the home page's own language and rejected on 2026-09-04 as "a replica of home page"; it then ran

@@ -682,8 +682,10 @@ so the nav's surface detection must read it, which is the reverse of what the pa
   — 1.2MB, with its first frame as `eleve-hover.webp`. Since 2026-10-27 the same clip is the case page's `cover` too
   (`eleveClip`), on the client's word; from 2026-10-21 to 2026-10-26 both ran `eleve-site.mp4`, which stays unused.
   The Shifa tile (tile 5) ran the same pair from 2026-10-26 to 2026-10-27 and is a plain clip tile now, like Twinhub and the
-  games: `media` is `shifaClip`, `shifa-hover.mp4`, the Shifa Foundation USA footage (its 884×588 H.264 stream copied as
-  supplied with the audio dropped and `+faststart` — 0.7MB), with its own first frame as the poster (`shifa-hover.webp`), and
+  games: `media` is `shifaClip`, `shifa-hover.mp4`, the Shifa Foundation USA footage. Its first cut was an 884×588 stream with
+  a pale grade, copied as supplied; on 2026-10-29 the client sent a darker 3528×2350 master of the same 3.7s
+  (`../VideoClips/work/shifa.mp4`), encoded at 1440×960 (cropped 3px to an exact 3:2), H.264 High, `-preset slow -crf 20`,
+  no audio, `+faststart` — 0.8MB, SSIM 0.993 against the master. Its own first frame is the poster (`shifa-hover.webp`), and
   the same clip is the case page's `cover`. The stats count-up before it, `stats-grid.mp4`, is deleted, because its agency
   figures were the 2026-10-26 handover's P0. The pair's still was the client's Canva card (*5x growth in online giving for a
   US nonprofit*); it stays unused as `shifa-poster.webp`, **stored square**: the tile is square below `lg`, and a centre crop

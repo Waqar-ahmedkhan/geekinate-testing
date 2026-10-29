@@ -165,7 +165,7 @@ karyn gyn toh yeh video play hogi"), and **the case page's hero runs the same cl
 2026-10-21 to 2026-10-26 both ran `eleve-site.mp4` ("hover par jo video ati hai usko replace karna hai, eleve detailed page ky
 top par hero section may jo video hai us sy"), which now stays in `public/media/work/` unused, as does the logo colouring in on
 white, `eleve-logo.mp4`, the hover before that. **Tile 5, Shifa Foundation USA, works like Twinhub and the games**: one clip,
-`shifa-hover.mp4` (the Shifa Foundation USA footage), resting on its own first frame (`shifa-hover.webp`) and playing on hover,
+`shifa.mp4` (the Shifa Foundation USA footage), resting on its own first frame (`shifa.webp`) and playing on hover,
 and the same clip is its case page's `cover`. Instructed 2026-10-27 ("uski starting sy ak image lo or uski as thumbnail use
 karlo"). From 2026-10-26 to then it was a still-and-hover pair resting on the client's Canva card (*5x growth in online giving
 for a US nonprofit*), which stays in `public/media/work/` as `shifa-poster.webp`, padded square, unused. The stats count-up
@@ -668,6 +668,12 @@ screen that is invisible. Behind a shorter one the browser paints the footer rig
 pixels down: PageSpeed scored `/work/eleve` at a layout shift of 0.447 for it (2026-10-28), and a local server never shows it,
 because the whole document arrives at once. Only put `HydrationSplit` under a hero that is at least `min-h-svh`, and count
 `<template id="B:` in the built HTML when in doubt.
+
+**A file replaced under its old name in `public/media` stays old in every browser that has it.** `public/_headers` gives
+`/media/*` an hour of `max-age` and a day of `stale-while-revalidate`, and the names carry no hash. On 2026-10-29 the new
+Shifa master went out over the old `shifa-hover.mp4`: the hover played the new clip while the still in front of it was the
+old frame, because the browser had kept the image and fetched the video afresh. The server sent the new files the whole time,
+so `curl` cannot show it. A replaced asset takes a new file name and the old file is deleted.
 
 **Do not put `preload="metadata"` back into the video markup.** It looks like the cheap setting, and Chrome still fetched every
 clip on the home page at 0.7s — nine of them, about 1.3MB — alongside the stylesheet and the fonts. `VideoSurface` renders

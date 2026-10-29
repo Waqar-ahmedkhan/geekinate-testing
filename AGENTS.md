@@ -334,8 +334,15 @@ mailbox for the site is created, the switch is secrets only: `SMTP_HOST=smtp.mig
 `CONTACT_FROM`, its password in `SMTP_PASS`. Delete `SMTP_PASS` and the forms fall back to Resend.
 
 **The contact form confirms to the visitor, and is rate-limited because it does.** Instructed 2026-10-21: after the enquiry is
-accepted, `worker/contact.js` mails the visitor `contactContent.confirmation` with their message quoted, through `ctx.waitUntil`
-so the "Message sent" panel does not wait on a second SMTP round. Mailing an address the visitor typed is what makes the form
+accepted, `worker/contact.js` mails the visitor `contactContent.confirmation` with their message quoted. **Since 2026-10-29 the
+form answers before any mail is sent**: the Gmail round (connect, STARTTLS, sign-in, send) held the "Message sent" panel for 2–3
+seconds, reported on a live test. `deliver` now runs the whole send in `ctx.waitUntil`, tries the enquiry twice, and mails the
+visitor only once the enquiry went through. The price is that an enquiry that fails both tries is lost without the visitor
+seeing the failure panel; there is no store to recover it from, so watch the Worker's logs after any mail change. The
+confirmation is HTML with the plain text kept as its fallback (`worker/confirmation.js`): brand values from `constants/email.js`,
+the logo as `public/brand/geekinate-lockup-dark.png` because mail clients do not render SVG, and every link and image built
+from the request's own origin, since `NEXT_PUBLIC_APP_URL` is a build variable the Worker never sees. Everything the visitor
+typed goes through `escapeHtml`. The team's enquiry is still plain text. Mailing an address the visitor typed is what makes the form
 usable to send mail to strangers from our account, so the same change added a throttle of five per ten minutes per IP. The mailer
 also flattens every subject to one line: `worker-mailer` writes an all-ASCII subject into the header unencoded, so a name with a
 line break in it would have added headers.

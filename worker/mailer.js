@@ -13,7 +13,7 @@ const parseAddress = (value) => {
 const smtpReady = () => Boolean(process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS);
 export const mailReady = (to) => Boolean(to && process.env.CONTACT_FROM && (smtpReady() || process.env.RESEND_API_KEY));
 
-const sendSmtp = async ({ to, replyTo, subject, text }) => {
+const sendSmtp = async ({ to, replyTo, subject, text, html }) => {
   await WorkerMailer.send(
     {
       host: process.env.SMTP_HOST,
@@ -23,16 +23,16 @@ const sendSmtp = async ({ to, replyTo, subject, text }) => {
       authType: 'plain',
       credentials: { username: process.env.SMTP_USER, password: process.env.SMTP_PASS },
     },
-    { from: parseAddress(process.env.CONTACT_FROM), to, reply: replyTo, subject: singleLine(subject), text }
+    { from: parseAddress(process.env.CONTACT_FROM), to, reply: replyTo, subject: singleLine(subject), text, html }
   );
   return true;
 };
 
-const sendResend = async ({ to, replyTo, subject, text }) => {
+const sendResend = async ({ to, replyTo, subject, text, html }) => {
   const response = await fetch('https://api.resend.com/emails', {
     method: 'POST',
     headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ from: process.env.CONTACT_FROM, to: [to], reply_to: replyTo, subject, text }),
+    body: JSON.stringify({ from: process.env.CONTACT_FROM, to: [to], reply_to: replyTo, subject, text, html }),
   });
   return response.ok;
 };

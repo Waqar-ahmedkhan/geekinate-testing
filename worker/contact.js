@@ -1,3 +1,4 @@
+import { confirmationHtml } from './confirmation';
 import { mailReady, sendMail } from './mailer';
 import { createThrottle } from './throttle';
 import { contactContent } from '@/lib/content';
@@ -54,7 +55,20 @@ const receipt = (body) =>
     confirmation.outro,
     confirmation.signoff,
   ].join('\n\n');
-const acknowledgement = (body, replyTo) => ({ to: body.email, replyTo, subject: confirmation.subject, text: receipt(body) });
+
+const acknowledgement = (body, replyTo, origin) => ({
+  to: body.email,
+  replyTo,
+  subject: confirmation.subject,
+  text: receipt(body),
+  html: confirmationHtml(body, origin),
+});
+const attempt = (message) => sendMail(message).catch(() => false);
+const deliver = async (body, to, origin) => {
+  const message = enquiry(body, to);
+  const sent = (await attempt(message)) || (await attempt(message));
+  if (sent) await attempt(acknowledgement(body, to, origin));
+};
 
 export async function POST(request, ctx) {
   let payload = null;
@@ -78,11 +92,13 @@ export async function POST(request, ctx) {
   const webhook = process.env.CONTACT_WEBHOOK_URL;
   const to = process.env.CONTACT_TO;
   if (!webhook && !mailReady(to)) return Response.json({ error: 'not-configured' }, { status: 503 });
-  try {
-    const sent = webhook ? await sendWebhook(webhook, body) : await sendMail(enquiry(body, to));
-    if (!sent) return Response.json({ error: 'failed' }, { status: 502 });
-    if (!webhook) ctx.waitUntil(sendMail(acknowledgement(body, to)).catch(() => false));
+  if (!webhook) {
+    ctx.waitUntil(deliver(body, to, new URL(request.url).origin));
     return Response.json({ ok: true });
+  }
+  try {
+    const sent = await sendWebhook(webhook, body);
+    return sent ? Response.json({ ok: true }) : Response.json({ error: 'failed' }, { status: 502 });
   } catch {
     return Response.json({ error: 'failed' }, { status: 502 });
   }

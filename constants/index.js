@@ -3,6 +3,7 @@ export * from './circuit';
 export * from './cosmos';
 export * from './cta';
 export * from './dice';
+export * from './email';
 export * from './globe';
 export * from './grain';
 export * from './lab';

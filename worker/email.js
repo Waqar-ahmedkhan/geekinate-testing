@@ -1,5 +1,5 @@
 import { footerContent } from '@/lib/content';
-import { EMAIL, SITE, SOCIALS } from '@/constants';
+import { EMAIL, MAIL_SOCIALS, SITE } from '@/constants';
 
 const { palette, fonts, logo } = EMAIL;
 const ENTITIES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
@@ -38,8 +38,8 @@ const masthead = (origin) =>
   `<tr><td style="padding:0 0 36px;"><a href="${origin}"><img src="${origin}${logo.src}" width="${logo.width}" ` +
   `height="${logo.height}" alt="${SITE.name}" style="display:block;border:0;outline:none;"></a></td></tr>`;
 
-const footer = (origin, note) => {
-  const links = [footerLink(new URL(origin).host, origin), ...SOCIALS.map(({ label, href }) => footerLink(label, href))];
+const footer = (note) => {
+  const links = MAIL_SOCIALS.map(({ label, href }) => footerLink(label, href));
   const copyright = `© ${new Date().getFullYear()} ${SITE.name}. ${footerContent.rights}`;
   return (
     `<tr><td style="padding:24px 0 0;border-top:1px solid ${palette.rule};">` +
@@ -55,5 +55,5 @@ export const emailDocument = ({ title, preheader, content, note, origin }) =>
   `<div style="display:none;max-height:0;overflow:hidden;opacity:0;">${preheader}</div>` +
   `<table ${TABLE} width="100%" style="background-color:${palette.white};"><tr><td align="center" style="padding:40px 24px;">` +
   `<table ${TABLE} width="100%" style="max-width:${EMAIL.width}px;">` +
-  `${masthead(origin)}<tr><td style="padding:0 0 20px;">${content}</td></tr>${footer(origin, note)}` +
+  `${masthead(origin)}<tr><td style="padding:0 0 20px;">${content}</td></tr>${footer(note)}` +
   `</table></td></tr></table></body></html>`;

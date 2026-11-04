@@ -349,9 +349,11 @@ subject into the header unencoded, so a name with a line break in it would have 
 **Both contact mails are minimal, on the user's word.** Both are HTML with their plain text kept as the fallback, built on one
 layout, `worker/email.js`. The page is plain white with a small ink lockup and a sans heading. The message is quoted behind a
 2px volt rule, which is the only accent. The action is an underlined text link, and a grey footer under a thin rule says why
-the mail was sent, links the site and `SOCIALS`, and carries the copyright line. The first designed version (2026-11-04) was the
-site's card language: black masthead, bordered card with a hard shadow, a volt marker on an italic serif heading, mono-caps
-labels, a pill button and a black footer. The user turned it down the same day ("mujhe minimalist design acha lagta hai"), so
+the mail was sent, links LinkedIn and Instagram (`MAIL_SOCIALS`, not the site's `SOCIALS`), and carries the copyright line.
+Nouman's review of the live mail (2026-11-04) set that footer: Instagram in place of GitHub, no Twitter because Geekinate is
+not active there yet, and no geekinate.com link, since the note above it already names the site. The first designed version
+(2026-11-04) was the site's card language: black masthead, bordered card with a hard shadow, a volt marker on an italic serif
+heading, mono-caps labels, a pill button and a black footer. The user turned it down the same day ("mujhe minimalist design acha lagta hai"), so
 do not bring back the card, black blocks, pills or marker. The team's enquiry (`worker/enquiry.js`, since 2026-11-04) lists
 the visitor's details over their message, with a *Reply to* link that opens a reply addressed to them. Its copy and field
 labels are `contactContent.enquiry`, and the plain-text enquiry reads the same labels. Brand values come from

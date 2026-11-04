@@ -75,7 +75,7 @@ the archive of the two older sites and holds nothing from this build.
 | `lib/partner/intent.js` | Which form mode a CTA asked for | `chooseIntent()` from a CTA, `watchIntent()` from the form — same shape as `lib/boot/ready.js` |
 | `lib/seo.js` | Metadata + JSON-LD builders | Single definition of metadata shape |
 | `lib/utils.js` | `cn`, `orderLabel` | shadcn's class merger, and the shared `01/02/03` label |
-| `constants/index.js` | `SITE`, `LAYOUT`, `NAV_LINKS`, `NAV_CTA`, `SOCIALS` | Site identity and static data; `export *` over every sibling file |
+| `constants/index.js` | `SITE`, `LAYOUT`, `NAV_LINKS`, `NAV_CTA`, `SOCIALS`, `MAIL_SOCIALS` (the mail footer's LinkedIn and Instagram) | Site identity and static data; `export *` over every sibling file |
 | `constants/cosmos.js` | Every tunable the particle canvas reads | Camera pair, morph easing, `globeRoutes`. Read the note at the top before changing the camera |
 | `constants/globe.js` | Globe geometry and `GLOBE_PALETTE` | Volt, paper and black. There is no approved blue |
 | `constants/preloader.js` | Every tunable the preload gate reads | Ring geometry, milestone weights, the timing floor and the failsafe |

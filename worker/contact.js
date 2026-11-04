@@ -1,4 +1,5 @@
 import { confirmationHtml } from './confirmation';
+import { enquiryHtml, enquirySubject } from './enquiry';
 import { mailReady, sendMail } from './mailer';
 import { createThrottle } from './throttle';
 import { contactContent } from '@/lib/content';
@@ -9,6 +10,7 @@ const EMAIL_SHAPE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const MESSAGE_MIN = 12;
 const WINDOW = { ms: 600000, max: 5 };
 const { confirmation } = contactContent;
+const { labels } = contactContent.enquiry;
 const throttled = createThrottle(WINDOW);
 
 const clean = (value, max) => (typeof value === 'string' ? value.trim().slice(0, max) : '');
@@ -25,10 +27,10 @@ const invalid = (body) => {
 
 const compose = (body) =>
   [
-    `From: ${body.name} <${body.email}>`,
-    body.company ? `Company: ${body.company}` : null,
-    body.topic ? `Service: ${body.topic}` : null,
-    body.interests.length ? `Interested in: ${body.interests.join(', ')}` : null,
+    `${labels.from}: ${body.name} <${body.email}>`,
+    body.company ? `${labels.company}: ${body.company}` : null,
+    body.topic ? `${labels.topic}: ${body.topic}` : null,
+    body.interests.length ? `${labels.interests}: ${body.interests.join(', ')}` : null,
     '',
     body.message,
   ]
@@ -44,14 +46,21 @@ const sendWebhook = async (url, body) => {
   return response.ok;
 };
 
-const enquiry = (body, to) => ({ to, replyTo: body.email, subject: `New project enquiry from ${body.name}`, text: compose(body) });
+const enquiry = (body, to, origin) => ({
+  to,
+  replyTo: body.email,
+  subject: enquirySubject(body),
+  text: compose(body),
+  html: enquiryHtml(body, origin),
+});
 
 const receipt = (body) =>
   [
     `${confirmation.greeting} ${body.name},`,
     confirmation.intro,
-    confirmation.quoted,
+    `${confirmation.quoted}:`,
     body.message,
+    confirmation.next,
     confirmation.outro,
     confirmation.signoff,
   ].join('\n\n');
@@ -65,7 +74,7 @@ const acknowledgement = (body, replyTo, origin) => ({
 });
 const attempt = (message) => sendMail(message).catch(() => false);
 const deliver = async (body, to, origin) => {
-  const message = enquiry(body, to);
+  const message = enquiry(body, to, origin);
   const sent = (await attempt(message)) || (await attempt(message));
   if (sent) await attempt(acknowledgement(body, to, origin));
 };

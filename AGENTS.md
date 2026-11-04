@@ -338,11 +338,17 @@ accepted, `worker/contact.js` mails the visitor `contactContent.confirmation` wi
 form answers before any mail is sent**: the Gmail round (connect, STARTTLS, sign-in, send) held the "Message sent" panel for 2–3
 seconds, reported on a live test. `deliver` now runs the whole send in `ctx.waitUntil`, tries the enquiry twice, and mails the
 visitor only once the enquiry went through. The price is that an enquiry that fails both tries is lost without the visitor
-seeing the failure panel; there is no store to recover it from, so watch the Worker's logs after any mail change. The
-confirmation is HTML with the plain text kept as its fallback (`worker/confirmation.js`): brand values from `constants/email.js`,
-the logo as `public/brand/geekinate-lockup-dark.png` because mail clients do not render SVG, and every link and image built
-from the request's own origin, since `NEXT_PUBLIC_APP_URL` is a build variable the Worker never sees. Everything the visitor
-typed goes through `escapeHtml`. The team's enquiry is still plain text. Mailing an address the visitor typed is what makes the form
+seeing the failure panel; there is no store to recover it from, so watch the Worker's logs after any mail change. Both
+mails are HTML with their plain text kept as the fallback, and both are built on one layout, `worker/email.js`: a black masthead
+with the lockup, the white card, and a black footer in the site footer's colours (`footerMut`, `footerLine`) carrying a line on
+why the mail was sent, the site and `SOCIALS` links, and the site's copyright line. The visitor's confirmation
+(`worker/confirmation.js`) quotes the service and interest they picked above their message and repeats `contactContent.next`
+under *What happens next*. The team's enquiry (`worker/enquiry.js`, since 2026-11-04) sets the visitor's details as a ruled table
+over the message, with a *Reply to* button that opens a reply addressed to them. Its copy and both mails' field labels are
+`contactContent.enquiry`. Brand values come from `constants/email.js`. The logo is `public/brand/geekinate-lockup-dark.png`
+because mail clients do not render SVG. Every link and image is built from the request's own origin, since
+`NEXT_PUBLIC_APP_URL` is a build variable the Worker never sees. Everything the visitor typed goes through `escapeHtml`, and
+the reply link is URL-encoded before that. Mailing an address the visitor typed is what makes the form
 usable to send mail to strangers from our account, so the same change added a throttle of five per ten minutes per IP. The mailer
 also flattens every subject to one line: `worker-mailer` writes an all-ASCII subject into the header unencoded, so a name with a
 line break in it would have added headers.

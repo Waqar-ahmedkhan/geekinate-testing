@@ -108,8 +108,8 @@ Geometry is as much the brand as the colour: **1.5px ink borders, 20px card radi
 `@react-three/fiber` and `@react-three/drei` are the one granted exception — raised and approved on 2026-08-10 for the hero brief in
 `docs/geekinate-hero-3d-prompt.md`. That approval covers the rest of that brief's list too (`lenis`, `zustand`, `maath`, `leva`,
 `@react-three/postprocessing`), but each installs with the phase that uses it. It does not extend to anything else.
-`worker-mailer` is the second, raised and approved on 2026-10-21 so the forms can send through an SMTP mailbox (Gmail first, the
-Migadu mailbox since 2026-11-04) rather than wait on Resend's domain verification. It is pinned to 1.2.1, the version Eleve runs.
+`worker-mailer` is the second, raised and approved on 2026-10-21 so the forms can send through an SMTP mailbox (Gmail now, the
+Migadu mailbox once it exists) rather than wait on Resend's domain verification. It is pinned to 1.2.1, the version Eleve runs.
 
 **One particle system holds the whole page, and it wears three shapes.** There is a single WebGL canvas, mounted from the app shell
 as a fixed sibling of every section (`lib/ui/reusable_components/cosmos`). The 26,000 particles in it are the hero's globe, the
@@ -326,22 +326,19 @@ read them through `process.env`, which `nodejs_compat` fills from the Worker's e
 a rebuild. Without a form key `/api/contact` answers 503 and the form shows its fallback panel. `OPENAI_API_KEY` and `AI_USER_SALT`
 belonged to the removed Guide; nothing reads them, and they can be deleted from the Worker.
 
-**The forms send through the hello@geekinate.com mailbox on Migadu.** Since 2026-11-04 `worker/mailer.js` signs in to
-`smtp.migadu.com` on 587 with STARTTLS as `hello@geekinate.com`, which is also `CONTACT_FROM` (`Geekinate <hello@geekinate.com>`)
-and `CONTACT_TO`, so enquiries land in the same mailbox they are sent from. The mailbox was created by Adil, who holds the Migadu
-account and its password. Migadu's own setup sheet gives 465 with implicit TLS, and both ports signed in on the day of the switch,
-so the mailer's 587 was kept and the switch was secrets only. From 2026-10-21 until then the forms went through Adil's Gmail
-(`smtp.gmail.com`, the old site's app password, from and to madilmazhar@gmail.com), because Resend's test sender delivers only to
-the Resend account's owner and geekinate.com has no Resend DNS. geekinate.com's MX, SPF and DKIM all point at Migadu. Delete
-`SMTP_PASS` and the forms fall back to Resend. Each enquiry sends two mails, so Migadu's daily outbound limit on the plan is the
-form's real ceiling.
+**The forms send through Adil's Gmail until a Migadu mailbox exists.** Resend's test sender delivers only to the owner of the
+Resend account, and geekinate.com has no Resend DNS, so on 2026-10-21 the user had enquiries go to madilmazhar@gmail.com — the
+address the old site's contact form sent from and to. `worker/mailer.js` signs in to `smtp.gmail.com` with the old site's app
+password (`SMTP_*`), from and to that address. geekinate.com's mail is on Migadu (MX, SPF and DKIM all point there); once a
+mailbox for the site is created, the switch is secrets only: `SMTP_HOST=smtp.migadu.com`, that mailbox in `SMTP_USER` and
+`CONTACT_FROM`, its password in `SMTP_PASS`. Delete `SMTP_PASS` and the forms fall back to Resend.
 
 **The contact form confirms to the visitor, and is rate-limited because it does.** Instructed 2026-10-21: after the enquiry is
 accepted, `worker/contact.js` mails the visitor `contactContent.confirmation` with their message quoted. **Since 2026-10-29 the
-form answers before any mail is sent**: the SMTP round (connect, STARTTLS, sign-in, send), on Gmail then, held the "Message
-sent" panel for 2–3 seconds, reported on a live test. `deliver` now runs the whole send in `ctx.waitUntil`, tries the enquiry
-twice, and mails the visitor only once the enquiry went through. The price is that an enquiry that fails both tries is lost
-without the visitor seeing the failure panel; there is no store to recover it from, so watch the Worker's logs after any mail change. The
+form answers before any mail is sent**: the Gmail round (connect, STARTTLS, sign-in, send) held the "Message sent" panel for 2–3
+seconds, reported on a live test. `deliver` now runs the whole send in `ctx.waitUntil`, tries the enquiry twice, and mails the
+visitor only once the enquiry went through. The price is that an enquiry that fails both tries is lost without the visitor
+seeing the failure panel; there is no store to recover it from, so watch the Worker's logs after any mail change. The
 confirmation is HTML with the plain text kept as its fallback (`worker/confirmation.js`): brand values from `constants/email.js`,
 the logo as `public/brand/geekinate-lockup-dark.png` because mail clients do not render SVG, and every link and image built
 from the request's own origin, since `NEXT_PUBLIC_APP_URL` is a build variable the Worker never sees. Everything the visitor

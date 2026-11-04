@@ -60,7 +60,6 @@ const receipt = (body) =>
     confirmation.intro,
     `${confirmation.quoted}:`,
     body.message,
-    confirmation.next,
     confirmation.outro,
     confirmation.signoff,
   ].join('\n\n');

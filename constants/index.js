@@ -24,7 +24,7 @@ export const SITE = {
     'Geekinate builds websites, software and games, uses AI to take repetitive work off your team, and helps customers find you through search, ads and content.',
   url: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
   locale: 'en_US',
-  ogImage: '/images/openGraph.png',
+  ogImage: '/images/openGraph-build-launch-grow.jpg',
   email: 'hello@geekinate.com',
 };
 

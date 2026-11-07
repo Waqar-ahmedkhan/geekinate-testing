@@ -213,12 +213,18 @@ those classes. Before this the site had five separately styled volt buttons in t
 - `lib/seo.js` is the only place the metadata shape is defined. `buildMetadata({ title, description, path, image })` returns title,
   description, canonical, OpenGraph and Twitter in one object. Pages call it rather than hand-rolling `metadata`.
 - `metadataBase` is set once in `app/layout.js`; that is what makes relative canonicals resolve. The title template lives there too.
-- The share image is `public/images/openGraph.png` (`SITE.ogImage`), the designer's own Canva export (page 7 of *OG image
-  Geekinate*, 2026-09-25), and every page carries it; `buildMetadata`'s `image` is the per-page override. It must stay 1200×630
-  because the metadata declares those dimensions. Replacing it is a file swap: export from Canva rather than screenshot the editor,
-  which captures at the zoom level and bleeds the editor's grey into the edge. Its URL is made absolute from `SITE.url`, and every page is
-  prerendered, so `NEXT_PUBLIC_APP_URL` has to be set when `next build` runs — a build variable on Cloudflare. Without it the HTML ships
-  `http://localhost:3000/images/openGraph.png`, which no crawler can fetch.
+- The share image is `public/images/openGraph-build-launch-grow.jpg` (`SITE.ogImage`), the *Build it. Launch it. Grow it.* card
+  Nouman designed and the team locked on 2026-11-06, and every page carries it; `buildMetadata`'s `image` is the per-page override.
+  It replaced the designer's Canva card of 2026-09-25 because LinkedIn's post inspector showed that one pixelated and cut off. It must
+  stay 1200×630 (1.91:1) because the metadata declares those dimensions: that ratio is the common denominator of LinkedIn, Facebook,
+  WhatsApp, Slack, Discord and iMessage, and X's `summary_large_image` crops it to 2:1 by about 2% top and bottom, which the card's
+  margins absorb. The supplied master was 1732×908 and 1.7MB; it was resized and saved as a 4:4:4 JPEG at quality 88, 135KB, because
+  WhatsApp drops previews much over 300KB and LinkedIn's limit is 5MB. Keep a replacement under 300KB. **A crawler caches a share image
+  by URL** (LinkedIn about a week, Slack and Facebook until asked again), so a new card takes a new file name and the old file is
+  deleted, the same rule as `public/media`. After a swap, clear each cache: LinkedIn Post Inspector, Facebook Sharing Debugger.
+  Its URL is made absolute from `SITE.url`, and every page is prerendered, so `NEXT_PUBLIC_APP_URL` has to be set when `next build`
+  runs — a build variable on Cloudflare. Without it the HTML ships `http://localhost:3000/images/openGraph-build-launch-grow.jpg`,
+  which no crawler can fetch.
 - JSON-LD is one `@graph` per page through `components/layout/JsonLd.jsx`. Organization is the anchor; `WebSite` and `Service`
   reference it by `@id`. Preserve that linkage when adding node types.
 - `public/_headers` sends `X-Robots-Tag: noindex, nofollow` on any `*.workers.dev` host so the Cloudflare URL cannot outrank

@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import gsap from 'gsap';
 import { createLife } from '../cosmos/automata';
+import { isPhone } from '@/lib/boot/phone';
 import { scrollProgress } from '@/lib/scroll/progress';
 import { footerMark, stage } from '@/lib/scroll/stage';
 import { footprint } from '@/lib/shape/footprint';
@@ -108,7 +109,7 @@ export default function SubstrateField() {
     };
     function tick(time) {
       const now = time * 1000;
-      const box = readBox(panel, window.innerHeight);
+      const box = isPhone() ? null : readBox(panel, window.innerHeight);
       if (!box) {
         wipe();
         return;

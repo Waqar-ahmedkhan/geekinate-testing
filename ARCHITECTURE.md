@@ -1034,6 +1034,11 @@ scattered field mid-page is untouched; `SubstrateField` seeds its automata at th
 how desktop falls back to the old pose. On a short phone the `min-h-64` makes the card taller than the viewport rather than letting
 the mark overlap the links again.
 
+**The automata dot grid does not run on a phone.** Instructed 2026-11-12 ("g ky pechy waly dots ... unreadable", Nouman's phone
+screenshot): behind the links the grid's dots lit the type's own pixels. `SubstrateField`'s tick treats `isPhone()` (below
+`48rem`) as an empty measurement, so it wipes the canvas and paints nothing; a rotation past 48rem brings it back without a
+reload. The particle letterform itself is unchanged.
+
 ## The legal pages
 
 `/privacy-policy` and `/terms-and-conditions` (paths in `LEGAL`, `constants/index.js`) render `features/legal` from

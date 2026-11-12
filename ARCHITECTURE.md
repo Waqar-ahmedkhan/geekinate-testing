@@ -1012,8 +1012,15 @@ was reserved for this surface long before the surface did.
 The top row splits 50/50 — the lockup on the left, four columns spread with `justify-between` on the right. Those
 columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
 `services` array in the same file** so the pillar list cannot drift from the section that renders it. An empty `href` renders as
-plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Partner with Us*, *Privacy Policy* and
+plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Privacy Policy* and
 *Terms & Conditions* (2026-10-06).
+
+**The partner programme has its own block under the link columns, not a link among them.** Instructed 2026-11-12 on Nouman's
+word that *Partner with Us* "is blending in with other links": `PartnerCallout` in `Footer.jsx` is a volt-bordered panel with a
+volt tint, the programme's eyebrow, its headline (both read from `partnerHero`, so the footer cannot drift from the page it sells)
+and a volt *Partner with us* button to `/partner`. Its copy is `footerContent.partner`. The socials row is LinkedIn, Instagram and
+Twitter: Instagram replaced GitHub the same day (`SOCIALS`, glyph in `SocialIcon`), and `MAIL_SOCIALS` reuses the same
+`INSTAGRAM` entry.
 
 **Below `lg` the particle letterform has a slot of its own.** From `lg` the mark forms in the card's right half beside the links.
 Below it there is no right half, and the mark used to form at the viewport's centre — straight over the link columns on every

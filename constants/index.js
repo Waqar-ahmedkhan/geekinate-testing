@@ -45,11 +45,8 @@ export const CONTACT_ROUTES = ['/services/', '/work/'];
 export const LEGAL = { privacy: '/privacy-policy', terms: '/terms-and-conditions' };
 
 const LINKEDIN = { label: 'LinkedIn', href: 'https://www.linkedin.com/company/geekinate' };
+const INSTAGRAM = { label: 'Instagram', href: 'https://www.instagram.com/geekinate/' };
 
-export const SOCIALS = [
-  LINKEDIN,
-  { label: 'GitHub', href: 'https://github.com/geekinate' },
-  { label: 'Twitter', icon: 'X', href: 'https://x.com/geekinate' },
-];
+export const SOCIALS = [LINKEDIN, INSTAGRAM, { label: 'Twitter', icon: 'X', href: 'https://x.com/geekinate' }];
 
-export const MAIL_SOCIALS = [LINKEDIN, { label: 'Instagram', href: 'https://www.instagram.com/geekinate/' }];
+export const MAIL_SOCIALS = [LINKEDIN, INSTAGRAM];

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { BrandMark, SocialIcon } from '@/lib/ui/reusable_components';
 import { footerColumns, footerContent } from '@/lib/content';
 import { SITE, SOCIALS } from '@/constants';
@@ -44,8 +45,20 @@ const FooterColumn = ({ title, links }) => (
   </div>
 );
 
+const PartnerCallout = ({ eyebrow, text, cta, href }) => (
+  <div className='border-volt flex flex-col items-start gap-4 rounded-[12px] bg-volt/[0.06] p-5 md:max-w-md'>
+    <p className='text-sm leading-[1.1] tracking-[-0.02em] text-volt'>{eyebrow}</p>
+    <p className='text-[1.75rem] leading-[1.1] tracking-[-0.02em] text-paper'>{text}</p>
+    <Button asChild variant='volt' size='pill-sm'>
+      <Link href={href}>
+        {cta} <span aria-hidden='true'>→</span>
+      </Link>
+    </Button>
+  </div>
+);
+
 export default function Footer() {
-  const { rights } = footerContent;
+  const { rights, partner } = footerContent;
   const copyright = `© ${new Date().getFullYear()} ${SITE.name}.`;
   return (
     <footer className='relative z-50 p-4'>
@@ -61,10 +74,13 @@ export default function Footer() {
               {SITE.name}
             </Link>
           </div>
-          <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:w-fit md:gap-x-30 md:gap-y-12 lg:my-auto'>
-            {footerColumns.map(({ title, links }) => (
-              <FooterColumn key={title} title={title} links={links} />
-            ))}
+          <div className='flex flex-col gap-10 lg:my-auto'>
+            <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:w-fit md:gap-x-30 md:gap-y-12'>
+              {footerColumns.map(({ title, links }) => (
+                <FooterColumn key={title} title={title} links={links} />
+              ))}
+            </div>
+            <PartnerCallout {...partner} />
           </div>
         </div>
         <div data-footer-mark='' aria-hidden='true' className='min-h-64 flex-1 lg:hidden' />

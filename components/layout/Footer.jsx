@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { BrandMark, SocialIcon } from '@/lib/ui/reusable_components';
 import { footerColumns, footerContent } from '@/lib/content';
 import { SITE, SOCIALS } from '@/constants';
@@ -45,15 +44,15 @@ const FooterColumn = ({ title, links }) => (
   </div>
 );
 
-const PartnerCallout = ({ eyebrow, text, cta, href }) => (
-  <div className='border-volt flex flex-col items-start gap-4 rounded-[12px] bg-volt/[0.06] p-5 md:max-w-md'>
-    <p className='text-sm leading-[1.1] tracking-[-0.02em] text-volt'>{eyebrow}</p>
-    <p className='text-[1.75rem] leading-[1.1] tracking-[-0.02em] text-paper'>{text}</p>
-    <Button asChild variant='volt' size='pill-sm'>
-      <Link href={href}>
-        {cta} <span aria-hidden='true'>→</span>
-      </Link>
-    </Button>
+const PartnerLink = ({ eyebrow, text, href }) => (
+  <div className='flex flex-col items-start gap-3 border-t border-footer-line pt-6'>
+    <p className='text-[1.225rem] leading-[1.1] tracking-[-0.02em] text-paper'>{eyebrow}</p>
+    <Link href={href} className={`${LINK} group`}>
+      {text}{' '}
+      <span aria-hidden='true' className='text-volt'>
+        →
+      </span>
+    </Link>
   </div>
 );
 
@@ -80,7 +79,7 @@ export default function Footer() {
                 <FooterColumn key={title} title={title} links={links} />
               ))}
             </div>
-            <PartnerCallout {...partner} />
+            <PartnerLink {...partner} />
           </div>
         </div>
         <div data-footer-mark='' aria-hidden='true' className='min-h-64 flex-1 lg:hidden' />

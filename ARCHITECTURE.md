@@ -1015,12 +1015,14 @@ columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Soc
 plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Privacy Policy* and
 *Terms & Conditions* (2026-10-06).
 
-**The partner programme has its own block under the link columns, not a link among them.** Instructed 2026-11-12 on Nouman's
-word that *Partner with Us* "is blending in with other links": `PartnerCallout` in `Footer.jsx` is a volt-bordered panel with a
-volt tint, the programme's eyebrow, its headline (both read from `partnerHero`, so the footer cannot drift from the page it sells)
-and a volt *Partner with us* button to `/partner`. Its copy is `footerContent.partner`. The socials row is LinkedIn, Instagram and
-Twitter: Instagram replaced GitHub the same day (`SOCIALS`, glyph in `SocialIcon`), and `MAIL_SOCIALS` reuses the same
-`INSTAGRAM` entry.
+**The partner programme has its own section under the link columns, and it is quiet.** Instructed 2026-11-12 on Nouman's word
+that *Partner with Us* "is blending in with other links". A first cut put it in a volt-bordered, tinted box with a headline and a
+volt button; Nouman turned it down the same day ("too much. Need it subtle and seamless not so in the face"). Do not bring back
+the box, tint or button. `PartnerLink` in `Footer.jsx` is a hairline rule (`border-footer-line`) as the section break, the
+programme's eyebrow in paper, and one muted link line in the other links' own style with a volt arrow as the only accent. Both
+strings are `footerContent.partner`, read from `partnerHero` so the footer cannot drift from the page it points at. The socials
+row is LinkedIn, Instagram and Twitter: Instagram replaced GitHub the same day (`SOCIALS`, glyph in `SocialIcon`), and
+`MAIL_SOCIALS` reuses the same `INSTAGRAM` entry.
 
 **Below `lg` the particle letterform has a slot of its own.** From `lg` the mark forms in the card's right half beside the links.
 Below it there is no right half, and the mark used to form at the viewport's centre — straight over the link columns on every

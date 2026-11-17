@@ -155,10 +155,11 @@ design decision to raise, not a tidy-up. The logos are **real client marks** as 
 the supplied originals that stay beside them in `public/media/clients/`: ink-on-transparent (`*.webp`) and original-colour
 (`*-color.webp`, LinkTax refilled in its brand navy because its white type cannot sit on the light strip). The strip runs the
 **ink** set — the colour set was shown for review on 2026-08-27 and the switch back to black was instructed on 2026-08-28;
-flipping `src` values in `lib/content/index.js` is the whole change either way. **A touch screen shows the colour set at
-rest** (`ClientLogo`, instructed 2026-11-17, Nouman: "there is no way to stop and hover on mobile"): the crossfade needs a
-pointer, so where `TOUCH_SCREEN` matches the strip renders the `-color.webp` file as its only layer. The check is the hover
-capability, not the width, so a narrow desktop window still shows ink.
+flipping `src` values in `lib/content/index.js` is the whole change either way. **A phone shows the colour set at rest** (`ClientLogo`, instructed 2026-11-17, Nouman: "there is no way to stop and hover on
+mobile"). The crossfade needs a pointer, so below `md` the colour layer is simply always up and the ink layer down (`max-md:`
+classes, which also cover a narrow desktop window, the way the user checks mobile view), and where `TOUCH_SCREEN` matches, a
+tablet included, the strip renders the `-color.webp` file as its only layer. The first cut keyed on touch alone and a narrow
+browser window still showed ink.
 
 **The Elevé tile rests on a still, and hover runs a clip of its own.** Tile 1 shows the brand render's settled
 frame (`eleve-mockup.webp`, the last frame of `eleve-mockup.mp4`) and answers hover with a different clip, fading it in under

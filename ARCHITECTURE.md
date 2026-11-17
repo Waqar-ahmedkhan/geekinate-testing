@@ -1020,10 +1020,10 @@ Us* "is blending in with other links", and settled on 2026-11-17 from his refere
 rounded card whose single call to action is the first block, top left, a heading at link-type size with one accent control and
 no box or tint around it, followed by plain same-weight link groups. Two earlier shapes were turned down: a volt-bordered, tinted
 box ("too much ... not so in the face", 2026-11-12) and a hairline plus a muted link line, which Nouman's manager did not
-approve. Do not bring back the box, and do not shrink it to a link. `PartnerLead` in `Footer.jsx` sits under the lockup: the
-programme's name as a `2rem` heading (the same size as the column titles), its headline in the footer's muted link type and one
-volt `Button` (`pill-sm`) to `/partner`. A hairline (`border-footer-line`) separates it from the link columns below. Its
-strings are `footerContent.partner`, read from `partnerHero` so the footer cannot drift from the page it points at. The socials
+approve. Do not bring back the box, and do not shrink it to a link. `PartnerLead` in `Footer.jsx` sits under the lockup and is one volt `Button` (`pill-sm`) to `/partner`. It first carried the
+programme's name as a `2rem` heading and its headline under that; the user took both out the same day ("remove this"), so the
+button stands alone. A hairline (`border-footer-line`) separates it from the link columns below. Its label and href are
+`footerContent.partner`, the label read from `partnerHero.actions` so the footer cannot drift from the page it points at. The socials
 row is LinkedIn, Instagram and Twitter: Instagram replaced GitHub on 2026-11-12 (`SOCIALS`, glyph in `SocialIcon`), and
 `MAIL_SOCIALS` reuses the same `INSTAGRAM` entry. Rise sets its socials as small pill chips with a ↗ under the lead block; ours
 stay in the bottom row.

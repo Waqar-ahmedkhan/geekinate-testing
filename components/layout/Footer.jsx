@@ -45,16 +45,12 @@ const FooterColumn = ({ title, links }) => (
   </div>
 );
 
-const PartnerLead = ({ title, text, cta, href }) => (
-  <div className='flex flex-col items-start gap-4'>
-    <p className='text-[2rem] leading-[1.1] text-paper'>{title}</p>
-    <p className={MUTED}>{text}</p>
-    <Button asChild variant='volt' size='pill-sm'>
-      <Link href={href}>
-        {cta} <span aria-hidden='true'>→</span>
-      </Link>
-    </Button>
-  </div>
+const PartnerLead = ({ cta, href }) => (
+  <Button asChild variant='volt' size='pill-sm' className='self-start'>
+    <Link href={href}>
+      {cta} <span aria-hidden='true'>→</span>
+    </Link>
+  </Button>
 );
 
 export default function Footer() {

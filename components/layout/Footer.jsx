@@ -1,13 +1,14 @@
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
 import { BrandMark, SocialIcon } from '@/lib/ui/reusable_components';
 import { footerColumns, footerContent } from '@/lib/content';
 import { SITE, SOCIALS } from '@/constants';
 
 const MUTED = 'text-[1.225rem] leading-[1.1] tracking-[-0.02em] text-footer-mut';
 const LINK = `${MUTED} -my-1.5 py-1.5 transition-colors duration-200 hover:text-paper`;
+const ACCENT =
+  'text-[1.225rem] leading-[1.1] tracking-[-0.02em] -my-1.5 py-1.5 text-paper underline decoration-volt decoration-[1.5px] underline-offset-4 transition-opacity duration-200 hover:opacity-75';
 
-const FooterLink = ({ label, href, external }) => {
+const FooterLink = ({ label, href, external, accent }) => {
   if (!href) return <span className={MUTED}>{label}</span>;
   if (external)
     return (
@@ -15,8 +16,9 @@ const FooterLink = ({ label, href, external }) => {
         {label} <span aria-hidden='true'>↗</span>
       </a>
     );
+  const className = accent ? ACCENT : LINK;
   return (
-    <Link href={href} className={LINK}>
+    <Link href={href} className={className}>
       {label}
     </Link>
   );
@@ -45,16 +47,8 @@ const FooterColumn = ({ title, links }) => (
   </div>
 );
 
-const PartnerLead = ({ cta, href }) => (
-  <Button asChild variant='volt' size='pill-sm' className='self-start'>
-    <Link href={href}>
-      {cta} <span aria-hidden='true'>→</span>
-    </Link>
-  </Button>
-);
-
 export default function Footer() {
-  const { rights, partner } = footerContent;
+  const { rights } = footerContent;
   const copyright = `© ${new Date().getFullYear()} ${SITE.name}.`;
   return (
     <footer className='relative z-50 p-4'>
@@ -70,13 +64,10 @@ export default function Footer() {
               {SITE.name}
             </Link>
           </div>
-          <div className='flex flex-col gap-8 lg:my-auto'>
-            <PartnerLead {...partner} />
-            <div className='grid grid-cols-2 gap-x-8 gap-y-6 border-t border-footer-line pt-8 md:w-fit md:gap-x-30 md:gap-y-12'>
-              {footerColumns.map(({ title, links }) => (
-                <FooterColumn key={title} title={title} links={links} />
-              ))}
-            </div>
+          <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:w-fit md:gap-x-30 md:gap-y-12 lg:my-auto'>
+            {footerColumns.map(({ title, links }) => (
+              <FooterColumn key={title} title={title} links={links} />
+            ))}
           </div>
         </div>
         <div data-footer-mark='' aria-hidden='true' className='min-h-64 flex-1 lg:hidden' />

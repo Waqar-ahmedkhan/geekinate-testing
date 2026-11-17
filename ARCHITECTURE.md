@@ -1015,18 +1015,15 @@ columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Soc
 plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Privacy Policy* and
 *Terms & Conditions* (2026-10-06).
 
-**The partner programme leads the footer, after Rise at Seven's pattern.** Instructed 2026-11-12 on Nouman's word that *Partner with
-Us* "is blending in with other links", and settled on 2026-11-17 from his reference, `riseatseven.com`: its footer is one black
-rounded card whose single call to action is the first block, top left, a heading at link-type size with one accent control and
-no box or tint around it, followed by plain same-weight link groups. Two earlier shapes were turned down: a volt-bordered, tinted
-box ("too much ... not so in the face", 2026-11-12) and a hairline plus a muted link line, which Nouman's manager did not
-approve. Do not bring back the box, and do not shrink it to a link. `PartnerLead` in `Footer.jsx` sits under the lockup and is one volt `Button` (`pill-sm`) to `/partner`. It first carried the
-programme's name as a `2rem` heading and its headline under that; the user took both out the same day ("remove this"), so the
-button stands alone. A hairline (`border-footer-line`) separates it from the link columns below. Its label and href are
-`footerContent.partner`, the label read from `partnerHero.actions` so the footer cannot drift from the page it points at. The socials
-row is LinkedIn, Instagram and Twitter: Instagram replaced GitHub on 2026-11-12 (`SOCIALS`, glyph in `SocialIcon`), and
-`MAIL_SOCIALS` reuses the same `INSTAGRAM` entry. Rise sets its socials as small pill chips with a ↗ under the lead block; ours
-stay in the bottom row.
+**The partner link is the first Quick links item, in paper with a volt underline.** Instructed 2026-11-12 on Nouman's word that
+*Partner with Us* "is blending in with other links", and settled on 2026-11-17 after four shapes were turned down: a
+volt-bordered, tinted box ("too much ... not so in the face"), a hairline plus a muted link line, a Rise at Seven-style lead
+block (his reference, `riseatseven.com`) of heading, line and volt button, and that block cut to the lone button, which left it
+orphaned with a gap above it on desktop. Do not bring back a box, a lead block or a button. A link in `footerColumns` carries
+`accent: true` and `FooterLink` sets it in `ACCENT`: paper white against the muted rest, with a 1.5px volt underline. An arrow
+was tried and dropped, because in the phone's narrow column it wrapped onto a line of its own. The socials row is LinkedIn,
+Instagram and Twitter: Instagram replaced GitHub on 2026-11-12 (`SOCIALS`, glyph in `SocialIcon`), and `MAIL_SOCIALS` reuses the
+same `INSTAGRAM` entry. Rise sets its socials as small pill chips with a ↗ under its lead block; ours stay in the bottom row.
 
 **Below `lg` the particle letterform has a slot of its own.** From `lg` the mark forms in the card's right half beside the links.
 Below it there is no right half, and the mark used to form at the viewport's centre — straight over the link columns on every

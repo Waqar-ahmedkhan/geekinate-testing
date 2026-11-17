@@ -1015,14 +1015,18 @@ columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Soc
 plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Privacy Policy* and
 *Terms & Conditions* (2026-10-06).
 
-**The partner programme has its own section under the link columns, and it is quiet.** Instructed 2026-11-12 on Nouman's word
-that *Partner with Us* "is blending in with other links". A first cut put it in a volt-bordered, tinted box with a headline and a
-volt button; Nouman turned it down the same day ("too much. Need it subtle and seamless not so in the face"). Do not bring back
-the box, tint or button. `PartnerLink` in `Footer.jsx` is a hairline rule (`border-footer-line`) as the section break, the
-programme's eyebrow in paper, and one muted link line in the other links' own style with a volt arrow as the only accent. Both
+**The partner programme leads the footer, after Rise at Seven's pattern.** Instructed 2026-11-12 on Nouman's word that *Partner with
+Us* "is blending in with other links", and settled on 2026-11-17 from his reference, `riseatseven.com`: its footer is one black
+rounded card whose single call to action is the first block, top left, a heading at link-type size with one accent control and
+no box or tint around it, followed by plain same-weight link groups. Two earlier shapes were turned down: a volt-bordered, tinted
+box ("too much ... not so in the face", 2026-11-12) and a hairline plus a muted link line, which Nouman's manager did not
+approve. Do not bring back the box, and do not shrink it to a link. `PartnerLead` in `Footer.jsx` sits under the lockup: the
+programme's name as a `2rem` heading (the same size as the column titles), its headline in the footer's muted link type and one
+volt `Button` (`pill-sm`) to `/partner`. A hairline (`border-footer-line`) separates it from the link columns below. Its
 strings are `footerContent.partner`, read from `partnerHero` so the footer cannot drift from the page it points at. The socials
-row is LinkedIn, Instagram and Twitter: Instagram replaced GitHub the same day (`SOCIALS`, glyph in `SocialIcon`), and
-`MAIL_SOCIALS` reuses the same `INSTAGRAM` entry.
+row is LinkedIn, Instagram and Twitter: Instagram replaced GitHub on 2026-11-12 (`SOCIALS`, glyph in `SocialIcon`), and
+`MAIL_SOCIALS` reuses the same `INSTAGRAM` entry. Rise sets its socials as small pill chips with a ↗ under the lead block; ours
+stay in the bottom row.
 
 **Below `lg` the particle letterform has a slot of its own.** From `lg` the mark forms in the card's right half beside the links.
 Below it there is no right half, and the mark used to form at the viewport's centre — straight over the link columns on every

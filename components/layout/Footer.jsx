@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 import { BrandMark, SocialIcon } from '@/lib/ui/reusable_components';
 import { footerColumns, footerContent } from '@/lib/content';
 import { SITE, SOCIALS } from '@/constants';
@@ -44,15 +45,15 @@ const FooterColumn = ({ title, links }) => (
   </div>
 );
 
-const PartnerLink = ({ eyebrow, text, href }) => (
-  <div className='flex flex-col items-start gap-3 border-t border-footer-line pt-6'>
-    <p className='text-[1.225rem] leading-[1.1] tracking-[-0.02em] text-paper'>{eyebrow}</p>
-    <Link href={href} className={`${LINK} group`}>
-      {text}{' '}
-      <span aria-hidden='true' className='text-volt'>
-        →
-      </span>
-    </Link>
+const PartnerLead = ({ title, text, cta, href }) => (
+  <div className='flex flex-col items-start gap-4'>
+    <p className='text-[2rem] leading-[1.1] text-paper'>{title}</p>
+    <p className={MUTED}>{text}</p>
+    <Button asChild variant='volt' size='pill-sm'>
+      <Link href={href}>
+        {cta} <span aria-hidden='true'>→</span>
+      </Link>
+    </Button>
   </div>
 );
 
@@ -73,13 +74,13 @@ export default function Footer() {
               {SITE.name}
             </Link>
           </div>
-          <div className='flex flex-col gap-10 lg:my-auto'>
-            <div className='grid grid-cols-2 gap-x-8 gap-y-6 md:w-fit md:gap-x-30 md:gap-y-12'>
+          <div className='flex flex-col gap-8 lg:my-auto'>
+            <PartnerLead {...partner} />
+            <div className='grid grid-cols-2 gap-x-8 gap-y-6 border-t border-footer-line pt-8 md:w-fit md:gap-x-30 md:gap-y-12'>
               {footerColumns.map(({ title, links }) => (
                 <FooterColumn key={title} title={title} links={links} />
               ))}
             </div>
-            <PartnerLink {...partner} />
           </div>
         </div>
         <div data-footer-mark='' aria-hidden='true' className='min-h-64 flex-1 lg:hidden' />

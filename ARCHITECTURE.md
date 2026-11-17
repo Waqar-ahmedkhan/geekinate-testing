@@ -1012,10 +1012,10 @@ was reserved for this surface long before the surface did.
 The top row splits 50/50 — the lockup on the left, four columns spread with `justify-between` on the right. Those
 columns are `footerColumns` in `lib/content/index.js`: Index is `NAV_LINKS`, Socials is `SOCIALS`, and **Services is derived from the
 `services` array in the same file** so the pillar list cannot drift from the section that renders it. An empty `href` renders as
-plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Privacy Policy* and
-*Terms & Conditions* (2026-10-06).
+plain text rather than a dead link, the same rule `WorkTile` follows. Quick links end with *Privacy Policy*,
+*Terms & Conditions* and the accented partner link (2026-10-06, 2026-11-17).
 
-**The partner link is the first Quick links item, in paper with a volt underline.** Instructed 2026-11-12 on Nouman's word that
+**The partner link is the last Quick links item, in paper with a volt underline.** Instructed 2026-11-12 on Nouman's word that
 *Partner with Us* "is blending in with other links", and settled on 2026-11-17 after four shapes were turned down: a
 volt-bordered, tinted box ("too much ... not so in the face"), a hairline plus a muted link line, a Rise at Seven-style lead
 block (his reference, `riseatseven.com`) of heading, line and volt button, and that block cut to the lone button, which left it

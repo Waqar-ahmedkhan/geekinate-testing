@@ -13,16 +13,18 @@ const HOLDER = `${SIZING} block`;
 
 export default function ClientLogo({ name, src, width, size }) {
   const settled = useSettled();
-  const hovers = settled && !window.matchMedia(TOUCH_SCREEN).matches;
+  const touch = settled && window.matchMedia(TOUCH_SCREEN).matches;
+  const hovers = settled && !touch;
   const scale = { '--logo-h': `${size}px` };
   const colorSrc = src.replace('.webp', '-color.webp');
+  const restSrc = touch ? colorSrc : src;
   const height = Math.round(size * WIDEST_SCALE);
   const shown = { width: Math.round((width * height) / SOURCE_HEIGHT), height };
   const holderStyle = { aspectRatio: `${width} / ${SOURCE_HEIGHT}` };
   const colorEl = hovers ? <Image src={colorSrc} alt='' aria-hidden='true' {...shown} className={COLOR_LAYER} /> : null;
   const layerEls = settled ? (
     <>
-      <Image src={src} alt={name} {...shown} className={INK_LAYER} />
+      <Image src={restSrc} alt={name} {...shown} className={INK_LAYER} />
       {colorEl}
     </>
   ) : (

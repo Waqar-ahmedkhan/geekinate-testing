@@ -1,0 +1,346 @@
+.paper {
+  background: var(--white);
+  color: var(--ink);
+  --edge: 1.5px solid var(--ink);
+  --grid: color-mix(in srgb, var(--grey) 15%, transparent);
+}
+.stage,
+.section,
+.final {
+  width: min(88%, 78rem);
+  margin: auto;
+}
+.stage {
+  padding: clamp(7rem, 15vh, 11rem) 0 4rem;
+  min-height: 95svh;
+}
+.mast,
+.controls,
+.filters,
+.final {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.mast,
+.final {
+  justify-content: space-between;
+}
+.mast h1,
+.section h2,
+.final i {
+  font:
+    italic clamp(2.1rem, 4vw, 4.5rem)/1.05 var(--font-display),
+    serif;
+}
+.mast a,
+.paper a:hover {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.book {
+  display: grid;
+  grid-template-columns: 0.92fr 1.08fr;
+  margin: 2rem 0 1.7rem;
+  border: var(--edge);
+  border-radius: 5px 20px 20px 5px;
+  background: var(--white);
+  box-shadow:
+    0 4px var(--white),
+    0 5px var(--ink),
+    0 8px var(--white),
+    2px 10px var(--ink);
+  overflow: hidden;
+}
+.copy,
+.leaf {
+  position: relative;
+  min-height: clamp(23rem, 46vh, 34rem);
+}
+.copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: clamp(1.5rem, 4vw, 4rem);
+  border-left: 8px solid var(--ink);
+  border-right: var(--edge);
+}
+.copy small,
+.copy span,
+.leaf small,
+.cards small,
+.archive time,
+.controls output {
+  font:
+    0.76rem var(--font-mono),
+    monospace;
+}
+.copy i,
+.annotation,
+.invite i {
+  font:
+    italic 1.5rem var(--font-display),
+    serif;
+}
+.copy h2 {
+  font:
+    italic clamp(2.7rem, 4.8vw, 5rem)/0.97 var(--font-display),
+    serif;
+  letter-spacing: -0.035em;
+  margin: 0.7rem 0 1rem;
+}
+.copy p {
+  max-width: 39ch;
+  line-height: 1.55;
+}
+.leaf {
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+  padding: 1.4rem;
+  background-color: var(--wash);
+  background-image: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+.map {
+  position: absolute;
+  inset: 8%;
+  width: 84%;
+  height: 84%;
+  z-index: -1;
+}
+.annotation {
+  position: absolute;
+  bottom: 6%;
+  right: 8%;
+  background: var(--white);
+  transform: rotate(-3deg);
+  padding: 0.2rem 0.7rem;
+}
+.ladder {
+  display: flex;
+  overflow-x: auto;
+  gap: 3px;
+  padding: 7px 0;
+  background: linear-gradient(transparent 16%, var(--ink) 16% 19%, transparent 19% 80%, var(--ink) 80% 83%, transparent 83%);
+}
+.ladder button,
+.controls button,
+.filters button,
+.sleeve button,
+.invite a,
+.final a {
+  border: var(--edge);
+  border-radius: 99px;
+  background: var(--white);
+  padding: 0.55rem 0.9rem;
+  min-height: 44px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.ladder button {
+  flex: 1;
+  border-radius: 5px;
+}
+.ladder [aria-current],
+.filters [aria-pressed='true'],
+.controls button:first-child,
+.invite a:first-of-type,
+.final a {
+  background: var(--volt);
+}
+.controls {
+  margin-top: 1rem;
+}
+.controls input {
+  flex: 1;
+  min-width: 70px;
+  accent-color: var(--ink);
+}
+.section {
+  padding: 4rem 0;
+  border-top: var(--edge);
+  scroll-margin-top: 6rem;
+}
+.archive {
+  margin: 2rem auto 0;
+  max-width: 50rem;
+  border-left: 3px double var(--ink);
+  padding-left: 1.5rem;
+}
+.archive li {
+  margin: 1.4rem 0;
+  list-style: disc;
+}
+.archive summary,
+.cards h3,
+.process h3 {
+  font-size: 1.3rem;
+  font-weight: 650;
+}
+.archive summary {
+  cursor: pointer;
+}
+.archive img {
+  width: 16rem;
+  margin-top: 1rem;
+}
+.filters {
+  margin: 1.5rem 0;
+}
+.cards,
+.process {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+  gap: 1.5rem;
+}
+.cards a,
+.artifact,
+.photos figure {
+  background: var(--white);
+  border: var(--edge);
+  padding: 0.7rem;
+  box-shadow: 3px 3px var(--ink);
+}
+.cards img,
+.artifact img {
+  width: 100%;
+  aspect-ratio: 1.65;
+  object-fit: cover;
+  margin-bottom: 0.6rem;
+}
+.process {
+  margin-top: 2rem;
+}
+.final {
+  padding: 2rem;
+  margin-bottom: 4rem;
+  background: var(--wash);
+  border: var(--edge);
+}
+.photos,
+.network,
+.world,
+.invite {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.sleeve {
+  text-align: center;
+}
+.photos figure {
+  max-width: 47%;
+  transform: rotate(-4deg);
+  animation: arrive 0.4s ease-out;
+}
+.photos figure + figure {
+  transform: rotate(5deg);
+}
+.photos img {
+  aspect-ratio: 4/5;
+  object-fit: cover;
+}
+.photos figcaption {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.sleeve small {
+  display: block;
+  margin: 1rem 0;
+  background: var(--white);
+}
+.artifact,
+.proof {
+  max-width: 85%;
+  max-height: 20rem;
+}
+.network a,
+.world a {
+  background: var(--white);
+  border: var(--edge);
+  padding: 0.5rem;
+  text-align: center;
+  font-weight: 650;
+}
+.world {
+  perspective: 600px;
+}
+.world a {
+  width: 30%;
+  transform: rotateY(-16deg);
+  box-shadow: 6px -5px var(--ink);
+}
+.world i {
+  display: block;
+  height: 2.6rem;
+  background: var(--volt);
+  clip-path: polygon(0 100%, 0 45%, 50% 0, 100% 45%, 100% 100%);
+}
+.invite {
+  flex-wrap: wrap;
+  padding: 2rem;
+  background: var(--white);
+  border: var(--edge);
+}
+.invite i {
+  width: 100%;
+  text-align: center;
+}
+@keyframes arrive {
+  from {
+    opacity: 0;
+    translate: 0 -12px;
+  }
+}
+@media (max-width: 700px) {
+  .stage,
+  .section,
+  .final {
+    width: 92%;
+  }
+  .stage {
+    padding-top: 7rem;
+  }
+  .book {
+    grid-template-columns: 1fr;
+  }
+  .copy {
+    min-height: 0;
+    border-right: none;
+    border-bottom: var(--edge);
+  }
+  .copy span {
+    display: none;
+  }
+  .leaf {
+    min-height: 16rem;
+  }
+  .photos img {
+    max-height: 10rem;
+  }
+  .controls {
+    gap: 0.4rem;
+  }
+  .controls output {
+    font-size: 0.65rem;
+  }
+  .ladder button {
+    flex: none;
+  }
+  .mast {
+    gap: 0.4rem;
+  }
+  .network,
+  .world {
+    font-size: 0.8rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .photos figure {
+    animation: none;
+  }
+}

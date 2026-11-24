@@ -45,6 +45,7 @@ export default function Scene({ onFirstFrame }) {
   if (!prepared) return null;
   return (
     <Canvas
+      style={{ pointerEvents: 'none' }}
       frameloop='never'
       dpr={[1, startingDpr()]}
       gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}

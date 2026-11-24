@@ -1322,3 +1322,10 @@ day a transitive version moves. Anything this project actually depends on gets i
   fast — and the per-frame geometry rebuild is the thing most likely to cost. Phase 5 owns the performance guards.
 - The `nextjs-agent-rules` block at the bottom of `AGENTS.md` is written by `next dev` on every run and is **not** part of this
   document set. Commit it rather than fighting the diff.
+
+## Team page preview
+
+`/meet-the-team` composes `features/team` and the shared contact form. Its copy and illustrative profiles live in
+`lib/content/team.js`; local sample portraits and their sources are in `public/media/team/`. Native `details` elements
+open profiles by pointer or keyboard without client-side JavaScript. This preview is noindexed and deliberately excluded
+from the sitemap and navigation until real profiles are supplied; add the route to both when preparing it for publication.

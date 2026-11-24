@@ -1,0 +1,1468 @@
+/* ==========================================================================
+   The Living Fieldbook — Geekinate
+   Tokens: --white (#fdfdfb), --wash (#f4f7ea), --ink (#101613),
+           --ink-soft (#3a423d), --grey (#5b6b62), --volt (#b8e01b)
+   ========================================================================== */
+
+.fieldbookPage {
+  background-color: var(--white);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--grey) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--grey) 7%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  overflow-x: clip;
+}
+
+/* ---------- 0. Kinetic "Welcome to Geekinate." Opening ---------- */
+
+.welcomeHero {
+  position: relative;
+  color: var(--white);
+  min-height: 82svh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(7rem, 13svh, 9.5rem) 1.5rem clamp(5.5rem, 9svh, 7.5rem);
+  overflow: hidden;
+}
+
+.welcomeInner {
+  width: min(94%, 76rem);
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.welcomeEyebrow {
+  display: inline-block;
+  margin-bottom: 1.4rem;
+  padding: 0.28rem 0.85rem;
+  background: var(--volt);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  font:
+    700 0.74rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.09em;
+}
+
+.welcomeTitle {
+  margin: 0 auto;
+  font-family: var(--font-sans), sans-serif;
+  font-weight: 650;
+  font-size: clamp(3rem, 9.4vw, 8.6rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+  will-change: transform;
+}
+
+.welcomeLine {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.14em 0.28em;
+}
+
+.welcomeWord,
+.welcomeWordVolt {
+  display: inline-flex;
+}
+
+.welcomeWordVolt {
+  color: var(--volt);
+}
+
+.letterClip {
+  display: inline-block;
+  overflow: hidden;
+  padding-bottom: 0.08em;
+}
+
+.letterGlyph {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+
+.welcomeLead {
+  margin: 1.5rem auto 0;
+  max-width: 52ch;
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
+  line-height: 1.55;
+  color: #b9c2bc;
+}
+
+.welcomeActions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.welcomeBtn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0.65rem 1.45rem;
+  background: var(--volt);
+  color: var(--ink);
+  border: 1.5px solid var(--volt);
+  border-radius: 99px;
+  font:
+    700 0.84rem var(--font-mono),
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  transition: transform 0.16s ease;
+}
+
+.welcomeBtn:hover {
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
+.paperTransition {
+  position: absolute;
+  left: -2%;
+  right: -2%;
+  bottom: -1px;
+  height: clamp(2.2rem, 4.5vw, 3.6rem);
+  background-color: var(--white);
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--grey) 7%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--grey) 7%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+  border-top: 2px solid var(--ink);
+  border-radius: 50% 50% 0 0 / 100% 100% 0 0;
+}
+
+/* ---------- 1. Hero Story Stage (Bigger, Cinematic, Zero Navbar Overlap) ---------- */
+
+.mapOpening {
+  width: min(95%, 76rem);
+  margin: auto;
+  padding: clamp(3rem, 6svh, 4.5rem) 0 3.2rem;
+  color: var(--ink);
+  scroll-margin-top: 5.2rem;
+}
+
+.heroCopy {
+  text-align: center;
+  margin: 0 auto 1.15rem;
+}
+
+.yearStamp {
+  font:
+    italic clamp(2.8rem, 5.8vw, 4.8rem)/0.95 var(--font-display),
+    serif;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  animation: yearPop 0.32s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+
+@keyframes yearPop {
+  from {
+    opacity: 0;
+    transform: translateY(-5px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.captionLine {
+  margin: 0.5rem auto 0;
+  max-width: 58ch;
+  font-size: clamp(0.98rem, 1.35vw, 1.14rem);
+  line-height: 1.48;
+  color: var(--ink-soft);
+  animation: captionRise 0.38s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes captionRise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stageFrame {
+  width: min(100%, 74rem);
+  margin: 0 auto;
+}
+
+.controlRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.65rem;
+}
+
+.controlLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.playPill,
+.soundPill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-height: 36px;
+  padding: 0.32rem 0.9rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  font:
+    700 0.74rem var(--font-mono),
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.playPill {
+  background: var(--volt);
+  color: var(--ink);
+}
+
+.soundPill {
+  background: var(--white);
+  color: var(--ink);
+}
+
+.playPill:hover,
+.soundPill:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.playPill:active,
+.soundPill:active {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.playDot {
+  width: 7px;
+  height: 7px;
+  border-radius: 99px;
+  background: var(--ink);
+  display: inline-block;
+}
+
+.playDot[data-playing='true'] {
+  animation: pulseDot 1s ease-in-out infinite;
+}
+
+@keyframes pulseDot {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.35;
+    transform: scale(0.75);
+  }
+}
+
+.eqBars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 11px;
+}
+
+.eqBars i {
+  display: block;
+  width: 2px;
+  height: 4px;
+  background: var(--ink);
+  border-radius: 1px;
+}
+
+.eqBars[data-active='true'] i:nth-child(1) {
+  animation: eqBounce 0.7s ease-in-out infinite alternate;
+}
+
+.eqBars[data-active='true'] i:nth-child(2) {
+  animation: eqBounce 0.55s ease-in-out 0.15s infinite alternate;
+}
+
+.eqBars[data-active='true'] i:nth-child(3) {
+  animation: eqBounce 0.8s ease-in-out 0.3s infinite alternate;
+}
+
+@keyframes eqBounce {
+  from {
+    height: 3px;
+  }
+  to {
+    height: 11px;
+  }
+}
+
+.clockReadout {
+  font:
+    600 0.74rem var(--font-mono),
+    monospace;
+  color: var(--grey);
+}
+
+/* 5-segment Instagram-Story progress bar */
+.storyBars {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+}
+
+.storySegment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.22rem;
+  padding: 0.15rem 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.storyTrack {
+  display: block;
+  width: 100%;
+  height: 6px;
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.storyFill {
+  display: block;
+  height: 100%;
+  background: var(--volt);
+  transition: width 0.08s linear;
+}
+
+.storyLabel {
+  font:
+    600 0.7rem var(--font-mono),
+    monospace;
+  color: var(--grey);
+  text-align: center;
+}
+
+.storySegment[aria-selected='true'] .storyLabel {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+/* Main clean paper map stage */
+.mapStageWrap {
+  position: relative;
+}
+
+.crewStamp {
+  position: absolute;
+  top: -0.95rem;
+  right: 1rem;
+  z-index: 4;
+  padding: 0.2rem 0.65rem;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  transform: rotate(2deg);
+  font:
+    700 0.7rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.06em;
+  animation: yearPop 0.35s ease-out;
+}
+
+.mapStage {
+  position: relative;
+  isolation: isolate;
+  aspect-ratio: 1000 / 410;
+  border: 1.5px solid var(--ink);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 5px 5px 0 var(--ink);
+  background: var(--wash);
+  cursor: pointer;
+}
+
+.chapterWipe {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in srgb, var(--white) 55%, transparent) 45%,
+    color-mix(in srgb, var(--volt) 35%, transparent) 52%,
+    transparent 100%
+  );
+  animation: pageSweep 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes pageSweep {
+  from {
+    transform: translateX(-110%);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateX(110%);
+    opacity: 0;
+  }
+}
+
+.mapCanvas {
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+}
+
+.artifactWrap {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 3;
+  transition: opacity 0.25s ease;
+}
+
+.district {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.liveRouteSvg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.sonarRing {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: sonarPulse 1.5s ease-out infinite;
+}
+
+@keyframes sonarPulse {
+  0% {
+    opacity: 0.95;
+    transform: scale(0.45);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.65);
+  }
+}
+
+.introTitle {
+  font:
+    italic clamp(2.4rem, 5vw, 4.2rem)/1 var(--font-display),
+    serif;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  animation: yearPop 0.4s cubic-bezier(0.2, 0.9, 0.3, 1.15);
+}
+
+.sunburst {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+  transform-origin: 50% 100%;
+}
+
+.cameraFlash {
+  position: absolute;
+  inset: 0;
+  z-index: 7;
+  background: var(--white);
+  pointer-events: none;
+}
+
+.stageHairline {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  height: 4px;
+  background: var(--volt);
+  border-top: 1px solid var(--ink);
+  z-index: 6;
+  pointer-events: none;
+  transition: width 0.08s linear;
+}
+
+/* Cutouts inside the map stage */
+.cutouts {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-start;
+  padding-inline: 2%;
+  pointer-events: none;
+}
+
+.cutoutCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  width: 24.5%;
+  height: 88%;
+  pointer-events: auto;
+  text-decoration: none;
+}
+
+.yearTag {
+  position: absolute;
+  top: 2%;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1.5deg);
+  z-index: 3;
+  padding: 0.12rem 0.48rem;
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  font:
+    700 clamp(0.64rem, 0.95vw, 0.8rem) var(--font-mono),
+    monospace;
+  font-style: normal;
+  color: var(--ink);
+  white-space: nowrap;
+}
+
+.cutoutImg {
+  display: block;
+  width: auto;
+  max-width: 100%;
+  max-height: 88%;
+  height: auto;
+  object-fit: contain;
+  object-position: bottom center;
+  filter: drop-shadow(2px 0 0 var(--white)) drop-shadow(-2px 0 0 var(--white)) drop-shadow(0 -2px 0 var(--white));
+}
+
+.nameSticker {
+  position: absolute;
+  bottom: 5%;
+  left: 50%;
+  z-index: 4;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  padding: 0.1em 0.55em;
+  font:
+    italic 700 clamp(0.8rem, 1.6vw, 1.35rem) var(--font-display),
+    serif;
+  color: var(--ink);
+  white-space: nowrap;
+  transition:
+    opacity 0.22s ease,
+    transform 0.25s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+}
+
+.nameSticker[data-finale='true'] {
+  text-transform: uppercase;
+  font-style: normal;
+  font-family: var(--font-mono), monospace;
+  font-size: clamp(0.72rem, 1.25vw, 1.05rem);
+  padding: 0.22em 0.65em;
+}
+
+/* Floating taped artifact note inside map stage */
+.artifactNote {
+  position: absolute;
+  right: 3%;
+  top: 5.5%;
+  z-index: 3;
+  width: 23%;
+  transform: rotate(1.5deg);
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+  padding: 0.28rem 0.5rem;
+  text-align: center;
+  pointer-events: none;
+}
+
+.artifactNote:before {
+  content: '';
+  position: absolute;
+  top: -5px;
+  left: 35%;
+  height: 10px;
+  width: 30%;
+  background: var(--volt);
+  border: 1px solid var(--ink);
+}
+
+.artifactNote svg {
+  display: block;
+  width: 100%;
+  max-height: 6.5svh;
+}
+
+.artifactNote figcaption {
+  margin-top: 0.15rem;
+  font:
+    700 clamp(0.62rem, 0.95vw, 0.8rem) var(--font-mono),
+    monospace;
+  color: var(--ink);
+}
+
+.scrollCue {
+  display: block;
+  margin-top: 0.85rem;
+  text-align: center;
+  font:
+    600 0.76rem var(--font-mono),
+    monospace;
+  color: var(--grey);
+  text-decoration: none;
+}
+
+.scrollCue:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* ---------- Shared Section Headers ---------- */
+
+.sectionHead {
+  margin-bottom: 2rem;
+}
+
+.headingRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.9rem;
+  flex-wrap: wrap;
+}
+
+.handNote {
+  display: inline-block;
+  padding: 0.18rem 0.58rem;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  font:
+    700 0.72rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.06em;
+}
+
+.credit {
+  margin: 0.55rem 0 0;
+  color: var(--ink-soft);
+  max-width: 54ch;
+  line-height: 1.5;
+}
+
+/* ---------- 2. The Team — Clean 4-Column Polaroids ---------- */
+
+.crew {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 2.2vw, 1.8rem);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.crewItem {
+  scroll-margin-top: 7rem;
+}
+
+.polaroidLink {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 16px;
+  padding: 0.65rem 0.65rem 1.05rem;
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(var(--card-tilt, 0deg));
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.polaroidLink:hover,
+.polaroidLink:focus-visible {
+  transform: rotate(0deg) translateY(-4px);
+  box-shadow: 5px 5px 0 var(--ink);
+  text-decoration: none;
+}
+
+.tapeStrip {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%) rotate(-1.5deg);
+  width: 4.2rem;
+  height: 1.15rem;
+  background: color-mix(in srgb, var(--volt) 75%, var(--white));
+  border: 1.5px solid var(--ink);
+  z-index: 2;
+}
+
+.polaroidFrame {
+  position: relative;
+  margin: 0;
+  background: var(--wash);
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.polaroidMedia {
+  aspect-ratio: 4 / 5;
+  width: 100%;
+  overflow: hidden;
+}
+
+.polaroidImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.polaroidYear {
+  position: absolute;
+  bottom: 0.5rem;
+  left: 0.5rem;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  padding: 0.08rem 0.45rem;
+  font:
+    700 0.74rem var(--font-mono),
+    monospace;
+}
+
+.crewMeta {
+  margin-top: 0.8rem;
+}
+
+.crewMeta h3 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font:
+    italic clamp(1.6rem, 2.2vw, 2.1rem) var(--font-display),
+    serif;
+  margin: 0;
+}
+
+.crewMeta h3 span {
+  font:
+    600 0.9rem var(--font-sans),
+    sans-serif;
+}
+
+.crewMeta small {
+  display: block;
+  margin-top: 0.15rem;
+  color: var(--grey);
+  font:
+    600 0.74rem var(--font-mono),
+    monospace;
+  text-transform: uppercase;
+}
+
+.crewMeta p {
+  margin: 0.55rem 0 0;
+  font-size: 0.9rem;
+  line-height: 1.48;
+  color: var(--ink-soft);
+}
+
+/* ---------- 3. Achievements & Proof Strip ---------- */
+
+.achievementsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.statCard {
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 20px;
+  padding: 1.5rem 1.35rem;
+  box-shadow: 4px 4px 0 var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  transition: transform 0.2s ease;
+}
+
+.statCard:hover {
+  transform: translateY(-3px);
+}
+
+.statNumber {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.15rem 0.65rem;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  font:
+    italic 700 clamp(2rem, 3.2vw, 2.9rem)/1.05 var(--font-display),
+    serif;
+  color: var(--ink);
+}
+
+.statCard h3 {
+  margin: 0.35rem 0 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.statCard p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+
+/* ---------- 4. Our Story — 5-Chapter Vertical Logbook Timeline ---------- */
+
+.logbookHead {
+  text-align: center;
+  margin-bottom: 2.8rem;
+}
+
+.logbookEyebrow {
+  display: inline-block;
+  margin-bottom: 0.5rem;
+  padding: 0.2rem 0.65rem;
+  background: var(--wash);
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  font:
+    700 0.72rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.08em;
+}
+
+.ledger {
+  position: relative;
+  display: grid;
+  gap: 2.2rem;
+  margin: 0 auto;
+  padding: 0.5rem 0 1.5rem;
+  max-width: 60rem;
+  list-style: none;
+}
+
+.ledger:before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 2px solid color-mix(in srgb, var(--ink) 40%, transparent);
+  transform: translateX(-50%);
+}
+
+.spineProgress {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: var(--volt);
+  border-inline: 1px solid var(--ink);
+  transform: translateX(-50%);
+  transform-origin: top center;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.ledgerItem {
+  position: relative;
+  width: 46.5%;
+  scroll-margin-top: 7rem;
+}
+
+.ledgerItem[data-reveal='right'] {
+  justify-self: end;
+}
+
+.spineNode {
+  position: absolute;
+  top: 1.5rem;
+  right: -8.6%;
+  width: 15px;
+  height: 15px;
+  border-radius: 99px;
+  background: var(--volt);
+  border: 2px solid var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+  z-index: 2;
+}
+
+.ledgerItem[data-reveal='right'] .spineNode {
+  right: auto;
+  left: -8.6%;
+}
+
+.ledgerCard {
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 20px;
+  padding: 1.25rem 1.35rem;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.ledgerFinal .ledgerCard {
+  background: var(--wash);
+  border-width: 2px;
+  box-shadow:
+    4px 4px 0 var(--volt),
+    6px 6px 0 var(--ink);
+}
+
+.dateBadge {
+  display: inline-block;
+  margin-bottom: 0.55rem;
+  padding: 0.18rem 0.6rem;
+  background: var(--wash);
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  font:
+    700 0.74rem var(--font-mono),
+    monospace;
+  color: var(--ink);
+}
+
+.ledgerFinal .dateBadge {
+  background: var(--volt);
+}
+
+.ledgerCard h3 {
+  margin: 0;
+  font:
+    italic clamp(1.38rem, 2vw, 1.8rem)/1.12 var(--font-display),
+    serif;
+}
+
+.ledgerAction {
+  margin: 0.5rem 0 0;
+  color: var(--ink-soft);
+  line-height: 1.52;
+  font-size: 0.94rem;
+}
+
+.chapterQuote {
+  margin: 0.75rem 0 0;
+  padding: 0.45rem 0 0.45rem 0.85rem;
+  border-left: 1px solid var(--ink);
+  font:
+    italic 0.98rem/1.45 var(--font-display),
+    serif;
+  color: var(--ink);
+}
+
+.metrics {
+  display: flex;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.tag {
+  padding: 0.2rem 0.58rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 6px;
+  background: var(--volt);
+  font:
+    700 0.76rem var(--font-mono),
+    monospace;
+  color: var(--ink);
+}
+
+/* Embedded Polaroids inside Timeline Cards */
+.inlinePolaroid {
+  margin: 0.95rem 0 0;
+  padding: 0.5rem 0.5rem 0.65rem;
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+.inlinePhotoWrap {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  background: var(--wash);
+}
+
+.inlinePhoto {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.crewMiniStrip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 4px;
+  border: 1px solid var(--ink);
+  border-radius: 8px;
+  overflow: hidden;
+  background: var(--ink);
+}
+
+.crewMiniCell {
+  aspect-ratio: 3 / 4;
+  overflow: hidden;
+  background: var(--wash);
+}
+
+.crewMiniCell img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.inlinePolaroid figcaption {
+  margin-top: 0.45rem;
+  text-align: center;
+  font:
+    600 0.7rem var(--font-mono),
+    monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--grey);
+}
+
+/* ---------- 4. Closing Invitation Sheet ---------- */
+
+.inviteWrap {
+  width: min(90%, 50rem);
+  margin: 1rem auto 4.5rem;
+}
+
+.inviteSheet {
+  position: relative;
+  text-align: center;
+  padding: clamp(2.2rem, 4.5vw, 3.4rem) clamp(1.5rem, 4vw, 3rem);
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 20px;
+  box-shadow: 4px 4px 0 var(--ink);
+}
+
+.inviteTapeLeft,
+.inviteTapeRight {
+  position: absolute;
+  top: -11px;
+  width: 5rem;
+  height: 1.3rem;
+  background: color-mix(in srgb, var(--volt) 78%, var(--white));
+  border: 1.5px solid var(--ink);
+}
+
+.inviteTapeLeft {
+  left: 12%;
+  transform: rotate(-6deg);
+}
+
+.inviteTapeRight {
+  right: 12%;
+  transform: rotate(5deg);
+}
+
+.continuedPill {
+  display: inline-block;
+  padding: 0.22rem 0.7rem;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  font:
+    700 0.72rem var(--font-mono),
+    monospace;
+  letter-spacing: 0.08em;
+}
+
+.inviteSheet h2 {
+  margin: 0.75rem 0 0.5rem;
+  font:
+    italic clamp(2rem, 4vw, 3.4rem)/1.02 var(--font-display),
+    serif;
+}
+
+.inviteCopy {
+  margin: 0 auto;
+  max-width: 44ch;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+
+.yourPhotoFrame {
+  position: relative;
+  width: min(100%, 14.5rem);
+  margin: 1.6rem auto;
+  padding: 0.65rem 0.65rem 1.5rem;
+  background: var(--white);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  box-shadow: 3px 3px 0 var(--ink);
+  transform: rotate(-2deg);
+}
+
+.thumbtack {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 14px;
+  border-radius: 99px;
+  background: var(--volt);
+  border: 1.5px solid var(--ink);
+  box-shadow: 1.5px 1.5px 0 var(--ink);
+}
+
+.yourPhotoInner {
+  aspect-ratio: 4 / 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+  background: var(--wash);
+  border: 1.5px dashed var(--ink);
+  border-radius: 8px;
+}
+
+.yourPhotoInner span {
+  font:
+    italic 1.3rem var(--font-display),
+    serif;
+  color: var(--ink);
+}
+
+.yourPhotoInner small {
+  font:
+    600 0.68rem var(--font-mono),
+    monospace;
+  color: var(--grey);
+  letter-spacing: 0.06em;
+}
+
+.inviteActions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.ctaPrimary,
+.ctaSecondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 0.6rem 1.3rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 99px;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--ink);
+  transition:
+    transform 0.14s ease,
+    box-shadow 0.14s ease;
+}
+
+.ctaPrimary {
+  background: var(--volt);
+}
+
+.ctaSecondary {
+  background: var(--white);
+}
+
+.ctaPrimary:hover,
+.ctaSecondary:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--ink);
+  text-decoration: none;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .crew,
+  .achievementsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .ledger {
+    padding-left: 1.75rem;
+  }
+  .ledger:before,
+  .spineProgress {
+    left: 0.5rem;
+    transform: none;
+  }
+  .ledgerItem,
+  .ledgerItem[data-reveal='right'] {
+    width: 100%;
+    justify-self: stretch;
+  }
+  .spineNode,
+  .ledgerItem[data-reveal='right'] .spineNode {
+    left: -1.72rem;
+    right: auto;
+  }
+}
+
+@media (max-width: 600px) {
+  .mapOpening {
+    padding-top: 6rem;
+  }
+  .mapStage {
+    aspect-ratio: 1000 / 480;
+    border-radius: 16px;
+  }
+  .artifactNote {
+    width: 34%;
+    top: 4%;
+    right: 3%;
+    padding: 0.16rem 0.3rem;
+  }
+  .artifactNote svg {
+    max-height: 26px;
+  }
+  .artifactNote figcaption {
+    font-size: 0.6rem;
+  }
+  .yearTag {
+    padding: 0.08rem 0.34rem;
+    font-size: 0.6rem;
+  }
+  .nameSticker {
+    padding: 0.08em 0.4em;
+    font-size: 0.76rem;
+  }
+  .storyLabel {
+    font-size: 0.64rem;
+  }
+  .crew,
+  .achievementsGrid {
+    grid-template-columns: 1fr;
+  }
+  .polaroidLink {
+    max-width: 24rem;
+    margin-inline: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .yearStamp,
+  .crewStamp,
+  .playDot[data-playing='true'],
+  .eqBars[data-active='true'] i {
+    animation: none;
+  }
+  .mapCanvas,
+  .polaroidLink,
+  .nameSticker {
+    transition: none;
+  }
+}
+
+/* The normal timeline spine sits behind milestone cards. */
+.timelineRail {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  list-style: none;
+}
+.timelineRail .spineProgress {
+  width: 3px;
+  background: var(--volt);
+  border: 0;
+}
+.heroCopy {
+  min-height: 9rem;
+  display: grid;
+  align-content: center;
+  overflow: hidden;
+}
+.introTitle {
+  font-size: clamp(2rem, 4vw, 3.6rem);
+}
+/* The story clock drives both entrance and exit, including pause and replay. */
+.yearStamp,
+.introTitle,
+.captionLine {
+  animation: none;
+}
+.heroCopy {
+  min-height: 10.5rem;
+  padding: 1rem 1.25rem 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.yearStamp {
+  font-size: clamp(3.2rem, 6vw, 4.6rem);
+  line-height: 1.08;
+}
+.captionLine {
+  max-width: 48ch;
+  margin-top: 0.8rem;
+  font-size: clamp(0.95rem, 1.3vw, 1.08rem);
+  line-height: 1.6;
+  text-wrap: balance;
+}
+.fieldbookPage :focus-visible {
+  outline: 3px solid var(--ink);
+  outline-offset: 5px;
+}
+.welcomeHero :focus-visible {
+  outline-color: var(--volt);
+}
+@media (max-width: 720px) {
+  .heroCopy {
+    min-height: 10rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .introTitle,
+  .captionLine,
+  .yearStamp {
+    animation: none;
+  }
+}
+
+.storySegment {
+  min-height: 36px;
+  justify-content: center;
+}
+.storyTrack {
+  height: 3px;
+  border: 0;
+  background: color-mix(in srgb, var(--ink) 15%, var(--white));
+}
+.storyFill {
+  width: 100%;
+  transform-origin: left;
+  transition: none;
+}
+.storySegment:hover .storyTrack,
+.storySegment[aria-current='step'] .storyTrack {
+  background: color-mix(in srgb, var(--ink) 35%, var(--white));
+}
+
+.trajectoryIntro {
+  max-width: 58ch;
+  margin: 1rem auto 0;
+  color: var(--ink-soft);
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+.growthOutcome {
+  margin-top: 1.1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 20%, transparent);
+}
+.growthOutcome span {
+  font-size: 0.72rem;
+  font-weight: 650;
+  color: var(--grey);
+}
+.growthOutcome p {
+  margin-top: 0.3rem;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink);
+}
+
+.playPill,
+.soundPill {
+  min-height: 44px;
+}
+.heroCopy {
+  min-height: 11rem;
+}
+.cutoutImg {
+  filter: drop-shadow(1px 0 0 var(--white)) drop-shadow(-1px 0 0 var(--white));
+}
+@media (max-width: 600px) {
+  .welcomeTitle {
+    font-size: clamp(2.8rem, 13vw, 4.5rem);
+  }
+  .welcomeHero {
+    min-height: 76svh;
+    padding-inline: 1rem;
+  }
+  .mapOpening {
+    padding-top: 2.5rem;
+  }
+  .heroCopy {
+    min-height: 12rem;
+    padding-inline: 0.6rem;
+  }
+  .captionLine {
+    max-width: 35ch;
+  }
+  .mapStage {
+    aspect-ratio: 1.65;
+  }
+  .cutoutCard {
+    height: 78%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sonarRing,
+  .crewStamp,
+  .captionLine,
+  .introTitle {
+    animation: none;
+  }
+}

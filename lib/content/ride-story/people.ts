@@ -1,0 +1,38 @@
+export const people = {
+  usama: {
+    name: 'Hamza',
+    role: 'Creative & product direction',
+    entry: 'origin',
+    year: 2019,
+    bio: 'Turns rough briefs into sharp visual identities, interfaces, and design systems.',
+    portrait: '/media/fieldbook/photos/usama.jpg',
+    cutout: '/media/fieldbook/photos/usama-cutout.png',
+  },
+  adil: {
+    name: 'Bilal',
+    role: 'Development & AI',
+    entry: 'adil-joins',
+    year: 2021,
+    bio: 'Engineers full-stack web platforms, AI workflows, and fast production software.',
+    portrait: '/media/fieldbook/photos/adil.jpg',
+    cutout: '/media/fieldbook/photos/adil-cutout.png',
+  },
+  nouman: {
+    name: 'Zain',
+    role: 'Marketing & strategy',
+    entry: 'nouman-joins',
+    year: 2022,
+    bio: 'Leads growth campaigns, client partnerships, and end-to-end delivery.',
+    portrait: '/media/fieldbook/photos/nouman.jpg',
+    cutout: '/media/fieldbook/photos/nouman-cutout.png',
+  },
+  waqar: {
+    name: 'Rayan',
+    role: 'Games & interactive',
+    entry: 'waqar-joins',
+    year: 2024,
+    bio: 'Builds AR/VR games, WebGL motion, and interactive brand experiences.',
+    portrait: '/media/fieldbook/photos/waqar.jpg',
+    cutout: '/media/fieldbook/photos/waqar-cutout.png',
+  },
+};

@@ -162,8 +162,19 @@ export default function Fieldbook() {
       {/* Section 5: Closing Invitation Sheet */}
       <section className={r.inviteWrap} id='your-turn' aria-labelledby='invite-heading'>
         <aside className={r.inviteSheet} data-reveal='sheet'>
+          <span className={r.inviteTapeLeft} aria-hidden='true' />
+          <span className={r.inviteTapeRight} aria-hidden='true' />
+          <span className={r.continuedPill}>TO BE CONTINUED</span>
           <h2 id='invite-heading'>Now it’s your turn.</h2>
           <p className={r.inviteCopy}>Bring us your product, game, or campaign — let’s write the next chapter together.</p>
+
+          <div className={r.yourPhotoFrame} data-reveal='your-photo' aria-hidden='true'>
+            <span className={r.thumbtack} />
+            <div className={r.yourPhotoInner}>
+              <span>YOUR PROJECT</span>
+              <small>NEXT IN THE LOGBOOK</small>
+            </div>
+          </div>
 
           <div className={r.inviteActions}>
             <Link href='/#contact' className={r.ctaPrimary}>
@@ -173,6 +184,10 @@ export default function Fieldbook() {
               See our work
             </Link>
           </div>
+
+          <p className={r.inviteFoot}>
+            Something on your mind? <Link href='/#contact'>Get in touch</Link>
+          </p>
         </aside>
       </section>
 

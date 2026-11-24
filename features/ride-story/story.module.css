@@ -997,7 +997,7 @@
 }
 
 .inviteCopy {
-  margin: 0 auto 1.75rem;
+  margin: 0 auto;
   max-width: 44ch;
   color: var(--ink-soft);
   line-height: 1.5;
@@ -1061,6 +1061,21 @@
   justify-content: center;
   gap: 0.8rem;
   flex-wrap: wrap;
+}
+
+.inviteFoot {
+  margin: 1.15rem 0 0;
+  font-size: 0.9rem;
+  color: var(--grey);
+}
+
+.inviteFoot a {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-decoration-color: var(--volt);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
 }
 
 .ctaPrimary,

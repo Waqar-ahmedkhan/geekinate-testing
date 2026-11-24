@@ -22,6 +22,39 @@ const MAP_PINS = [
   { x: 848, y: 252 },
 ];
 const LIVE_ROUTE = 'M168 270 L266 249 L289 253 L253 110 L377 87 L455 171 L524 161 L593 230 L721 228 L731 275 L848 252';
+const ROUTE_PTS = [
+  [168, 270],
+  [266, 249],
+  [289, 253],
+  [253, 110],
+  [377, 87],
+  [455, 171],
+  [524, 161],
+  [593, 230],
+  [721, 228],
+  [731, 275],
+  [848, 252],
+];
+const ROUTE_SEGS = ROUTE_PTS.slice(1).map(([x2, y2], i) => {
+  const [x1, y1] = ROUTE_PTS[i];
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  return { x1, y1, dx, dy, len: Math.hypot(dx, dy), angle: (Math.atan2(dy, dx) * 180) / Math.PI };
+});
+const ROUTE_TOTAL = ROUTE_SEGS.reduce((sum, s) => sum + s.len, 0);
+
+function routePose(progress) {
+  let target = clamp01(progress) * ROUTE_TOTAL;
+  for (const seg of ROUTE_SEGS) {
+    if (target <= seg.len || seg === ROUTE_SEGS[ROUTE_SEGS.length - 1]) {
+      const k = seg.len ? clamp01(target / seg.len) : 0;
+      return { x: seg.x1 + seg.dx * k, y: seg.y1 + seg.dy * k, angle: seg.angle };
+    }
+    target -= seg.len;
+  }
+  return { x: 168, y: 270, angle: 0 };
+}
+
 const RAYS = Array.from({ length: 24 }, (_, i) => i);
 const FINALE = { glowAt: 0.25, burstDuration: 0.9, cardsAt: 0.55, stagger: 0.16, settle: 0.5 };
 
@@ -98,6 +131,7 @@ export default function Player() {
   const isFinale = chapter.id === 'studio';
 
   const routeDraw = reduced ? 1 : clamp01(time / startOf(5));
+  const car = routePose(routeDraw);
   const finaleGlow = isFinale ? (reduced ? 1 : easeOutCubic(clamp01((local - FINALE.glowAt) / 0.85))) : 0;
   const rays = isFinale ? (reduced ? 1 : easeOutCubic(clamp01((local - FINALE.glowAt) / FINALE.burstDuration))) : 0;
 
@@ -308,6 +342,48 @@ export default function Player() {
                     />
                   );
                 })}
+                {/* Crisp top-down Geekinate sports car driving along the route */}
+                <g transform={`translate(${car.x}, ${car.y}) rotate(${car.angle})`}>
+                  {/* Dual headlight beams while moving */}
+                  {!reduced && routeDraw > 0.01 && routeDraw < 0.99 && (
+                    <g opacity='0.3'>
+                      <polygon points='21,-6 54,-16 54,-2 21,-3' fill='#b8e01b' />
+                      <polygon points='21,3 54,2 54,16 21,6' fill='#b8e01b' />
+                    </g>
+                  )}
+                  {/* Soft ground shadow */}
+                  <ellipse cx='0' cy='2' rx='22' ry='11' fill='#101613' opacity='0.18' />
+                  {/* Tires */}
+                  <rect x='-15' y='-11.5' width='8' height='3.5' rx='1.5' fill='#101613' />
+                  <rect x='7' y='-11.5' width='8' height='3.5' rx='1.5' fill='#101613' />
+                  <rect x='-15' y='8' width='8' height='3.5' rx='1.5' fill='#101613' />
+                  <rect x='7' y='8' width='8' height='3.5' rx='1.5' fill='#101613' />
+                  {/* Side mirrors */}
+                  <path d='M5 -9 L8 -12 L10 -12 L8 -9 Z' fill='#101613' />
+                  <path d='M5 9 L8 12 L10 12 L8 9 Z' fill='#101613' />
+                  {/* Sculpted sports coupe body */}
+                  <path
+                    d='M-20 -7 C-20 -9.5 -15 -10 -8 -10 L8 -10 C15 -10 21 -7.5 22 -3.5 L22 3.5 C21 7.5 15 10 8 10 L-8 10 C-15 10 -20 9.5 -20 7 Z'
+                    fill='#b8e01b'
+                    stroke='#101613'
+                    strokeWidth='2'
+                  />
+                  {/* Hood lines & cabin glass */}
+                  <path d='M10 -5.5 L18 -4 M10 5.5 L18 4' stroke='#101613' strokeWidth='1.1' strokeLinecap='round' opacity='0.45' />
+                  <path
+                    d='M-11 -6.5 C-7 -7.5 5 -7.5 11 -5.5 L11 5.5 C5 7.5 -7 7.5 -11 6.5 Z'
+                    fill='#101613'
+                  />
+                  {/* Roof panel */}
+                  <rect x='-7' y='-5' width='11' height='10' rx='3' fill='#fdfdfb' stroke='#101613' strokeWidth='1.2' />
+                  {/* Rear spoiler */}
+                  <rect x='-21' y='-8.5' width='3' height='17' rx='1.2' fill='#101613' />
+                  {/* Headlights & taillights */}
+                  <ellipse cx='20' cy='-5.5' rx='1.8' ry='1.2' fill='#fdfdfb' />
+                  <ellipse cx='20' cy='5.5' rx='1.8' ry='1.2' fill='#fdfdfb' />
+                  <rect x='-20.2' y='-7' width='1.4' height='3.2' rx='0.6' fill='#fdfdfb' />
+                  <rect x='-20.2' y='3.8' width='1.4' height='3.2' rx='0.6' fill='#fdfdfb' />
+                </g>
               </svg>
             </div>
 

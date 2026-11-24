@@ -14,10 +14,6 @@ const startOf = (index) => ends[index] - chapters[index].duration;
 
 const clamp01 = (v) => Math.max(0, Math.min(1, v));
 const easeOutCubic = (t) => 1 - Math.pow(1 - t, 3);
-const easeOutBack = (t, s = 1.65) => {
-  const c3 = s + 1;
-  return 1 + c3 * Math.pow(t - 1, 3) + s * Math.pow(t - 1, 2);
-};
 
 const MAP_PINS = [
   { x: 168, y: 270 },
@@ -26,28 +22,51 @@ const MAP_PINS = [
   { x: 848, y: 252 },
 ];
 const LIVE_ROUTE = 'M168 270 L266 249 L289 253 L253 110 L377 87 L455 171 L524 161 L593 230 L721 228 L731 275 L848 252';
-const RAYS = Array.from({ length: 16 }, (_, i) => i);
-const FINALE = { burstAt: 1.4, burstDuration: 0.85, stickersAt: 2.15, stagger: 0.28, settle: 0.38 };
+const RAYS = Array.from({ length: 24 }, (_, i) => i);
+const FINALE = { glowAt: 0.25, burstDuration: 0.9, cardsAt: 0.55, stagger: 0.16, settle: 0.5 };
 
-// Each maker enters from a different edge: Hamza left, Bilal top, Zain right, Rayan bottom.
+// Each maker enters in 3 steps: angled arc swoop -> overshoot pop -> crisp settle.
 const ENTRY = {
-  usama: { dur: 0.8, x: -145, y: 0, rot: -3 },
-  adil: { dur: 0.85, x: 0, y: -145, rot: 2 },
-  nouman: { dur: 0.8, x: 265, y: 0, rot: 3 },
-  waqar: { dur: 0.85, x: 0, y: 135, rot: -2 },
+  usama: { dur: 0.92, x: -95, y: 18, rot: -10, arcY: -12 },
+  adil: { dur: 0.95, x: 18, y: -88, rot: 9, arcY: 0 },
+  nouman: { dur: 0.92, x: 110, y: 16, rot: 10, arcY: -12 },
+  waqar: { dur: 0.95, x: -16, y: 88, rot: -9, arcY: 0 },
 };
-const YEAR_DELAY = 0.12;
+const CAMERA_PAN = {
+  intro: 'scale(1) translate3d(0, 0, 0)',
+  origin: 'scale(1.06) translate3d(2.2%, -1.2%, 0)',
+  engineering: 'scale(1.07) translate3d(0.8%, 1.8%, 0)',
+  growth: 'scale(1.07) translate3d(-1.4%, 0.5%, 0)',
+  interactive: 'scale(1.06) translate3d(-2.2%, -1%, 0)',
+  studio: 'scale(1) translate3d(0, 0, 0)',
+};
+const YEAR_DELAY = 0.08;
 
 function pose(id, t) {
-  const eased = easeOutBack(t, 0.5);
   const from = ENTRY[id];
-
+  if (t <= 0) {
+    return { x: from.x, y: from.y, rot: from.rot, scale: 0.78, opacity: 0 };
+  }
+  if (t < 0.62) {
+    // Step 1: Angled arc swoop toward target with slight overshoot
+    const p = easeOutCubic(t / 0.62);
+    const arc = Math.sin(p * Math.PI) * from.arcY;
+    return {
+      x: from.x * (1 - p) - Math.sign(from.x || 1) * 3.5 * p,
+      y: from.y * (1 - p) + arc - 2 * p,
+      rot: from.rot * (1 - p) + -from.rot * 0.22 * p,
+      scale: 0.78 + 0.26 * p,
+      opacity: clamp01(p * 1.6),
+    };
+  }
+  // Step 2 & 3: Crisp counter-angle settle & micro-scale lock
+  const s = easeOutCubic((t - 0.62) / 0.38);
   return {
-    x: from.x * (1 - eased),
-    y: from.y * (1 - eased),
-    rot: from.rot * (1 - easeOutCubic(t)),
-    scale: 0.98 + 0.02 * eased,
-    opacity: t > 0 ? 1 : 0,
+    x: -Math.sign(from.x || 1) * 3.5 * (1 - s),
+    y: -2 * (1 - s),
+    rot: -from.rot * 0.22 * (1 - s),
+    scale: 1.04 - 0.04 * s,
+    opacity: 1,
   };
 }
 
@@ -78,9 +97,9 @@ export default function Player() {
   const isIntro = chapter.id === 'intro';
   const isFinale = chapter.id === 'studio';
 
-  const routeDraw = reduced ? 1 : clamp01((time - startOf(1) + 0.6) / (startOf(5) - startOf(1)));
-  const flash = isFinale && !reduced ? clamp01(1 - Math.abs(local - FINALE.burstAt) / 0.18) * 0.12 : 0;
-  const rays = isFinale ? (reduced ? 1 : easeOutCubic(clamp01((local - FINALE.burstAt) / FINALE.burstDuration))) : 0;
+  const routeDraw = reduced ? 1 : clamp01(time / startOf(5));
+  const finaleGlow = isFinale ? (reduced ? 1 : easeOutCubic(clamp01((local - FINALE.glowAt) / 0.85))) : 0;
+  const rays = isFinale ? (reduced ? 1 : easeOutCubic(clamp01((local - FINALE.glowAt) / FINALE.burstDuration))) : 0;
 
   useEffect(() => {
     const syncSound = (event) => setSound(event.detail);
@@ -117,8 +136,8 @@ export default function Player() {
         at(s + m.arrival + entry.dur, () => fx.playStickerSlap(i));
       }
       if (item.id === 'studio') {
-        at(s + FINALE.burstAt, () => fx.playGlideIn());
-        item.people.forEach((_, idx) => at(s + FINALE.stickersAt + idx * FINALE.stagger, () => fx.playStickerSlap(idx)));
+        at(s + FINALE.glowAt, () => fx.playGlideIn());
+        item.people.forEach((_, idx) => at(s + FINALE.cardsAt + idx * FINALE.stagger, () => fx.playStickerSlap(idx)));
       }
     });
     timeline.current = clock;
@@ -135,6 +154,15 @@ export default function Player() {
     preference();
     query.addEventListener('change', preference);
 
+    const startRaf = requestAnimationFrame(() => {
+      setReady(true);
+      if (!query.matches) {
+        clock.restart();
+        setPlaying(true);
+        wasVisible.current = true;
+      }
+    });
+
     const pause = () => {
       clock.pause();
       fx.stopStory();
@@ -142,21 +170,21 @@ export default function Player() {
     };
     const observer = new IntersectionObserver(
       ([entry]) => {
-        setReady(true);
-        const visible = entry.isIntersecting && entry.intersectionRatio >= 0.35;
+        const visible = entry.isIntersecting && entry.intersectionRatio >= 0.25;
         if (visible && !wasVisible.current && !query.matches) {
-          clock.restart();
+          clock.play();
           setPlaying(true);
         } else if (!visible) pause();
         wasVisible.current = visible;
       },
-      { threshold: 0.35 }
+      { threshold: 0.25 }
     );
     observer.observe(stage.current);
     const visibility = () => document.hidden && pause();
     document.addEventListener('visibilitychange', visibility);
 
     return () => {
+      cancelAnimationFrame(startRaf);
       window.removeEventListener('fieldbook-sound', syncSound);
       document.removeEventListener('pointerdown', unlock);
       document.removeEventListener('keydown', onKey);
@@ -223,9 +251,9 @@ export default function Player() {
 
         <div className={r.heroCopy}>
           {isIntro ? (
-            <h2 className={r.introTitle} key='intro' style={titleStyle}>
+            <h1 className={r.introTitle} key='intro' style={titleStyle}>
               A studio built by makers.
-            </h2>
+            </h1>
           ) : (
             <div className={r.yearStamp} key={'year-' + chapter.id} style={titleStyle}>
               {chapter.year}
@@ -238,13 +266,13 @@ export default function Player() {
 
         <div className={r.mapStageWrap}>
           {isFinale && (
-            <div className={r.crewStamp} style={{ opacity: reduced ? 1 : clamp01((local - 3.4) / 0.5) }} aria-hidden='true'>
-              THE CREW IN STICKERS
+            <div className={r.crewStamp} style={{ opacity: finaleGlow }} aria-hidden='true'>
+              FOUR MAKERS · ONE STUDIO
             </div>
           )}
 
           <div className={r.mapStage}>
-            <div className={r.mapCanvas}>
+            <div className={r.mapCanvas} style={{ transform: reduced ? undefined : CAMERA_PAN[chapter.id] }}>
               <Image
                 className={r.district}
                 src='/media/fieldbook/district.svg'
@@ -265,7 +293,8 @@ export default function Player() {
                 />
                 {MAP_PINS.map((pin, p) => {
                   const pinChapter = p + 1;
-                  if (pinChapter > index) return null;
+                  const isActivePin = index === 0 ? p === 0 : pinChapter === index;
+                  if (index > 0 && pinChapter > index) return null;
                   return (
                     <circle
                       key={pin.x}
@@ -275,32 +304,35 @@ export default function Player() {
                       fill='none'
                       stroke='#b8e01b'
                       strokeWidth='2.5'
-                      className={!reduced && playing && pinChapter === index ? r.sonarRing : undefined}
+                      className={!reduced && playing && isActivePin ? r.sonarRing : undefined}
                     />
                   );
                 })}
               </svg>
             </div>
 
-            {/* 2026 finale: volt-and-paper sunburst behind the crew */}
+            {/* 2026 finale: refined volt-and-paper radiating lines + ambient glow */}
             {isFinale && (
-              <svg
-                className={r.sunburst}
-                viewBox='-100 -100 200 200'
-                preserveAspectRatio='xMidYMax slice'
-                style={{ opacity: Math.min(1, rays), transform: `scale(${0.6 + 0.4 * rays})` }}
-                aria-hidden='true'
-              >
-                {RAYS.map((i) => (
-                  <path
-                    key={i}
-                    d='M0 0 L-9 -150 L9 -150 Z'
-                    transform={`rotate(${i * 22.5 - 90})`}
-                    fill={i % 2 ? '#fdfdfb' : '#b8e01b'}
-                    opacity={i % 2 ? 0.9 : 0.75}
-                  />
-                ))}
-              </svg>
+              <>
+                <div className={r.finaleGlow} style={{ opacity: finaleGlow }} aria-hidden='true' />
+                <svg
+                  className={r.sunburst}
+                  viewBox='-100 -100 200 200'
+                  preserveAspectRatio='xMidYMax slice'
+                  style={{ opacity: Math.min(1, rays), transform: `scale(${0.72 + 0.28 * rays})` }}
+                  aria-hidden='true'
+                >
+                  {RAYS.map((i) => (
+                    <path
+                      key={i}
+                      d='M0 0 L-5.5 -150 L5.5 -150 Z'
+                      transform={`rotate(${i * 15 - 90})`}
+                      fill={i % 2 ? '#fdfdfb' : '#b8e01b'}
+                      opacity={i % 2 ? 0.72 : 0.58}
+                    />
+                  ))}
+                </svg>
+              </>
             )}
 
             <div className={r.cutouts}>
@@ -311,8 +343,11 @@ export default function Player() {
                 const t = reduced || !isNew ? 1 : clamp01((local - motion.arrival) / entryDur);
                 const p = pose(id, t);
                 const yearT = reduced || !isNew ? 1 : clamp01((local - (motion.arrival + entryDur + YEAR_DELAY)) / 0.35);
-                const slapT = !isFinale ? 0 : reduced ? 1 : clamp01((local - (FINALE.stickersAt + i * FINALE.stagger)) / FINALE.settle);
-                const tilt = [-3, 2, -2, 3][i % 4];
+                const badgeT = !isFinale
+                  ? 0
+                  : reduced
+                    ? 1
+                    : easeOutCubic(clamp01((local - (FINALE.cardsAt + i * FINALE.stagger)) / FINALE.settle));
 
                 return (
                   <a
@@ -329,7 +364,7 @@ export default function Player() {
                       className={r.yearTag}
                       style={{
                         opacity: yearT,
-                        transform: `translateX(-50%) rotate(-1.5deg) scale(${yearT ? easeOutCubic(yearT) : 0.6})`,
+                        transform: `translateX(-50%) scale(${yearT ? 0.85 + 0.15 * easeOutCubic(yearT) : 0.85})`,
                       }}
                     >
                       {person.year}
@@ -340,8 +375,8 @@ export default function Player() {
                         className={r.nameSticker}
                         data-finale='true'
                         style={{
-                          opacity: clamp01(slapT * 3),
-                          transform: `translateX(-50%) rotate(${slapT ? tilt + (1 - easeOutCubic(slapT)) * -12 : -14}deg) scale(${slapT ? 1 + (1 - easeOutBack(slapT, 1.5)) * 0.75 : 1.8})`,
+                          opacity: badgeT,
+                          transform: `translateX(-50%) translateY(${(1 - badgeT) * 10}px)`,
                         }}
                       >
                         {person.name}
@@ -352,13 +387,15 @@ export default function Player() {
               })}
             </div>
 
-            {flash > 0 && <span className={r.cameraFlash} style={{ opacity: flash }} aria-hidden='true' />}
+            {!reduced && <div key={chapter.id} className={r.chapterWipe} aria-hidden='true' />}
+
+            <div
+              className={r.stageHairline}
+              style={{ width: `${Math.min(100, (time / duration) * 100)}%` }}
+              aria-hidden='true'
+            />
           </div>
         </div>
-
-        <a href='#team' className={r.scrollCue}>
-          ↓ Scroll for the team & logbook
-        </a>
       </div>
     </header>
   );

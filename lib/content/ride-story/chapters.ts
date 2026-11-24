@@ -1,7 +1,7 @@
 import type { Chapter } from './CONTENT_SCHEMA';
 
 export const chapters: Chapter[] = [
-  { id: 'intro', year: 2019, milestoneIds: [], people: [], duration: 3.5, art: 'ledger' },
+  { id: 'intro', year: 2019, milestoneIds: [], people: [], duration: 2.0, art: 'ledger' },
   { id: 'origin', year: 2019, milestoneIds: ['origin', 'first-systems'], people: ['usama'], duration: 4.4, art: 'ledger' },
   {
     id: 'engineering',

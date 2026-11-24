@@ -1,7 +1,6 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import Cta from '@/features/cta';
-import WelcomeBanner from '@/features/ride-story/WelcomeBanner';
 import Player from '@/features/ride-story/Player';
 import ScrollReveal from '@/features/ride-story/ScrollReveal';
 import { milestones, people } from '@/lib/content/ride-story/story-data';
@@ -21,9 +20,6 @@ export default function Fieldbook() {
     <main className={`${s.paper} ${r.fieldbookPage}`}>
       <ScrollReveal />
 
-      {/* Section 0: Kinetic "Welcome to Geekinate." Opening */}
-      <WelcomeBanner />
-
       {/* Section 1: Bigger Interactive Animated Fieldbook Stage */}
       <Player />
 
@@ -32,19 +28,16 @@ export default function Fieldbook() {
         <div className={r.sectionHead} data-reveal='heading'>
           <div className={r.headingRow}>
             <h2 id='crew-heading'>The team</h2>
-            <span className={r.handNote}>FOUR MAKERS</span>
           </div>
           <p className={r.credit}>The crew behind Geekinate’s design, engineering, games, and growth.</p>
         </div>
 
         <ol className={r.crew}>
-          {crewList.map(([id, person], idx) => {
+          {crewList.map(([id, person]) => {
             const event = milestones.find((item) => item.id === person.entry);
-            const tilt = [-1.1, 0.9, -0.8, 1.1][idx % 4];
             return (
-              <li key={id} id={'person-' + id} className={r.crewItem} data-reveal='polaroid' style={{ '--card-tilt': `${tilt}deg` }}>
+              <li key={id} id={'person-' + id} className={r.crewItem} data-reveal='polaroid'>
                 <a href={'#entry-' + event.id} className={r.polaroidLink}>
-                  <span className={r.tapeStrip} aria-hidden='true' />
                   <figure className={r.polaroidFrame}>
                     <div className={r.polaroidMedia}>
                       <Image
@@ -58,9 +51,7 @@ export default function Fieldbook() {
                     <figcaption className={r.polaroidYear}>{event.year}</figcaption>
                   </figure>
                   <div className={r.crewMeta}>
-                    <h3>
-                      {person.name} <span aria-hidden='true'>↗</span>
-                    </h3>
+                    <h3>{person.name}</h3>
                     <small>{person.role}</small>
                     <p>{person.bio}</p>
                   </div>
@@ -76,7 +67,6 @@ export default function Fieldbook() {
         <div className={r.sectionHead} data-reveal='heading'>
           <div className={r.headingRow}>
             <h2 id='achievements-heading'>Achievements</h2>
-            <span className={r.handNote}>PROOF IN THE WORK</span>
           </div>
           <p className={r.credit}>Real numbers and real habits from the projects we’ve shipped together.</p>
         </div>
@@ -172,23 +162,12 @@ export default function Fieldbook() {
       {/* Section 5: Closing Invitation Sheet */}
       <section className={r.inviteWrap} id='your-turn' aria-labelledby='invite-heading'>
         <aside className={r.inviteSheet} data-reveal='sheet'>
-          <span className={r.inviteTapeLeft} aria-hidden='true' />
-          <span className={r.inviteTapeRight} aria-hidden='true' />
-          <span className={r.continuedPill}>TO BE CONTINUED</span>
           <h2 id='invite-heading'>Now it’s your turn.</h2>
           <p className={r.inviteCopy}>Bring us your product, game, or campaign — let’s write the next chapter together.</p>
 
-          <div className={r.yourPhotoFrame} data-reveal='your-photo' aria-hidden='true'>
-            <span className={r.thumbtack} />
-            <div className={r.yourPhotoInner}>
-              <span>YOUR PROJECT</span>
-              <small>NEXT IN THE LOGBOOK</small>
-            </div>
-          </div>
-
           <div className={r.inviteActions}>
             <Link href='/#contact' className={r.ctaPrimary}>
-              Let’s talk ↗
+              Let’s talk
             </Link>
             <Link href='/#work' className={r.ctaSecondary}>
               See our work

@@ -7,6 +7,7 @@ import { chapters, people, sceneMotion } from '@/lib/content/ride-story/story-da
 import { beats } from '@/lib/content/ride-story/story-copy';
 import { sharedFieldbookSound as fx } from './soundEngine';
 import r from './story.module.css';
+import d from './story-dark.module.css';
 
 const ends = chapters.reduce((list, chapter) => [...list, (list.at(-1) ?? 0) + chapter.duration], []);
 const duration = ends.at(-1);
@@ -103,7 +104,9 @@ function pose(id, t) {
   };
 }
 
-export default function Player() {
+export default function Player({ theme = 'light' }) {
+  const dark = theme === 'dark';
+  const cx = (key) => (dark && d[key] ? `${r[key]} ${d[key]}` : r[key]);
   const stage = useRef(null);
   const timeline = useRef(null);
   const wasVisible = useRef(false);
@@ -266,15 +269,15 @@ export default function Player() {
   }
 
   return (
-    <header className={r.mapOpening} id='story-top' ref={stage}>
+    <header className={cx('mapOpening')} id='story-top' ref={stage}>
       <div className={r.stageFrame}>
         <div className={r.controlRow}>
-          <button type='button' className={r.playPill} disabled={!ready} onClick={() => void toggle()}>
+          <button type='button' className={cx('playPill')} disabled={!ready} onClick={() => void toggle()}>
             <span className={r.playDot} data-playing={playing} aria-hidden='true' />
             {!ready ? 'Loading…' : playing ? 'Pause' : time >= duration - 0.05 ? 'Replay' : 'Play'}
           </button>
-          <button type='button' className={r.soundPill} aria-pressed={sound} onClick={() => void toggleSound()}>
-            <span className={r.eqBars} data-active={sound && playing} aria-hidden='true'>
+          <button type='button' className={cx('soundPill')} aria-pressed={sound} onClick={() => void toggleSound()}>
+            <span className={cx('eqBars')} data-active={sound && playing} aria-hidden='true'>
               <i />
               <i />
               <i />
@@ -285,31 +288,31 @@ export default function Player() {
 
         <div className={r.heroCopy}>
           {isIntro ? (
-            <h1 className={r.introTitle} key='intro' style={titleStyle}>
+            <h1 className={cx('introTitle')} key='intro' style={titleStyle}>
               A studio built by makers.
             </h1>
           ) : (
-            <div className={r.yearStamp} key={'year-' + chapter.id} style={titleStyle}>
+            <div className={cx('yearStamp')} key={'year-' + chapter.id} style={titleStyle}>
               {chapter.year}
             </div>
           )}
-          <p className={r.captionLine} key={'caption-' + chapter.id} style={captionStyle}>
+          <p className={cx('captionLine')} key={'caption-' + chapter.id} style={captionStyle}>
             {beat.narration}
           </p>
         </div>
 
         <div className={r.mapStageWrap}>
           {isFinale && (
-            <div className={r.crewStamp} style={{ opacity: finaleGlow }} aria-hidden='true'>
+            <div className={cx('crewStamp')} style={{ opacity: finaleGlow }} aria-hidden='true'>
               FOUR MAKERS · ONE STUDIO
             </div>
           )}
 
-          <div className={r.mapStage}>
+          <div className={cx('mapStage')}>
             <div className={r.mapCanvas} style={{ transform: reduced ? undefined : CAMERA_PAN[chapter.id] }}>
               <Image
                 className={r.district}
-                src='/media/fieldbook/district.svg'
+                src={dark ? '/media/fieldbook/district-dark.svg' : '/media/fieldbook/district.svg'}
                 alt='Illustrated fieldbook map connecting Geekinate milestones'
                 width={1000}
                 height={390}
@@ -346,13 +349,13 @@ export default function Player() {
                 <g transform={`translate(${car.x}, ${car.y}) rotate(${car.angle})`}>
                   {/* Dual headlight beams while moving */}
                   {!reduced && routeDraw > 0.01 && routeDraw < 0.99 && (
-                    <g opacity='0.3'>
+                    <g opacity={dark ? '0.45' : '0.3'}>
                       <polygon points='21,-6 54,-16 54,-2 21,-3' fill='#b8e01b' />
                       <polygon points='21,3 54,2 54,16 21,6' fill='#b8e01b' />
                     </g>
                   )}
                   {/* Soft ground shadow */}
-                  <ellipse cx='0' cy='2' rx='22' ry='11' fill='#101613' opacity='0.18' />
+                  <ellipse cx='0' cy='2' rx='22' ry='11' fill={dark ? '#000000' : '#101613'} opacity={dark ? '0.55' : '0.18'} />
                   {/* Tires */}
                   <rect x='-15' y='-11.5' width='8' height='3.5' rx='1.5' fill='#101613' />
                   <rect x='7' y='-11.5' width='8' height='3.5' rx='1.5' fill='#101613' />
@@ -370,10 +373,7 @@ export default function Player() {
                   />
                   {/* Hood lines & cabin glass */}
                   <path d='M10 -5.5 L18 -4 M10 5.5 L18 4' stroke='#101613' strokeWidth='1.1' strokeLinecap='round' opacity='0.45' />
-                  <path
-                    d='M-11 -6.5 C-7 -7.5 5 -7.5 11 -5.5 L11 5.5 C5 7.5 -7 7.5 -11 6.5 Z'
-                    fill='#101613'
-                  />
+                  <path d='M-11 -6.5 C-7 -7.5 5 -7.5 11 -5.5 L11 5.5 C5 7.5 -7 7.5 -11 6.5 Z' fill='#101613' />
                   {/* Roof panel */}
                   <rect x='-7' y='-5' width='11' height='10' rx='3' fill='#fdfdfb' stroke='#101613' strokeWidth='1.2' />
                   {/* Rear spoiler */}
@@ -390,7 +390,7 @@ export default function Player() {
             {/* 2026 finale: refined volt-and-paper radiating lines + ambient glow */}
             {isFinale && (
               <>
-                <div className={r.finaleGlow} style={{ opacity: finaleGlow }} aria-hidden='true' />
+                <div className={cx('finaleGlow')} style={{ opacity: finaleGlow }} aria-hidden='true' />
                 <svg
                   className={r.sunburst}
                   viewBox='-100 -100 200 200'
@@ -404,7 +404,7 @@ export default function Player() {
                       d='M0 0 L-5.5 -150 L5.5 -150 Z'
                       transform={`rotate(${i * 15 - 90})`}
                       fill={i % 2 ? '#fdfdfb' : '#b8e01b'}
-                      opacity={i % 2 ? 0.72 : 0.58}
+                      opacity={dark ? (i % 2 ? 0.08 : 0.22) : i % 2 ? 0.72 : 0.58}
                     />
                   ))}
                 </svg>
@@ -437,7 +437,7 @@ export default function Player() {
                     }}
                   >
                     <em
-                      className={r.yearTag}
+                      className={cx('yearTag')}
                       style={{
                         opacity: yearT,
                         transform: `translateX(-50%) scale(${yearT ? 0.85 + 0.15 * easeOutCubic(yearT) : 0.85})`,
@@ -445,10 +445,16 @@ export default function Player() {
                     >
                       {person.year}
                     </em>
-                    <Image src={person.cutout} width={320} height={360} alt={`${person.name}, ${person.role}`} className={r.cutoutImg} />
+                    <Image
+                      src={person.cutout}
+                      width={320}
+                      height={360}
+                      alt={`${person.name}, ${person.role}`}
+                      className={cx('cutoutImg')}
+                    />
                     {isFinale && (
                       <span
-                        className={r.nameSticker}
+                        className={cx('nameSticker')}
                         data-finale='true'
                         style={{
                           opacity: badgeT,
@@ -463,13 +469,9 @@ export default function Player() {
               })}
             </div>
 
-            {!reduced && <div key={chapter.id} className={r.chapterWipe} aria-hidden='true' />}
+            {!reduced && <div key={chapter.id} className={cx('chapterWipe')} aria-hidden='true' />}
 
-            <div
-              className={r.stageHairline}
-              style={{ width: `${Math.min(100, (time / duration) * 100)}%` }}
-              aria-hidden='true'
-            />
+            <div className={cx('stageHairline')} style={{ width: `${Math.min(100, (time / duration) * 100)}%` }} aria-hidden='true' />
           </div>
         </div>
       </div>

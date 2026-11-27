@@ -8,20 +8,36 @@
   overflow-x: clip;
 }
 
-.darkPage :focus-visible {
-  outline: 2px solid var(--volt);
-  outline-offset: 4px;
+.bandDark {
+  width: 100%;
+  background-color: #000000;
+  color: var(--white);
+  padding: clamp(4.2rem, 7.5vw, 6rem) 0;
+  scroll-margin-top: 5.5rem;
 }
 
-.darkSection {
+.bandDarkInvite {
+  width: 100%;
+  background-color: #000000;
+  color: var(--white);
+  padding: clamp(4.2rem, 7.5vw, 6rem) 0 clamp(2.5rem, 5vw, 4rem);
+  scroll-margin-top: 5.5rem;
+}
+
+.bandLight {
+  width: 100%;
+  background-color: var(--white);
+  color: var(--ink);
+  padding: clamp(4.2rem, 7.5vw, 6rem) 0;
+  scroll-margin-top: 5.5rem;
+}
+
+.bandInner {
   width: min(88%, 78rem);
-  margin: auto;
-  padding: clamp(3.8rem, 7vw, 5.2rem) 0;
-  border-top: 1.5px solid var(--line);
-  scroll-margin-top: 6rem;
+  margin: 0 auto;
 }
 
-.darkSection h2 {
+.bandDark h2 {
   font:
     italic clamp(2.1rem, 4vw, 4.5rem)/1.05 var(--font-display),
     serif;
@@ -29,9 +45,30 @@
   letter-spacing: -0.02em;
 }
 
+.bandLight h2 {
+  font:
+    italic clamp(2.1rem, 4vw, 4.5rem)/1.05 var(--font-display),
+    serif;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+
+.darkPage .mapOpening :focus-visible,
+.darkPage .bandDark :focus-visible,
+.darkPage .bandDarkInvite :focus-visible {
+  outline: 2px solid var(--volt);
+  outline-offset: 4px;
+}
+
+.darkPage .bandLight :focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 4px;
+}
+
 .darkPage .mapOpening {
   color: var(--white);
   padding-top: calc(var(--nav-rail) + clamp(2.25rem, 4.5svh, 3.75rem));
+  padding-bottom: clamp(3.5rem, 6svh, 5rem);
 }
 
 .darkPage .introTitle,
@@ -121,68 +158,29 @@
   box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.9);
 }
 
-.darkPage .credit,
-.darkPage .trajectoryIntro {
+.bandDark .credit {
   color: rgba(253, 253, 251, 0.68);
 }
 
-.darkPage .polaroidLink {
-  background: #090b09;
-  color: var(--white);
-  border-color: rgba(253, 253, 251, 0.16);
-  box-shadow: 3px 3px 0 rgba(184, 224, 27, 0.22);
-  transition:
-    transform 0.24s var(--ease-brutal),
-    box-shadow 0.24s var(--ease-brutal),
-    border-color 0.24s ease;
+.bandLight .lightCredit,
+.bandLight .lightTrajectoryIntro {
+  color: var(--ink-soft);
 }
 
-.darkPage .polaroidLink:hover,
-.darkPage .polaroidLink:focus-visible {
-  transform: translateY(-4px);
-  border-color: var(--volt);
-  box-shadow: 5px 5px 0 var(--volt);
-  text-decoration: none;
-}
-
-.darkPage .polaroidFrame {
-  background: #050704;
-  border-color: rgba(253, 253, 251, 0.14);
-}
-
-.darkPage .polaroidImg {
+.bandLight .lightPolaroidImg {
   transition: transform 0.45s var(--ease-brutal);
 }
 
-.darkPage .polaroidLink:hover .polaroidImg {
+.bandLight .lightPolaroidLink:hover .lightPolaroidImg {
   transform: scale(1.03);
 }
 
-.darkPage .polaroidYear {
-  background: var(--volt);
-  color: var(--ink);
-  border-color: #000000;
+.bandLight .lightPolaroidLink:hover,
+.bandLight .lightPolaroidLink:focus-visible {
+  text-decoration: none;
 }
 
-.darkPage .crewMeta h3 {
-  color: var(--white);
-  transition: color 0.24s ease;
-}
-
-.darkPage .polaroidLink:hover .crewMeta h3 {
-  color: var(--volt);
-}
-
-.darkPage .crewMeta small {
-  color: var(--volt);
-  letter-spacing: 0.05em;
-}
-
-.darkPage .crewMeta p {
-  color: rgba(253, 253, 251, 0.68);
-}
-
-.darkPage .statCard {
+.bandDark .statCard {
   background: #090b09;
   border-color: rgba(253, 253, 251, 0.16);
   box-shadow: 4px 4px 0 rgba(184, 224, 27, 0.22);
@@ -192,225 +190,124 @@
     box-shadow 0.22s var(--ease-brutal);
 }
 
-.darkPage .statCard:hover {
+.bandDark .statCard:hover {
   transform: translateY(-3px);
   border-color: rgba(184, 224, 27, 0.55);
   box-shadow: 5px 5px 0 var(--volt);
 }
 
-.darkPage .statNumber {
+.bandDark .statNumber {
   background: var(--volt);
   color: var(--ink);
   border-color: #000000;
 }
 
-.darkPage .statCard h3 {
+.bandDark .statCard h3 {
   color: var(--white);
 }
 
-.darkPage .statCard p {
+.bandDark .statCard p {
   color: rgba(253, 253, 251, 0.68);
 }
 
-.darkPage .ledger:before {
-  border-left-color: rgba(253, 253, 251, 0.18);
+.bandDarkInvite .inviteWrap {
+  margin: 0 auto;
+  padding-top: 0;
 }
 
-.darkPage .spineProgress {
-  background: var(--volt);
-  box-shadow: 0 0 12px rgba(184, 224, 27, 0.4);
-}
-
-.darkPage .spineNode {
-  background: var(--volt);
-  border: 2.5px solid #000000;
-  box-shadow: 0 0 0 1.5px rgba(184, 224, 27, 0.55);
-}
-
-.darkPage .ledgerCard {
-  background: #090b09;
-  border-color: rgba(253, 253, 251, 0.16);
-  box-shadow: 3px 3px 0 rgba(184, 224, 27, 0.2);
-  transition:
-    border-color 0.22s ease,
-    box-shadow 0.22s ease;
-}
-
-.darkPage .ledgerCard:hover {
-  border-color: rgba(184, 224, 27, 0.42);
-  box-shadow: 4px 4px 0 rgba(184, 224, 27, 0.34);
-}
-
-.darkPage .ledgerFinal .ledgerCard {
-  background: #0d110a;
-  border: 2px solid var(--volt);
-  box-shadow:
-    4px 4px 0 var(--volt),
-    7px 7px 0 rgba(253, 253, 251, 0.14);
-}
-
-.darkPage .dateBadge {
-  background: rgba(184, 224, 27, 0.1);
-  border-color: rgba(184, 224, 27, 0.42);
-  color: var(--volt);
-}
-
-.darkPage .ledgerFinal .dateBadge {
-  background: var(--volt);
-  border-color: #000000;
-  color: var(--ink);
-}
-
-.darkPage .ledgerCard h3 {
-  color: var(--white);
-}
-
-.darkPage .ledgerAction {
-  color: rgba(253, 253, 251, 0.72);
-}
-
-.darkPage .growthOutcome {
-  border-top-color: rgba(253, 253, 251, 0.14);
-}
-
-.darkPage .growthOutcome span {
-  color: var(--volt);
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-family: var(--font-mono), monospace;
-}
-
-.darkPage .growthOutcome p {
-  color: var(--white);
-}
-
-.darkPage .tag {
-  background: var(--volt);
-  border-color: #000000;
-  color: var(--ink);
-}
-
-.darkPage .inlinePolaroid {
-  background: #111512;
-  border-color: rgba(253, 253, 251, 0.16);
-  box-shadow: 2px 2px 0 rgba(184, 224, 27, 0.22);
-}
-
-.darkPage .inlinePhotoWrap {
-  background: #050704;
-  border-color: rgba(253, 253, 251, 0.12);
-}
-
-.darkPage .crewMiniStrip {
-  background: #000000;
-  border-color: rgba(253, 253, 251, 0.14);
-}
-
-.darkPage .crewMiniCell {
-  background: #0a0d08;
-}
-
-.darkPage .inlinePolaroid figcaption {
-  color: var(--footer-mut);
-}
-
-.darkPage .inviteWrap {
-  padding-top: 2rem;
-}
-
-.darkPage .inviteSheet {
+.bandDarkInvite .inviteSheet {
   background: #0a0d09;
   border-color: rgba(184, 224, 27, 0.42);
   box-shadow: 5px 5px 0 rgba(184, 224, 27, 0.26);
   color: var(--white);
 }
 
-.darkPage .inviteTapeLeft,
-.darkPage .inviteTapeRight {
+.bandDarkInvite .inviteTapeLeft,
+.bandDarkInvite .inviteTapeRight {
   background: rgba(184, 224, 27, 0.82);
   border-color: #000000;
 }
 
-.darkPage .continuedPill {
+.bandDarkInvite .continuedPill {
   background: var(--volt);
   border-color: #000000;
   color: var(--ink);
 }
 
-.darkPage .inviteSheet h2 {
+.bandDarkInvite .inviteSheet h2 {
   color: var(--white);
 }
 
-.darkPage .inviteCopy {
+.bandDarkInvite .inviteCopy {
   color: rgba(253, 253, 251, 0.72);
 }
 
-.darkPage .yourPhotoFrame {
+.bandDarkInvite .yourPhotoFrame {
   background: #111512;
   border-color: rgba(253, 253, 251, 0.2);
   box-shadow: 3px 3px 0 rgba(184, 224, 27, 0.28);
 }
 
-.darkPage .thumbtack {
+.bandDarkInvite .thumbtack {
   background: var(--volt);
   border-color: #000000;
   box-shadow: 1.5px 1.5px 0 rgba(0, 0, 0, 0.85);
 }
 
-.darkPage .yourPhotoInner {
+.bandDarkInvite .yourPhotoInner {
   background: #050704;
   border: 1.5px dashed rgba(184, 224, 27, 0.45);
 }
 
-.darkPage .yourPhotoInner span {
+.bandDarkInvite .yourPhotoInner span {
   color: var(--white);
 }
 
-.darkPage .yourPhotoInner small {
+.bandDarkInvite .yourPhotoInner small {
   color: var(--footer-mut);
 }
 
-.darkPage .ctaPrimary {
+.bandDarkInvite .ctaPrimary {
   background: var(--volt);
   color: var(--ink);
   border-color: var(--volt);
   box-shadow: 3px 3px 0 rgba(253, 253, 251, 0.22);
 }
 
-.darkPage .ctaPrimary:hover {
+.bandDarkInvite .ctaPrimary:hover {
   transform: translate(-1px, -1px);
   box-shadow: 4px 4px 0 var(--white);
 }
 
-.darkPage .ctaSecondary {
+.bandDarkInvite .ctaSecondary {
   background: transparent;
   color: var(--white);
   border-color: rgba(253, 253, 251, 0.32);
   box-shadow: none;
 }
 
-.darkPage .ctaSecondary:hover {
+.bandDarkInvite .ctaSecondary:hover {
   transform: translate(-1px, -1px);
   border-color: var(--white);
   background: rgba(253, 253, 251, 0.06);
   box-shadow: 3px 3px 0 rgba(184, 224, 27, 0.35);
 }
 
-.darkPage .inviteFoot {
+.bandDarkInvite .inviteFoot {
   color: var(--footer-mut);
 }
 
-.darkPage .inviteFoot a {
+.bandDarkInvite .inviteFoot a {
   color: var(--white);
   text-decoration-color: var(--volt);
 }
 
-.darkPage .inviteFoot a:hover {
+.bandDarkInvite .inviteFoot a:hover {
   color: var(--volt);
 }
 
 @media (max-width: 700px) {
-  .darkSection {
+  .bandInner {
     width: 92%;
   }
 }
@@ -422,12 +319,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .darkPage .polaroidImg,
-  .darkPage .polaroidLink,
-  .darkPage .statCard,
-  .darkPage .ledgerCard,
-  .darkPage .ctaPrimary,
-  .darkPage .ctaSecondary,
+  .bandLight .lightPolaroidImg,
+  .bandDark .statCard,
+  .bandDarkInvite .ctaPrimary,
+  .bandDarkInvite .ctaSecondary,
   .darkPage .playPill,
   .darkPage .soundPill {
     transition: none;
